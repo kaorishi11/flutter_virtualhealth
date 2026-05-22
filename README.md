@@ -4,8 +4,8 @@
 Plataforma completa de telemedicina que conecta pacientes, médicos e administradores em um só lugar.
 
 ### Tecnologias
-Flutter
-Supabase
+- Flutter
+- Supabase
 
 ### Tipos de Usuários
 Paciente:	Agendar consultas, chat, notificações
@@ -21,9 +21,9 @@ flutter pub get
 flutter run
 
 ### Credenciais de Teste
-Paciente	kaori@gmail.com	123456
-Médico	claudia@gmail	123456
-Admin	admin@gmail.com	123456
+- Paciente	kaori@gmail.com	123456
+- Médico	claudia@gmail	123456
+- Admin	admin@gmail.com	123456
 
 ### Funcionalidades
 Login diferenciado por tipo de usuário
