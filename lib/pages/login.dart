@@ -60,15 +60,20 @@ class _LoginPageState extends State<LoginPage> {
     
     setState(() => _isLoading = false);
     
-    if (error == null) {
+   if (error == null) {
       await _saveCredentials();
+
+      // PEGA A FUNÇÃO DO USUÁRIO
+      final funcao = await _auth.pegarFuncaoUsuario();
+
       if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomePage()),
-       );      
-      if (!mounted) return;
-      
+
+      // REDIRECIONA
+      if (funcao == 'admin') {
+        Navigator.pushReplacementNamed(context, '/admin');
+      } else {
+        Navigator.pushReplacementNamed(context, '/home');
+      }
     } else {
       setState(() {
         _errorMessage = error;

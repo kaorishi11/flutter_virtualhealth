@@ -97,6 +97,20 @@ class AuthService {
     }
   }
 
+  Future<String?> pegarFuncaoUsuario() async {
+    final user = usuarioAtual;
+
+    if (user == null) return null;
+
+    final response = await supabase
+        .from('perfis')
+        .select('funcao')
+        .eq('auth_id', user.id)
+        .single();
+
+    return response['funcao'];
+  }
+
   // LOGIN
   Future<String?> login({
     required String email,
