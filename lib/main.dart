@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
 import 'pages/login.dart';
 
 Future<void> main() async {
-
   WidgetsFlutterBinding.ensureInitialized();
 
   await Supabase.initialize(
@@ -21,7 +19,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Virtual Health',
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        fontFamily: 'Roboto',
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
       home: const LoginPage(),
     );
   }
