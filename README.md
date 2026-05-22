@@ -1,16 +1,36 @@
-# virtualhealth
+### Virtual Health - Plataforma de Telemedicina
 
-A new Flutter project.
+### Sobre o Projeto
+Plataforma completa de telemedicina que conecta pacientes, médicos e administradores em um só lugar.
 
-## Getting Started
+### Tecnologias
+Flutter
+Supabase
 
-This project is a starting point for a Flutter application.
+### Tipos de Usuários
+Paciente:	Agendar consultas, chat, notificações
+Médico:	Dashboard, agenda, teleconsulta, dicas
+Admin:	Gerenciar usuários, profissionais, consultas
 
-A few resources to get you started if this is your first Flutter project:
+### Como Executar
+bash
+git clone https://github.com/kaorishi11/flutter_virtualhealth.git
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+flutter pub get
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+flutter run
+
+### Credenciais de Teste
+Paciente	kaori@gmail.com	123456
+Médico	claudia@gmail	123456
+Admin	admin@gmail.com	123456
+
+### Funcionalidades
+Login diferenciado por tipo de usuário
+Agendamento de consultas (presencial e online)
+Teleconsulta com câmera real
+Chat com médico virtual
+Sistema de notificações
+Pagamento via PIX (simulado)
+Dashboard administrativo
+Gerenciamento de usuários e profissionais
