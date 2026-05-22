@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:virtualhealth/services/auth_service.dart';
 import 'home.dart';
 import 'cadastro.dart';
@@ -64,19 +63,12 @@ class _LoginPageState extends State<LoginPage> {
     if (error == null) {
       await _saveCredentials();
       if (!mounted) return;
-      
-      final perfil = await _auth.getPerfilUsuario();
-      
-      if (!mounted) return;
-      
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (_) => HomePage(
-            userData: perfil,
-          ),
-        ),
-      );
+        MaterialPageRoute(builder: (_) => const HomePage()),
+       );      
+      if (!mounted) return;
+      
     } else {
       setState(() {
         _errorMessage = error;
