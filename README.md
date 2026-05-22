@@ -22,7 +22,7 @@ flutter run
 
 ### Credenciais de Teste
 - Paciente	kaori@gmail.com	123456
-- Médico	claudia@gmail	123456
+- Médico	claudia@gmail.com	123456
 - Admin	admin@gmail.com	123456
 
 ### Funcionalidades
