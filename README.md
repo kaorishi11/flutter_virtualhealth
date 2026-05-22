@@ -8,9 +8,9 @@ Plataforma completa de telemedicina que conecta pacientes, médicos e administra
 - Supabase
 
 ### Tipos de Usuários
-Paciente:	Agendar consultas, chat, notificações
-Médico:	Dashboard, agenda, teleconsulta, dicas
-Admin:	Gerenciar usuários, profissionais, consultas
+- Paciente:	Agendar consultas, chat, notificações
+- Médico:	Dashboard, agenda, teleconsulta, dicas
+- Admin:	Gerenciar usuários, profissionais, consultas
 
 ### Como Executar
 bash
@@ -26,11 +26,11 @@ flutter run
 - Admin	admin@gmail.com	123456
 
 ### Funcionalidades
-Login diferenciado por tipo de usuário
-Agendamento de consultas (presencial e online)
-Teleconsulta com câmera real
-Chat com médico virtual
-Sistema de notificações
-Pagamento via PIX (simulado)
-Dashboard administrativo
-Gerenciamento de usuários e profissionais
+- Login diferenciado por tipo de usuário
+- Agendamento de consultas (presencial e online)
+- Teleconsulta com câmera real
+- Chat com médico virtual
+- Sistema de notificações
+- Pagamento via PIX (simulado)
+- Dashboard administrativo
+- Gerenciamento de usuários e profissionais
