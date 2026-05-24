@@ -1,8 +1,8 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-
+ 
 class AuthService {
   final supabase = Supabase.instance.client;
-
+ 
   // CADASTRO DE PACIENTE
   Future<String?> cadastrarPaciente({
     required String nome,
@@ -16,12 +16,12 @@ class AuthService {
         email: email,
         password: senha,
       );
-
+ 
       final user = response.user;
       if (user == null) {
         return 'Erro ao criar usuário';
       }
-
+ 
       // Cria perfil do paciente
       await supabase.from('perfis').insert({
         'auth_id': user.id,
@@ -32,7 +32,7 @@ class AuthService {
         'cep': cep,
         'ativo': true,
       });
-
+ 
       return null;
     } on AuthException catch (e) {
       return e.message;
@@ -40,7 +40,7 @@ class AuthService {
       return e.toString();
     }
   }
-
+ 
   // CADASTRO DE MÉDICO
   Future<String?> cadastrarMedico({
     required String nome,
@@ -59,12 +59,12 @@ class AuthService {
         email: email,
         password: senha,
       );
-
+ 
       final user = response.user;
       if (user == null) {
         return 'Erro ao criar usuário';
       }
-
+ 
       // Cria perfil do médico
       final perfilResponse = await supabase.from('perfis').insert({
         'auth_id': user.id,
@@ -76,9 +76,9 @@ class AuthService {
         'data_nascimento': dataNascimento.toIso8601String(),
         'ativo': true,
       }).select();
-
+ 
       final perfilId = perfilResponse[0]['id'];
-
+ 
       // Cria registro do profissional
       await supabase.from('profissionais').insert({
         'perfil_id': perfilId,
@@ -88,7 +88,7 @@ class AuthService {
         'ano_formacao': anoFormacao,
         'status': 'pendente',
       });
-
+ 
       return null;
     } on AuthException catch (e) {
       return e.message;
@@ -96,21 +96,24 @@ class AuthService {
       return e.toString();
     }
   }
-
+ 
   Future<String?> pegarFuncaoUsuario() async {
     final user = usuarioAtual;
-
     if (user == null) return null;
-
-    final response = await supabase
-        .from('perfis')
-        .select('funcao')
-        .eq('auth_id', user.id)
-        .single();
-
-    return response['funcao'];
+ 
+    try {
+      final response = await supabase
+          .from('perfis')
+          .select('funcao')
+          .eq('auth_id', user.id)
+          .maybeSingle();
+ 
+      return response?['funcao'] as String?;
+    } catch (e) {
+      return null;
+    }
   }
-
+ 
   // LOGIN
   Future<String?> login({
     required String email,
@@ -128,36 +131,36 @@ class AuthService {
       return e.toString();
     }
   }
-
+ 
   // LOGOUT
   Future<void> logout() async {
     await supabase.auth.signOut();
   }
-
+ 
   // USUÁRIO ATUAL
   User? get usuarioAtual {
     return supabase.auth.currentUser;
   }
-
+ 
   // PEGAR PERFIL DO USUÁRIO
   Future<Map<String, dynamic>?> getPerfilUsuario() async {
     final user = usuarioAtual;
     if (user == null) return null;
-
+ 
     final response = await supabase
         .from('perfis')
         .select()
         .eq('auth_id', user.id)
         .maybeSingle();
-
+ 
     return response;
   }
-
+ 
   // VERIFICAR SE ESTÁ LOGADO
   bool get isLoggedIn {
     return supabase.auth.currentUser != null;
   }
-
+ 
   // RECUPERAR SENHA
   Future<String?> resetPassword(String email) async {
     try {

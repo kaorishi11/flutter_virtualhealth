@@ -1,137 +1,205 @@
 import 'package:flutter/material.dart';
-import 'package:virtualhealth/services/auth_service.dart';
+import '../services/auth_service.dart';
 import 'home.dart';
 import 'cadastro.dart';
-
+ 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
-
+ 
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
-
+ 
 class _LoginPageState extends State<LoginPage> {
   final AuthService _auth = AuthService();
   final _formKey = GlobalKey<FormState>();
-  
+ 
   final _emailController = TextEditingController();
   final _senhaController = TextEditingController();
-  
+ 
   bool _isLoading = false;
   bool _rememberMe = false;
   bool _obscurePassword = true;
   String? _errorMessage;
-
+ 
   @override
   void initState() {
     super.initState();
     _loadSavedCredentials();
   }
-
+ 
   @override
   void dispose() {
     _emailController.dispose();
     _senhaController.dispose();
     super.dispose();
   }
-
+ 
   Future<void> _loadSavedCredentials() async {
+    // TODO: Implementar carregamento de credenciais salvas
+    // Por enquanto apenas simulando
     if (_rememberMe) {
+      // Carregar credenciais do storage
     }
   }
-
+ 
   Future<void> _saveCredentials() async {
+    // TODO: Implementar salvamento de credenciais
     if (_rememberMe) {
+      // Salvar credenciais no storage
     }
   }
-
+ 
   Future<void> _handleLogin() async {
-    if (!_formKey.currentState!.validate()) return;
-    
+    // Valida o formulário
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+   
+    // Previne múltiplos cliques
+    if (_isLoading) return;
+   
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
-    
-    final error = await _auth.login(
-      email: _emailController.text.trim(),
-      senha: _senhaController.text.trim(),
-    );
-    
-    setState(() => _isLoading = false);
-    
-   if (error == null) {
-      await _saveCredentials();
-
-      // PEGA A FUNÇÃO DO USUÁRIO
-      final funcao = await _auth.pegarFuncaoUsuario();
-
-      if (!mounted) return;
-
-      // REDIRECIONA
-      if (funcao == 'admin') {
-        Navigator.pushReplacementNamed(context, '/admin');
-      } else {
-        Navigator.pushReplacementNamed(context, '/home');
-      }
-    } else {
-      setState(() {
-        _errorMessage = error;
-      });
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-        ),
+   
+    try {
+      final error = await _auth.login(
+        email: _emailController.text.trim(),
+        senha: _senhaController.text.trim(),
       );
+     
+      if (!mounted) return;
+     
+      if (error == null) {
+        // Login bem sucedido
+        await _saveCredentials();
+       
+        // Mostrar mensagem de sucesso
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Login realizado com sucesso!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(seconds: 2),
+          ),
+        );
+       
+        // Navegar para Home e limpar histórico
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const HomePage()),
+          (route) => false,
+        );
+      } else {
+        // Erro no login
+        setState(() {
+          _errorMessage = error;
+        });
+       
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      // Erro inesperado
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Erro inesperado. Tente novamente.';
+        });
+       
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Erro ao realizar login. Tente novamente.'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
-
+ 
   Future<void> _handleResetPassword() async {
-    if (_emailController.text.trim().isEmpty) {
+    final email = _emailController.text.trim();
+   
+    if (email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Digite seu e-mail para recuperar a senha'),
           backgroundColor: Colors.orange,
+          behavior: SnackBarBehavior.floating,
         ),
       );
       return;
     }
-
-    setState(() => _isLoading = true);
-    
-    final error = await _auth.resetPassword(_emailController.text.trim());
-    
-    setState(() => _isLoading = false);
-    
-    if (error == null) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Recuperação de Senha'),
-          content: Text(
-            'Enviamos um link de recuperação para ${_emailController.text.trim()}',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('OK'),
+ 
+    if (_isLoading) return;
+   
+    setState(() {
+      _isLoading = true;
+    });
+   
+    try {
+      final error = await _auth.resetPassword(email);
+     
+      if (!mounted) return;
+     
+      if (error == null) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Recuperação de Senha'),
+            content: Text(
+              'Enviamos um link de recuperação para:\n\n$email\n\nVerifique sua caixa de entrada e a pasta de spam.',
             ),
-          ],
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error),
-          backgroundColor: Colors.red,
-        ),
-      );
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Erro ao recuperar senha. Tente novamente.'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
-
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -140,7 +208,7 @@ class _LoginPageState extends State<LoginPage> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Colors.blue[700]!, Colors.blue[900]!],
+            colors: [Colors.green[700]!, Colors.green[900]!],
           ),
         ),
         child: SafeArea(
@@ -160,12 +228,11 @@ class _LoginPageState extends State<LoginPage> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-
                         // Logo
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.blue[50],
+                            color: Colors.green[50],
                             shape: BoxShape.circle,
                           ),
                           child: ClipOval(
@@ -174,16 +241,32 @@ class _LoginPageState extends State<LoginPage> {
                               width: 72,
                               height: 72,
                               fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  width: 72,
+                                  height: 72,
+                                  decoration: BoxDecoration(
+                                    color: Colors.green[100],
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.medical_services,
+                                    size: 40,
+                                    color: Colors.green[700],
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ),
                         const SizedBox(height: 24),
-                        
+                       
                         const Text(
                           'Bem-vindo de volta!',
                           style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
+                            color: Color(0xFF2E7D32),
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -196,17 +279,19 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        
+                       
                         const SizedBox(height: 32),
-                        
+                       
+                        // Campo de E-mail
                         TextFormField(
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
                           textInputAction: TextInputAction.next,
+                          enabled: !_isLoading,
                           decoration: InputDecoration(
                             labelText: 'E-mail',
                             labelStyle: TextStyle(color: Colors.grey[600]),
-                            prefixIcon: Icon(Icons.email_outlined, color: Colors.blue[700]),
+                            prefixIcon: Icon(Icons.email_outlined, color: Colors.green[700]),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide(color: Colors.grey[300]!),
@@ -217,7 +302,7 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: Colors.blue[700]!, width: 2),
+                              borderSide: BorderSide(color: Colors.green[700]!, width: 2),
                             ),
                             filled: true,
                             fillColor: Colors.grey[50],
@@ -232,19 +317,20 @@ class _LoginPageState extends State<LoginPage> {
                             return null;
                           },
                         ),
-                        
+                       
                         const SizedBox(height: 16),
-                        
-                        // Senha
+                       
+                        // Campo de Senha
                         TextFormField(
                           controller: _senhaController,
                           obscureText: _obscurePassword,
                           textInputAction: TextInputAction.done,
+                          enabled: !_isLoading,
                           onFieldSubmitted: (_) => _handleLogin(),
                           decoration: InputDecoration(
                             labelText: 'Senha',
                             labelStyle: TextStyle(color: Colors.grey[600]),
-                            prefixIcon: Icon(Icons.lock_outline, color: Colors.blue[700]),
+                            prefixIcon: Icon(Icons.lock_outline, color: Colors.green[700]),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _obscurePassword ? Icons.visibility_off : Icons.visibility,
@@ -266,7 +352,7 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: Colors.blue[700]!, width: 2),
+                              borderSide: BorderSide(color: Colors.green[700]!, width: 2),
                             ),
                             filled: true,
                             fillColor: Colors.grey[50],
@@ -275,29 +361,39 @@ class _LoginPageState extends State<LoginPage> {
                             if (value == null || value.isEmpty) {
                               return 'Digite sua senha';
                             }
+                            if (value.length < 6) {
+                              return 'A senha deve ter no mínimo 6 caracteres';
+                            }
                             return null;
                           },
                         ),
-                        
+                       
                         const SizedBox(height: 16),
-                        
-                        // Lembrar de mim e Esqueceu senha
+                       
+                        // Opções: Lembrar de mim e Esqueceu senha
                         Row(
                           children: [
-                            Checkbox(
-                              value: _rememberMe,
-                              onChanged: (value) {
-                                setState(() {
-                                  _rememberMe = value ?? false;
-                                });
-                              },
-                              activeColor: Colors.blue[700],
-                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            SizedBox(
+                              width: 40,
+                              height: 40,
+                              child: Checkbox(
+                                value: _rememberMe,
+                                onChanged: _isLoading ? null : (value) {
+                                  setState(() {
+                                    _rememberMe = value ?? false;
+                                  });
+                                },
+                                activeColor: Colors.green[700],
+                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
                             ),
-                            const Text('Lembrar de mim'),
+                            Text(
+                              'Lembrar de mim',
+                              style: TextStyle(color: Colors.grey[700]),
+                            ),
                             const Spacer(),
                             TextButton(
-                              onPressed: _handleResetPassword,
+                              onPressed: _isLoading ? null : _handleResetPassword,
                               style: TextButton.styleFrom(
                                 minimumSize: Size.zero,
                                 padding: EdgeInsets.zero,
@@ -306,18 +402,19 @@ class _LoginPageState extends State<LoginPage> {
                               child: Text(
                                 'Esqueceu a senha?',
                                 style: TextStyle(
-                                  color: Colors.blue[700],
+                                  color: Colors.green[700],
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ),
                           ],
                         ),
-                        
+                       
+                        // Mensagem de erro
                         if (_errorMessage != null) ...[
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 16),
                           Container(
-                            padding: const EdgeInsets.all(8),
+                            padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: Colors.red[50],
                               borderRadius: BorderRadius.circular(8),
@@ -325,35 +422,35 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             child: Row(
                               children: [
-                                Icon(Icons.error_outline, color: Colors.red[700], size: 16),
-                                const SizedBox(width: 8),
+                                Icon(Icons.error_outline, color: Colors.red[700], size: 20),
+                                const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
                                     _errorMessage!,
-                                    style: TextStyle(color: Colors.red[700], fontSize: 12),
+                                    style: TextStyle(color: Colors.red[700], fontSize: 13),
                                   ),
                                 ),
                               ],
                             ),
                           ),
                         ],
-                        
+                       
                         const SizedBox(height: 24),
-                        
-                        // Botão Entrar
+                       
+                        // Botão de Login
                         SizedBox(
                           width: double.infinity,
                           height: 50,
                           child: ElevatedButton(
                             onPressed: _isLoading ? null : _handleLogin,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue[700],
+                              backgroundColor: Colors.green[700],
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               elevation: 2,
-                              disabledBackgroundColor: Colors.blue[300],
+                              disabledBackgroundColor: Colors.green[300],
                             ),
                             child: _isLoading
                                 ? const SizedBox(
@@ -373,10 +470,10 @@ class _LoginPageState extends State<LoginPage> {
                                   ),
                           ),
                         ),
-                        
+                       
                         const SizedBox(height: 16),
-                        
-                        // Link para cadastro
+                       
+                        // Link para Cadastro
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -384,24 +481,40 @@ class _LoginPageState extends State<LoginPage> {
                               'Não tem conta?',
                               style: TextStyle(color: Colors.grey[600]),
                             ),
+                            const SizedBox(width: 4),
                             TextButton(
-                              onPressed: () {
-                                Navigator.push(
+                              onPressed: _isLoading ? null : () {
+                                Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
                                     builder: (_) => const CadastroPage(),
                                   ),
                                 );
                               },
+                              style: TextButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                                minimumSize: Size.zero,
+                              ),
                               child: Text(
                                 'Cadastre-se aqui',
                                 style: TextStyle(
-                                  color: Colors.blue[700],
+                                  color: Colors.green[700],
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
                           ],
+                        ),
+                       
+                        const SizedBox(height: 8),
+                       
+                        // Versão do App
+                        Text(
+                          'Versão 1.0.0',
+                          style: TextStyle(
+                            color: Colors.grey[400],
+                            fontSize: 12,
+                          ),
                         ),
                       ],
                     ),

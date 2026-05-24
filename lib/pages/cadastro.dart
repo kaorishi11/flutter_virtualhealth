@@ -1,31 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:virtualhealth/services/auth_service.dart';
+import '../services/auth_service.dart';
 import 'login.dart';
-
+ 
 class CadastroPage extends StatefulWidget {
   const CadastroPage({super.key});
-
+ 
   @override
   State<CadastroPage> createState() => _CadastroPageState();
 }
-
+ 
 class _CadastroPageState extends State<CadastroPage> {
   final AuthService _auth = AuthService();
   final _formKey = GlobalKey<FormState>();
-  
+ 
   // Tipo de cadastro
   String _tipoCadastro = 'paciente'; // 'paciente' ou 'medico'
-  
+ 
   // Controllers comuns
   final _nomeController = TextEditingController();
   final _emailController = TextEditingController();
   final _senhaController = TextEditingController();
   final _cepController = TextEditingController();
-  
+ 
   // Controllers específicos do paciente
   final _cpfController = TextEditingController();
-  
+ 
   // Controllers específicos do médico
   final _telefoneController = TextEditingController();
   final _dataNascimentoController = TextEditingController();
@@ -33,11 +33,11 @@ class _CadastroPageState extends State<CadastroPage> {
   final _universidadeController = TextEditingController();
   final _anoFormacaoController = TextEditingController();
   final _especialidadeController = TextEditingController();
-  
+ 
   bool _isLoading = false;
   bool _obscurePassword = true;
   DateTime? _selectedDate;
-
+ 
   @override
   void dispose() {
     _nomeController.dispose();
@@ -53,14 +53,14 @@ class _CadastroPageState extends State<CadastroPage> {
     _especialidadeController.dispose();
     super.dispose();
   }
-
+ 
   Future<void> _handleCadastro() async {
     if (!_formKey.currentState!.validate()) return;
-    
+   
     setState(() => _isLoading = true);
-    
+   
     String? error;
-    
+   
     if (_tipoCadastro == 'paciente') {
       error = await _auth.cadastrarPaciente(
         nome: _nomeController.text.trim(),
@@ -83,9 +83,9 @@ class _CadastroPageState extends State<CadastroPage> {
         especialidade: _especialidadeController.text.trim(),
       );
     }
-    
+   
     setState(() => _isLoading = false);
-    
+   
     if (error == null) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -104,7 +104,7 @@ class _CadastroPageState extends State<CadastroPage> {
       );
     }
   }
-
+ 
   Future<void> _selecionarDataNascimento() async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -125,7 +125,7 @@ class _CadastroPageState extends State<CadastroPage> {
         );
       },
     );
-    
+   
     if (picked != null) {
       setState(() {
         _selectedDate = picked;
@@ -133,7 +133,7 @@ class _CadastroPageState extends State<CadastroPage> {
       });
     }
   }
-
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -170,8 +170,8 @@ class _CadastroPageState extends State<CadastroPage> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          _tipoCadastro == 'paciente' 
-                              ? 'Cadastre-se' 
+                          _tipoCadastro == 'paciente'
+                              ? 'Cadastre-se'
                               : 'Bem-vindo Profissional',
                           style: const TextStyle(
                             fontSize: 28,
@@ -191,7 +191,7 @@ class _CadastroPageState extends State<CadastroPage> {
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 24),
-                        
+                       
                         // Seletor de tipo (Paciente/Médico)
                         Row(
                           children: [
@@ -204,9 +204,9 @@ class _CadastroPageState extends State<CadastroPage> {
                             ),
                           ],
                         ),
-                        
+                       
                         const SizedBox(height: 24),
-                        
+                       
                         // Nome Completo
                         _buildTextField(
                           controller: _nomeController,
@@ -219,9 +219,9 @@ class _CadastroPageState extends State<CadastroPage> {
                             return null;
                           },
                         ),
-                        
+                       
                         const SizedBox(height: 16),
-                        
+                       
                         // E-mail
                         _buildTextField(
                           controller: _emailController,
@@ -238,7 +238,7 @@ class _CadastroPageState extends State<CadastroPage> {
                             return null;
                           },
                         ),
-                        
+                       
                         // Campos específicos para médico
                         if (_tipoCadastro == 'medico') ...[
                           const SizedBox(height: 16),
@@ -255,9 +255,9 @@ class _CadastroPageState extends State<CadastroPage> {
                             },
                           ),
                         ],
-                        
+                       
                         const SizedBox(height: 16),
-                        
+                       
                         // CEP
                         _buildTextField(
                           controller: _cepController,
@@ -271,7 +271,7 @@ class _CadastroPageState extends State<CadastroPage> {
                             return null;
                           },
                         ),
-                        
+                       
                         // CPF para paciente
                         if (_tipoCadastro == 'paciente') ...[
                           const SizedBox(height: 16),
@@ -291,11 +291,11 @@ class _CadastroPageState extends State<CadastroPage> {
                             },
                           ),
                         ],
-                        
+                       
                         // Campos específicos para médico
                         if (_tipoCadastro == 'medico') ...[
                           const SizedBox(height: 16),
-                          
+                         
                           // Data de Nascimento
                           GestureDetector(
                             onTap: _selecionarDataNascimento,
@@ -313,9 +313,9 @@ class _CadastroPageState extends State<CadastroPage> {
                               ),
                             ),
                           ),
-                          
+                         
                           const SizedBox(height: 16),
-                          
+                         
                           // Registro Profissional (CRM)
                           _buildTextField(
                             controller: _registroProfissionalController,
@@ -328,9 +328,9 @@ class _CadastroPageState extends State<CadastroPage> {
                               return null;
                             },
                           ),
-                          
+                         
                           const SizedBox(height: 16),
-                          
+                         
                           // Universidade
                           _buildTextField(
                             controller: _universidadeController,
@@ -343,9 +343,9 @@ class _CadastroPageState extends State<CadastroPage> {
                               return null;
                             },
                           ),
-                          
+                         
                           const SizedBox(height: 16),
-                          
+                         
                           // Ano de Formação
                           _buildTextField(
                             controller: _anoFormacaoController,
@@ -363,9 +363,9 @@ class _CadastroPageState extends State<CadastroPage> {
                               return null;
                             },
                           ),
-                          
+                         
                           const SizedBox(height: 16),
-                          
+                         
                           // Especialidade
                           _buildTextField(
                             controller: _especialidadeController,
@@ -379,9 +379,9 @@ class _CadastroPageState extends State<CadastroPage> {
                             },
                           ),
                         ],
-                        
+                       
                         const SizedBox(height: 16),
-                        
+                       
                         // Senha
                         _buildTextField(
                           controller: _senhaController,
@@ -390,8 +390,8 @@ class _CadastroPageState extends State<CadastroPage> {
                           obscureText: _obscurePassword,
                           suffixIcon: IconButton(
                             icon: Icon(
-                              _obscurePassword 
-                                  ? Icons.visibility_off 
+                              _obscurePassword
+                                  ? Icons.visibility_off
                                   : Icons.visibility,
                               color: Colors.grey,
                             ),
@@ -411,9 +411,9 @@ class _CadastroPageState extends State<CadastroPage> {
                             return null;
                           },
                         ),
-                        
+                       
                         const SizedBox(height: 24),
-                        
+                       
                         // Botão Cadastrar
                         SizedBox(
                           width: double.infinity,
@@ -447,9 +447,9 @@ class _CadastroPageState extends State<CadastroPage> {
                                   ),
                           ),
                         ),
-                        
+                       
                         const SizedBox(height: 16),
-                        
+                       
                         // Link para login
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -486,7 +486,7 @@ class _CadastroPageState extends State<CadastroPage> {
       ),
     );
   }
-
+ 
   Widget _buildTypeButton(String tipo, String label) {
     final isSelected = _tipoCadastro == tipo;
     return GestureDetector(
@@ -526,7 +526,7 @@ class _CadastroPageState extends State<CadastroPage> {
       ),
     );
   }
-
+ 
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,

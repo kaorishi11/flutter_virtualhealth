@@ -1,11 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
+import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 import 'pages/login.dart';
 import 'pages/home.dart';
-import 'adm/homeadm.dart';
+import 'pages/cadastro.dart';
+import 'pages/clinicas.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Configuração do Google Maps para Android (Hybrid Composition)
+  final GoogleMapsFlutterPlatform mapsImplementation =
+      GoogleMapsFlutterPlatform.instance;
+  if (mapsImplementation is GoogleMapsFlutterAndroid) {
+    mapsImplementation.useAndroidViewSurface = true;
+  }
 
   await Supabase.initialize(
     url: 'https://yxhvmckqfjymmrcognta.supabase.co',
@@ -24,21 +34,22 @@ class MyApp extends StatelessWidget {
       title: 'Virtual Health',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-        fontFamily: 'Roboto',
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-        appBarTheme: const AppBarTheme(
-          elevation: 0,
-          centerTitle: true,
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.blue,
+        primarySwatch: Colors.green,
+        primaryColor: const Color(0xFF2E7D32),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF2E7D32),
+          primary: const Color(0xFF2E7D32),
+          secondary: const Color(0xFF81C784),
         ),
+        fontFamily: 'Roboto',
+        useMaterial3: true,
       ),
-      initialRoute: '/',
+      initialRoute: '/login',
       routes: {
-        '/': (context) => const LoginPage(),
+        '/login': (context) => const LoginPage(),
         '/home': (context) => const HomePage(),
-        '/admin': (context) => const HomeAdmPage(),
+        '/cadastro': (context) => const CadastroPage(),
+        '/clinicas': (context) => const ClinicasPage(),
       },
     );
   }
