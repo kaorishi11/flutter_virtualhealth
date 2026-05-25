@@ -178,20 +178,11 @@ class _CadastroPageState extends State<CadastroPage> {
             children: [
               // Logo ou ícone para mobile
               Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFB9DEFF), Color(0xFF6DB7FF)],
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Icon(
-                  Icons.medical_services,
-                  size: 50,
-                  color: Colors.white,
-                ),
+                padding: const EdgeInsets.all(10),
+                child: Image.asset(
+                'assets/logo.png',
+                height: 80,)
               ),
-              const SizedBox(height: 20),
               
               Text(
                 isMedico ? 'Bem-vindo Profissional' : 'Cadastre-se',
