@@ -6,11 +6,11 @@ import 'pages/login.dart';
 import 'pages/home.dart';
 import 'pages/cadastro.dart';
 import 'pages/clinicas.dart';
+import 'pages/contato.dart'; // Adicione esta linha
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Configuração do Google Maps para Android (Hybrid Composition)
   final GoogleMapsFlutterPlatform mapsImplementation =
       GoogleMapsFlutterPlatform.instance;
   if (mapsImplementation is GoogleMapsFlutterAndroid) {
@@ -50,6 +50,7 @@ class MyApp extends StatelessWidget {
         '/home': (context) => const HomePage(),
         '/cadastro': (context) => const CadastroPage(),
         '/clinicas': (context) => const ClinicasPage(),
+        '/contato': (context) => const ContatoPage(),
       },
     );
   }

@@ -3,6 +3,7 @@ import 'package:video_player/video_player.dart';
 import 'cadastro.dart';
 import 'login.dart';
 import 'clinicas.dart';
+import 'contato.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -14,27 +15,36 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   String _currentPage = 'Início';
 
-  void _onPageChanged(String page) {
-    setState(() {
-      _currentPage = page;
-    });
+void _onPageChanged(String page) {
+  setState(() {
+    _currentPage = page;
+  });
 
-    if (page == 'Clínicas') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const ClinicasPage()),
-      ).then((_) {
-        setState(() {
-          _currentPage = 'Início';
-        });
+  if (page == 'Clínicas') {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ClinicasPage()),
+    ).then((_) {
+      setState(() {
+        _currentPage = 'Início';
       });
-    } else if (page == 'Fazer Consulta') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginPage()),
-      );
-    }
+    });
+  } else if (page == 'Contato') {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ContatoPage()),
+    ).then((_) {
+      setState(() {
+        _currentPage = 'Início';
+      });
+    });
+  } else if (page == 'Fazer Consulta') {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginPage()),
+    );
   }
+}
 
   @override
   Widget build(BuildContext context) {
