@@ -1,21 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
-import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 import 'pages/login.dart';
 import 'pages/home.dart';
 import 'pages/cadastro.dart';
 import 'pages/clinicas.dart';
-import 'pages/contato.dart'; // Adicione esta linha
+import 'pages/contato.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  final GoogleMapsFlutterPlatform mapsImplementation =
-      GoogleMapsFlutterPlatform.instance;
-  if (mapsImplementation is GoogleMapsFlutterAndroid) {
-    mapsImplementation.useAndroidViewSurface = true;
-  }
 
   await Supabase.initialize(
     url: 'https://yxhvmckqfjymmrcognta.supabase.co',
