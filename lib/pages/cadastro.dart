@@ -144,361 +144,598 @@ class _CadastroPageState extends State<CadastroPage> {
   @override
   Widget build(BuildContext context) {
     final bool isMedico = _tipoCadastro == 'medico';
+    final bool isMobile = MediaQuery.of(context).size.width < 900;
 
     return Scaffold(
       backgroundColor: const Color(0xFFEDEDED),
       body: SafeArea(
-        child: Row(
-          children: [
-            // LADO ESQUERDO
-            Expanded(
-              flex: 5,
-              child: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Color(0xFFB9DEFF),
-                      Color(0xFF6DB7FF),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+        child: isMobile
+            ? _buildMobileLayout(isMedico)
+            : _buildDesktopLayout(isMedico),
+      ),
+    );
+  }
+
+  Widget _buildMobileLayout(bool isMedico) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(35),
+          boxShadow: [
+            BoxShadow(
+              blurRadius: 15,
+              color: Colors.black.withOpacity(0.08),
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              // Logo ou ícone para mobile
+              Container(
+                padding: const EdgeInsets.all(10),
+                child: Image.asset(
+                'assets/logo.png',
+                height: 80,)
+              ),
+              
+              Text(
+                isMedico ? 'Bem-vindo Profissional' : 'Cadastre-se',
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                isMedico
+                    ? 'Acesse nossa plataforma e ajude muitas pessoas.'
+                    : 'Acesse nossa plataforma e descubra ferramentas incríveis.',
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 14,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 30),
+
+              // BOTÕES
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _tipoButton(
+                    tipo: 'paciente',
+                    texto: 'Sou\npaciente',
+                    imagem: 'assets/paciente.png',
+                  ),
+                  const SizedBox(width: 20),
+                  _tipoButton(
+                    tipo: 'medico',
+                    texto: 'Sou\nmédico',
+                    imagem: 'assets/medico.png',
+                  ),
+                ],
+              ),
+              const SizedBox(height: 30),
+
+              // NOME
+              _campo(
+                titulo: isMedico ? 'Nome Completo' : 'Nome',
+                hint: isMedico ? 'Digite seu nome completo' : 'Digite seu nome',
+                controller: _nomeController,
+              ),
+              const SizedBox(height: 20),
+
+              // EMAIL
+              if (!isMedico)
+                _campo(
+                  titulo: 'E-mail',
+                  hint: 'Digite seu e-mail',
+                  controller: _emailController,
+                ),
+              if (isMedico) ...[
+                _campo(
+                  titulo: 'E-mail',
+                  hint: 'Digite seu e-mail',
+                  controller: _emailController,
+                ),
+                const SizedBox(height: 20),
+                _campo(
+                  titulo: 'Telefone',
+                  hint: 'Digite seu telefone',
+                  controller: _telefoneController,
+                ),
+              ],
+              const SizedBox(height: 20),
+
+              // CEP / CPF
+              _campo(
+                titulo: 'CEP',
+                hint: 'Digite seu CEP',
+                controller: _cepController,
+              ),
+              const SizedBox(height: 20),
+              _campo(
+                titulo: 'CPF',
+                hint: 'Digite seu CPF',
+                controller: _cpfController,
+              ),
+
+              // CAMPOS MÉDICO
+              if (isMedico) ...[
+                const SizedBox(height: 20),
+                GestureDetector(
+                  onTap: _selecionarData,
+                  child: AbsorbPointer(
+                    child: _campo(
+                      titulo: 'Data de nascimento',
+                      hint: 'DD/MM/AAAA',
+                      controller: _dataNascimentoController,
+                    ),
                   ),
                 ),
-                child: Center(
-                  child: Image.asset(
-                    'assets/mulhercomlogo.png',
-                    fit: BoxFit.cover,
+                const SizedBox(height: 20),
+                _dropdown(
+                  titulo: 'Gênero',
+                  valor: _generoSelecionado,
+                  itens: ['Masculino', 'Feminino', 'Outro'],
+                  onChanged: (v) {
+                    setState(() {
+                      _generoSelecionado = v;
+                    });
+                  },
+                ),
+                const SizedBox(height: 20),
+                _campo(
+                  titulo: 'Registro profissional',
+                  hint: 'Ex: CRM-SP 00000',
+                  controller: _registroController,
+                ),
+                const SizedBox(height: 20),
+                _dropdown(
+                  titulo: 'Especialidade',
+                  valor: _especialidadeSelecionada,
+                  itens: especialidades,
+                  onChanged: (v) {
+                    setState(() {
+                      _especialidadeSelecionada = v;
+                    });
+                  },
+                ),
+                const SizedBox(height: 20),
+                _campo(
+                  titulo: 'Universidade',
+                  hint: 'Ex: USP',
+                  controller: _universidadeController,
+                ),
+                const SizedBox(height: 20),
+                _campo(
+                  titulo: 'Ano de Formação',
+                  hint: 'Digite o ano',
+                  controller: _anoController,
+                ),
+              ],
+              const SizedBox(height: 20),
+
+              // SENHA
+              _campo(
+                titulo: 'Senha',
+                hint: 'Digite sua senha',
+                controller: _senhaController,
+                obscure: _obscurePassword,
+                suffix: IconButton(
+                  icon: Icon(
+                    _obscurePassword
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
+                    color: Colors.grey,
                   ),
+                  onPressed: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
+                  },
                 ),
               ),
-            ),
+              const SizedBox(height: 30),
 
-            // LADO DIREITO
-            Expanded(
-              flex: 6,
-              child: Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(25),
-                  child: Container(
-                    width: 520,
-                    padding: const EdgeInsets.all(35),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(35),
-                      boxShadow: [
-                        BoxShadow(
-                          blurRadius: 15,
-                          color: Colors.black.withOpacity(0.08),
-                          offset: const Offset(0, 5),
+              // BOTÃO
+              SizedBox(
+                width: double.infinity,
+                height: 58,
+                child: ElevatedButton(
+                  onPressed: _loading ? null : _cadastrar,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3FA9C6),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    elevation: 5,
+                  ),
+                  child: _loading
+                      ? const CircularProgressIndicator(
+                          color: Colors.white,
+                        )
+                      : const Text(
+                          'Cadastrar',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                ),
+              ),
+              const SizedBox(height: 15),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Tem conta?',
+                    style: TextStyle(
+                      color: Colors.grey.shade600,
+                      fontSize: 16,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const LoginPage(),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      'Faça Login',
+                      style: TextStyle(
+                        color: Color(0xFF006B88),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDesktopLayout(bool isMedico) {
+    return Row(
+      children: [
+        // LADO ESQUERDO - IMAGEM
+        Expanded(
+          flex: 5,
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFFB9DEFF),
+                  Color(0xFF6DB7FF),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: Center(
+              child: Image.asset(
+                'assets/mulhercomlogo.png',
+                width: 690,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Icon(
+                    Icons.medical_services,
+                    size: 100,
+                    color: Colors.white,
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+
+        // LADO DIREITO - FORMULÁRIO
+        Expanded(
+          flex: 6,
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(25),
+              child: Container(
+                width: 520,
+                padding: const EdgeInsets.all(35),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(35),
+                  boxShadow: [
+                    BoxShadow(
+                      blurRadius: 15,
+                      color: Colors.black.withOpacity(0.08),
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      Text(
+                        isMedico ? 'Bem-vindo Profissional' : 'Cadastre-se',
+                        style: const TextStyle(
+                          fontSize: 42,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        isMedico
+                            ? 'Acesse nossa plataforma e ajude muitas pessoas.'
+                            : 'Acesse nossa plataforma e descubra ferramentas incríveis.',
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 16,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 30),
+
+                      // BOTÕES
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _tipoButton(
+                            tipo: 'paciente',
+                            texto: 'Sou\npaciente',
+                            imagem: 'assets/paciente.png',
+                          ),
+                          const SizedBox(width: 20),
+                          _tipoButton(
+                            tipo: 'medico',
+                            texto: 'Sou\nmédico',
+                            imagem: 'assets/medico.png',
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 30),
+
+                      // NOME
+                      _campo(
+                        titulo: isMedico ? 'Nome Completo' : 'Nome',
+                        hint: isMedico ? 'Digite seu nome completo' : 'Digite seu nome',
+                        controller: _nomeController,
+                      ),
+                      const SizedBox(height: 20),
+
+                      // EMAIL
+                      if (!isMedico)
+                        _campo(
+                          titulo: 'E-mail',
+                          hint: 'Digite seu e-mail',
+                          controller: _emailController,
+                        ),
+                      if (isMedico)
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _campo(
+                                titulo: 'E-mail',
+                                hint: 'Digite seu e-mail',
+                                controller: _emailController,
+                              ),
+                            ),
+                            const SizedBox(width: 20),
+                            Expanded(
+                              child: _campo(
+                                titulo: 'Telefone',
+                                hint: 'Digite seu telefone',
+                                controller: _telefoneController,
+                              ),
+                            ),
+                          ],
+                        ),
+                      const SizedBox(height: 20),
+
+                      // CEP / CPF
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _campo(
+                              titulo: 'CEP',
+                              hint: 'Digite seu CEP',
+                              controller: _cepController,
+                            ),
+                          ),
+                          const SizedBox(width: 20),
+                          Expanded(
+                            child: _campo(
+                              titulo: 'CPF',
+                              hint: 'Digite seu CPF',
+                              controller: _cpfController,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      // CAMPOS MÉDICO
+                      if (isMedico) ...[
+                        const SizedBox(height: 20),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: _selecionarData,
+                                child: AbsorbPointer(
+                                  child: _campo(
+                                    titulo: 'Data de nascimento',
+                                    hint: 'DD/MM/AAAA',
+                                    controller: _dataNascimentoController,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 20),
+                            Expanded(
+                              child: _dropdown(
+                                titulo: 'Gênero',
+                                valor: _generoSelecionado,
+                                itens: ['Masculino', 'Feminino', 'Outro'],
+                                onChanged: (v) {
+                                  setState(() {
+                                    _generoSelecionado = v;
+                                  });
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _campo(
+                                titulo: 'Registro profissional',
+                                hint: 'Ex: CRM-SP 00000',
+                                controller: _registroController,
+                              ),
+                            ),
+                            const SizedBox(width: 20),
+                            Expanded(
+                              child: _dropdown(
+                                titulo: 'Especialidade',
+                                valor: _especialidadeSelecionada,
+                                itens: especialidades,
+                                onChanged: (v) {
+                                  setState(() {
+                                    _especialidadeSelecionada = v;
+                                  });
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _campo(
+                                titulo: 'Universidade',
+                                hint: 'Ex: USP',
+                                controller: _universidadeController,
+                              ),
+                            ),
+                            const SizedBox(width: 20),
+                            Expanded(
+                              child: _campo(
+                                titulo: 'Ano de Formação',
+                                hint: 'Digite o ano',
+                                controller: _anoController,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
-                    ),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
+                      const SizedBox(height: 20),
+
+                      // SENHA
+                      _campo(
+                        titulo: 'Senha',
+                        hint: 'Digite sua senha',
+                        controller: _senhaController,
+                        obscure: _obscurePassword,
+                        suffix: IconButton(
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                            color: Colors.grey,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+
+                      // BOTÃO
+                      SizedBox(
+                        width: double.infinity,
+                        height: 58,
+                        child: ElevatedButton(
+                          onPressed: _loading ? null : _cadastrar,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF3FA9C6),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            elevation: 5,
+                          ),
+                          child: _loading
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                              : const Text(
+                                  'Cadastrar',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            isMedico
-                                ? 'Bem-vindo Profissional'
-                                : 'Cadastre-se',
-                            style: const TextStyle(
-                              fontSize: 42,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-
-                          const SizedBox(height: 10),
-
-                          Text(
-                            isMedico
-                                ? 'Acesse nossa plataforma e ajude muitas pessoas.'
-                                : 'Acesse nossa plataforma e descubra ferramentas incríveis.',
+                            'Tem conta?',
                             style: TextStyle(
                               color: Colors.grey.shade600,
                               fontSize: 16,
                             ),
-                            textAlign: TextAlign.center,
                           ),
-
-                          const SizedBox(height: 30),
-
-                          // BOTÕES
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              _tipoButton(
-                                tipo: 'paciente',
-                                texto: 'Sou\npaciente',
-                                imagem: 'assets/paciente.png',
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const LoginPage(),
+                                ),
+                              );
+                            },
+                            child: const Text(
+                              'Faça Login',
+                              style: TextStyle(
+                                color: Color(0xFF006B88),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
                               ),
-                              const SizedBox(width: 20),
-                              _tipoButton(
-                                tipo: 'medico',
-                                texto: 'Sou\nmédico',
-                                imagem: '../assets/medico.png',
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 30),
-
-                          // NOME
-                          _campo(
-                            titulo: isMedico
-                                ? 'Nome Completo'
-                                : 'Nome',
-                            hint: isMedico
-                                ? 'Digite seu nome completo'
-                                : 'Digite seu nome',
-                            controller: _nomeController,
-                          ),
-
-                          const SizedBox(height: 20),
-
-                          // EMAIL
-                          if (!isMedico)
-                            _campo(
-                              titulo: 'E-mail',
-                              hint: 'Digite seu e-mail',
-                              controller: _emailController,
-                            ),
-
-                          if (isMedico)
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _campo(
-                                    titulo: 'E-mail',
-                                    hint: 'Digite seu e-mail',
-                                    controller: _emailController,
-                                  ),
-                                ),
-                                const SizedBox(width: 20),
-                                Expanded(
-                                  child: _campo(
-                                    titulo: 'Telefone',
-                                    hint: 'Digite seu telefone',
-                                    controller: _telefoneController,
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                          const SizedBox(height: 20),
-
-                          // CEP / CPF
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _campo(
-                                  titulo: 'CEP',
-                                  hint: 'Digite seu CEP',
-                                  controller: _cepController,
-                                ),
-                              ),
-                              const SizedBox(width: 20),
-                              Expanded(
-                                child: _campo(
-                                  titulo: 'CPF',
-                                  hint: 'Digite seu CPF',
-                                  controller: _cpfController,
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          // CAMPOS MÉDICO
-                          if (isMedico) ...[
-                            const SizedBox(height: 20),
-
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: GestureDetector(
-                                    onTap: _selecionarData,
-                                    child: AbsorbPointer(
-                                      child: _campo(
-                                        titulo: 'Data de nascimento',
-                                        hint: 'DD/MM/AAAA',
-                                        controller:
-                                            _dataNascimentoController,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 20),
-                                Expanded(
-                                  child: _dropdown(
-                                    titulo: 'Gênero',
-                                    valor: _generoSelecionado,
-                                    itens: [
-                                      'Masculino',
-                                      'Feminino',
-                                      'Outro'
-                                    ],
-                                    onChanged: (v) {
-                                      setState(() {
-                                        _generoSelecionado = v;
-                                      });
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            const SizedBox(height: 20),
-
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _campo(
-                                    titulo: 'Registro profissional',
-                                    hint: 'Ex: CRM-SP 00000',
-                                    controller: _registroController,
-                                  ),
-                                ),
-                                const SizedBox(width: 20),
-                                Expanded(
-                                  child: _dropdown(
-                                    titulo: 'Especialidade',
-                                    valor: _especialidadeSelecionada,
-                                    itens: especialidades,
-                                    onChanged: (v) {
-                                      setState(() {
-                                        _especialidadeSelecionada = v;
-                                      });
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            const SizedBox(height: 20),
-
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _campo(
-                                    titulo: 'Universidade',
-                                    hint: 'Ex: USP',
-                                    controller:
-                                        _universidadeController,
-                                  ),
-                                ),
-                                const SizedBox(width: 20),
-                                Expanded(
-                                  child: _campo(
-                                    titulo: 'Ano de Formação',
-                                    hint: 'Digite o ano',
-                                    controller: _anoController,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-
-                          const SizedBox(height: 20),
-
-                          // SENHA
-                          _campo(
-                            titulo: 'Senha',
-                            hint: 'Digite sua senha',
-                            controller: _senhaController,
-                            obscure: _obscurePassword,
-                            suffix: IconButton(
-                              icon: Icon(
-                                _obscurePassword
-                                    ? Icons.visibility_outlined
-                                    : Icons.visibility_off_outlined,
-                                color: Colors.grey,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _obscurePassword =
-                                      !_obscurePassword;
-                                });
-                              },
                             ),
                           ),
-
-                          const SizedBox(height: 30),
-
-                          // BOTÃO
-                          SizedBox(
-                            width: double.infinity,
-                            height: 58,
-                            child: ElevatedButton(
-                              onPressed:
-                                  _loading ? null : _cadastrar,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    const Color(0xFF3FA9C6),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(15),
-                                ),
-                                elevation: 5,
-                              ),
-                              child: _loading
-                                  ? const CircularProgressIndicator(
-                                      color: Colors.white,
-                                    )
-                                  : const Text(
-                                      'Cadastrar',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                            ),
-                          ),
-
-                          const SizedBox(height: 15),
-
-                          Row(
-                            mainAxisAlignment:
-                                MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Tem conta?',
-                                style: TextStyle(
-                                  color: Colors.grey.shade600,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                          const LoginPage(),
-                                    ),
-                                  );
-                                },
-                                child: const Text(
-                                  'Faça Login',
-                                  style: TextStyle(
-                                    color: Color(0xFF006B88),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          )
                         ],
-                      ),
-                    ),
+                      )
+                    ],
                   ),
                 ),
               ),
             ),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -517,12 +754,10 @@ class _CadastroPageState extends State<CadastroPage> {
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
-        width: 150,
-        height: 75,
+        width: 130,
+        height: 70,
         decoration: BoxDecoration(
-          color: selecionado
-              ? const Color(0xFFAEE8F5)
-              : Colors.white,
+          color: selecionado ? const Color(0xFFAEE8F5) : Colors.white,
           borderRadius: BorderRadius.circular(15),
           border: Border.all(
             color: Colors.grey.shade300,
@@ -540,13 +775,21 @@ class _CadastroPageState extends State<CadastroPage> {
           children: [
             Image.asset(
               imagem,
-              width: 38,
+              width: 32,
+              errorBuilder: (context, error, stackTrace) {
+                return Icon(
+                  tipo == 'paciente' ? Icons.person : Icons.medical_services,
+                  size: 32,
+                  color: selecionado ? const Color(0xFF006B88) : Colors.grey,
+                );
+              },
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 8),
             Text(
               texto,
-              style: const TextStyle(
-                fontSize: 16,
+              style: TextStyle(
+                fontSize: 14,
+                color: selecionado ? const Color(0xFF006B88) : Colors.grey.shade700,
               ),
             ),
           ],
@@ -568,7 +811,8 @@ class _CadastroPageState extends State<CadastroPage> {
         Text(
           titulo,
           style: const TextStyle(
-            fontSize: 16,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
           ),
         ),
         const SizedBox(height: 8),
@@ -584,14 +828,36 @@ class _CadastroPageState extends State<CadastroPage> {
             filled: true,
             fillColor: const Color(0xFFF2F2F2),
             contentPadding: const EdgeInsets.symmetric(
-              horizontal: 18,
-              vertical: 18,
+              horizontal: 16,
+              vertical: 14,
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(15),
+              borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
             ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF3FA9C6), width: 2),
+            ),
           ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Campo obrigatório';
+            }
+            if (titulo == 'E-mail' && (!value.contains('@') || !value.contains('.'))) {
+              return 'E-mail inválido';
+            }
+            if (titulo == 'Senha' && value.length < 6) {
+              return 'Senha deve ter no mínimo 6 caracteres';
+            }
+            if (titulo == 'Ano de Formação') {
+              final ano = int.tryParse(value);
+              if (ano == null || ano < 1950 || ano > DateTime.now().year) {
+                return 'Ano inválido';
+              }
+            }
+            return null;
+          },
         ),
       ],
     );
@@ -609,7 +875,8 @@ class _CadastroPageState extends State<CadastroPage> {
         Text(
           titulo,
           style: const TextStyle(
-            fontSize: 16,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
           ),
         ),
         const SizedBox(height: 8),
@@ -619,12 +886,16 @@ class _CadastroPageState extends State<CadastroPage> {
             filled: true,
             fillColor: const Color(0xFFF2F2F2),
             contentPadding: const EdgeInsets.symmetric(
-              horizontal: 18,
-              vertical: 18,
+              horizontal: 16,
+              vertical: 14,
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(15),
+              borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF3FA9C6), width: 2),
             ),
           ),
           hint: const Text('Selecione'),
@@ -635,6 +906,12 @@ class _CadastroPageState extends State<CadastroPage> {
             );
           }).toList(),
           onChanged: onChanged,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Selecione uma opção';
+            }
+            return null;
+          },
         ),
       ],
     );
