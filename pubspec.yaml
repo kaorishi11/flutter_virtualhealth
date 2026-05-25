@@ -18,10 +18,11 @@ dependencies:
   # Supabase
   supabase_flutter: ^2.0.0
   
-  # Google Maps
-  google_maps_flutter: ^2.5.0
-  google_maps_flutter_android: ^2.19.8
-  google_maps_flutter_platform_interface: ^2.4.0
+  # Mapas com Geoapify (alternativa ao Google Maps)
+  flutter_map: ^8.2.2
+  latlong2: ^0.9.1
+  geolocator: ^10.1.0
+  http: ^1.1.0
   
   # Video Player
   video_player: ^2.8.1
