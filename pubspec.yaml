@@ -39,6 +39,9 @@ flutter:
   
   assets:
     - assets/logo.png
+    - assets/medico.png
+    - assets/paciente.png
+    - assets/mulhercomlogo.png
     - assets/homepage.jpg
     - assets/video.mp4
     - assets/computadorhome.jpg
