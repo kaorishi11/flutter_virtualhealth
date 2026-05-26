@@ -5,6 +5,8 @@ import 'pages/home.dart';
 import 'pages/cadastro.dart';
 import 'pages/clinicas.dart';
 import 'pages/contato.dart';
+import '../adm/admin_home.dart';
+import '../medico/medico_home.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -43,6 +45,8 @@ class MyApp extends StatelessWidget {
         '/cadastro': (context) => const CadastroPage(),
         '/clinicas': (context) => const ClinicasPage(),
         '/contato': (context) => const ContatoPage(),
+        '/admin': (context) => const AdminHomePage(),
+        '/medico': (context) => const MedicoHomePage(),
       },
     );
   }

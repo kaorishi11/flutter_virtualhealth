@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import 'home.dart';
 import 'cadastro.dart';
+import '../adm/admin_home.dart';
+import '../medico/medico_home.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -51,78 +53,146 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _handleLogin() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-   
-    if (_isLoading) return;
-   
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-   
-    try {
-      final error = await _auth.login(
-        email: _emailController.text.trim(),
-        senha: _senhaController.text.trim(),
+  if (!_formKey.currentState!.validate()) {
+    return;
+  }
+
+  if (_isLoading) return;
+
+  setState(() {
+    _isLoading = true;
+    _errorMessage = null;
+  });
+
+  try {
+    final error = await _auth.login(
+      email: _emailController.text.trim(),
+      senha: _senhaController.text.trim(),
+    );
+
+    if (!mounted) return;
+
+    if (error == null) {
+      await _saveCredentials();
+
+      // Busca função do usuário no Supabase
+      final funcao = await _auth.pegarFuncaoUsuario();
+
+      if (funcao == null) {
+        throw Exception(
+          'Usuário sem função cadastrada.',
+        );
+      }
+
+      // Admin ignora seleção
+      if (funcao != 'admin') {
+        // Valida botão paciente/médico
+        if (funcao != _userType) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(
+            SnackBar(
+              content: Text(
+                'Você selecionou "$_userType", mas sua conta é "$funcao".',
+              ),
+              backgroundColor: Colors.red,
+              behavior:
+                  SnackBarBehavior.floating,
+            ),
+          );
+
+          await _auth.logout();
+
+          setState(() {
+            _isLoading = false;
+          });
+
+          return;
+        }
+      }
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Login realizado com sucesso!',
+          ),
+          backgroundColor: Colors.green,
+          behavior:
+              SnackBarBehavior.floating,
+          duration: Duration(seconds: 2),
+        ),
       );
-     
-      if (!mounted) return;
-     
-      if (error == null) {
-        await _saveCredentials();
-       
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Login realizado com sucesso!'),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-            duration: Duration(seconds: 2),
-          ),
-        );
-       
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const HomePage()),
-          (route) => false,
-        );
-      } else {
-        setState(() {
-          _errorMessage = error;
-        });
-       
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(error),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 3),
-          ),
-        );
+
+      Widget destino;
+
+      switch (funcao) {
+        case 'admin':
+          destino = const AdminHomePage();
+          break;
+
+        case 'medico':
+          destino = const MedicoHomePage();
+          break;
+
+        case 'paciente':
+          destino = const HomePage();
+          break;
+
+        default:
+          destino = const HomePage();
       }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _errorMessage = 'Erro inesperado. Tente novamente.';
-        });
-       
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Erro ao realizar login. Tente novamente.'),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (_) => destino,
+        ),
+        (route) => false,
+      );
+    } else {
+      setState(() {
+        _errorMessage = error;
+      });
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        SnackBar(
+          content: Text(error),
+          backgroundColor: Colors.red,
+          behavior:
+              SnackBarBehavior.floating,
+          duration:
+              const Duration(seconds: 3),
+        ),
+      );
+    }
+  } catch (e) {
+    if (mounted) {
+      setState(() {
+        _errorMessage =
+            'Erro inesperado. Tente novamente.';
+      });
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        SnackBar(
+          content: Text(
+            e.toString(),
           ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+          backgroundColor: Colors.red,
+          behavior:
+              SnackBarBehavior.floating,
+        ),
+      );
+    }
+  } finally {
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
+}
 
   Future<void> _handleResetPassword() async {
     final email = _emailController.text.trim();
