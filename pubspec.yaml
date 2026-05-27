@@ -14,6 +14,8 @@ dependencies:
   
   # Intl para formatação de datas
   intl: ^0.18.1
+  table_calendar: ^3.0.9
+  image_picker: ^1.0.4
   
   # Supabase
   supabase_flutter: ^2.0.0
