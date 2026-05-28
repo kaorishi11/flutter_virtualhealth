@@ -1,5 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_ai_chatbot/flutter_ai_chatbot.dart';
+import 'package:http/http.dart' as http;
 
 import 'home.dart';
 import 'login.dart';
@@ -10,17 +11,105 @@ class ChatbotPage extends StatefulWidget {
   const ChatbotPage({super.key});
 
   @override
-  State<ChatbotPage> createState() =>
-      _ChatbotPageState();
+  State<ChatbotPage> createState() => _ChatbotPageState();
 }
 
-class _ChatbotPageState
-    extends State<ChatbotPage> {
+class _ChatbotPageState extends State<ChatbotPage> {
   String _currentPage = 'Chatbot';
 
+  final TextEditingController _controller =
+      TextEditingController();
 
-  final String deepseekApiKey =
-      'sk-473f4e82283942a1a6f07ef37dfbc511';
+  final List<Map<String, dynamic>> messages = [];
+
+  bool isLoading = false;
+
+  // SUA NOVA KEY DO GROQ
+  final String groqApiKey =
+      'COLE_SUA_NOVA_KEY_AQUI';
+
+  @override
+  void initState() {
+    super.initState();
+
+    messages.add({
+      'role': 'assistant',
+      'text':
+          'Olá! 👋\n\nSou o assistente virtual da Virtual Health.\n\nDescreva seus sintomas ou faça perguntas médicas 😊',
+    });
+  }
+
+  Future<void> sendMessage() async {
+    String userMessage =
+        _controller.text.trim();
+
+    if (userMessage.isEmpty) return;
+
+    setState(() {
+      messages.add({
+        'role': 'user',
+        'text': userMessage,
+      });
+
+      isLoading = true;
+    });
+
+    _controller.clear();
+
+    try {
+      final response = await http.post(
+        Uri.parse(
+          'https://api.groq.com/openai/v1/chat/completions',
+        ),
+        headers: {
+          'Authorization':
+              'Bearer $groqApiKey',
+          'Content-Type':
+              'application/json',
+        },
+        body: jsonEncode({
+          "model": "llama-3.3-70b-versatile",
+          "messages": [
+            {
+              "role": "system",
+              "content":
+                  "Você é um assistente médico virtual da Virtual Health. Nunca dê diagnóstico definitivo e recomende procurar um médico quando necessário."
+            },
+            {
+              "role": "user",
+              "content": userMessage
+            }
+          ]
+        }),
+      );
+
+      final data =
+          jsonDecode(response.body);
+
+      String botResponse =
+          data['choices'][0]['message']
+              ['content'];
+
+      setState(() {
+        messages.add({
+          'role': 'assistant',
+          'text': botResponse,
+        });
+      });
+    } catch (e) {
+      setState(() {
+        messages.add({
+          'role': 'assistant',
+          'text':
+              'Erro ao conectar ao assistente.',
+        });
+      });
+    }
+
+    setState(() {
+      isLoading = false;
+    });
+  }
 
   void _onPageChanged(String page) {
     if (page == 'Início') {
@@ -73,7 +162,6 @@ class _ChatbotPageState
                   height: 70,
                 ),
 
-                // HEADER
                 Container(
                   width: double.infinity,
                   padding:
@@ -84,12 +172,10 @@ class _ChatbotPageState
                       const Color(
                     0xFF2E7D32,
                   ),
-
                   child: const Column(
                     crossAxisAlignment:
                         CrossAxisAlignment
                             .start,
-
                     children: [
                       Text(
                         'Assistente Virtual',
@@ -102,11 +188,7 @@ class _ChatbotPageState
                                   .bold,
                         ),
                       ),
-
-                      SizedBox(
-                        height: 4,
-                      ),
-
+                      SizedBox(height: 4),
                       Text(
                         'Converse com nosso assistente médico',
                         style: TextStyle(
@@ -118,178 +200,128 @@ class _ChatbotPageState
                   ),
                 ),
 
-                // CHATBOT
                 Expanded(
-                  child: Padding(
-                    padding:
-                        const EdgeInsets.all(
-                      16,
-                    ),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child:
+                            ListView.builder(
+                          padding:
+                              const EdgeInsets
+                                  .all(16),
+                          itemCount:
+                              messages.length,
+                          itemBuilder:
+                              (context,
+                                  index) {
+                            final msg =
+                                messages[
+                                    index];
 
-                    child: Card(
-                      elevation: 4,
+                            bool isUser =
+                                msg['role'] ==
+                                    'user';
 
-                      shape:
-                          RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(
-                          20,
+                            return Align(
+                              alignment: isUser
+                                  ? Alignment
+                                      .centerRight
+                                  : Alignment
+                                      .centerLeft,
+                              child:
+                                  Container(
+                                margin:
+                                    const EdgeInsets
+                                        .only(
+                                  bottom: 10,
+                                ),
+                                padding:
+                                    const EdgeInsets
+                                        .all(
+                                  14,
+                                ),
+                                decoration:
+                                    BoxDecoration(
+                                  color: isUser
+                                      ? const Color(
+                                          0xFF2E7D32)
+                                      : Colors
+                                          .white,
+                                  borderRadius:
+                                      BorderRadius.circular(
+                                          16),
+                                ),
+                                child: Text(
+                                  msg['text'],
+                                  style:
+                                      TextStyle(
+                                    color: isUser
+                                        ? Colors
+                                            .white
+                                        : Colors
+                                            .black87,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ),
 
-                      child: ClipRRect(
-                        borderRadius:
-                            BorderRadius.circular(
-                          20,
+                      if (isLoading)
+                        const Padding(
+                          padding:
+                              EdgeInsets.all(
+                                  10),
+                          child:
+                              CircularProgressIndicator(),
                         ),
 
-                        child: ChatBotWidget(
-                          // API KEY
-                          apiKey:
-                              deepseekApiKey,
+                      Padding(
+                        padding:
+                            const EdgeInsets
+                                .all(16),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child:
+                                  TextField(
+                                controller:
+                                    _controller,
+                                decoration:
+                                    InputDecoration(
+                                  hintText:
+                                      'Digite sua mensagem...',
+                                  border:
+                                      OutlineInputBorder(
+                                    borderRadius:
+                                        BorderRadius.circular(
+                                            16),
+                                  ),
+                                ),
+                              ),
+                            ),
 
-                          // DEEPSEEK
-                          aiService:
-                              AIService.deepseek,
+                            const SizedBox(
+                                width: 10),
 
-                          // APARÊNCIA
-                          primaryColor:
-                              const Color(
-                            0xFF2E7D32,
-                          ),
-
-                          chatIcon:
-                              Icons.chat,
-
-                          headerTitle:
-                              'Virtual Health AI',
-
-                          headerIcon:
-                              Icons.smart_toy,
-
-                          clearHistoryOnClose:
-                              false,
-
-                          initialMessage:
-                              '''
-Olá! 👋
-
-Sou o assistente virtual da Virtual Health.
-
-Descreva seus sintomas ou faça perguntas médicas.
-
-Estou aqui para ajudar 😊
-''',
+                            IconButton(
+                              onPressed:
+                                  sendMessage,
+                              icon:
+                                  const Icon(
+                                Icons.send,
+                                color: Color(
+                                    0xFF2E7D32),
+                              ),
+                            )
+                          ],
                         ),
-                      ),
-                    ),
+                      )
+                    ],
                   ),
                 ),
               ],
-            ),
-          ),
-
-          // NAVBAR
-          Positioned(
-            top: 10,
-            left: 16,
-            right: 16,
-
-            child: Container(
-              padding:
-                  const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 12,
-              ),
-
-              decoration: BoxDecoration(
-                color: Colors.white,
-
-                borderRadius:
-                    BorderRadius.circular(
-                  16,
-                ),
-
-                boxShadow: const [
-                  BoxShadow(
-                    color:
-                        Colors.black12,
-                    blurRadius: 10,
-                  ),
-                ],
-              ),
-
-              child: Row(
-                mainAxisAlignment:
-                    MainAxisAlignment
-                        .spaceAround,
-
-                children: [
-                  _buildNavItem(
-                    Icons.home,
-                    'Início',
-                  ),
-
-                  _buildNavItem(
-                    Icons.chat,
-                    'Chatbot',
-                  ),
-
-                  _buildNavItem(
-                    Icons.local_hospital,
-                    'Clínicas',
-                  ),
-
-                  _buildNavItem(
-                    Icons.contact_mail,
-                    'Contato',
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavItem(
-    IconData icon,
-    String page,
-  ) {
-    final isSelected =
-        _currentPage == page;
-
-    return GestureDetector(
-      onTap: () =>
-          _onPageChanged(page),
-
-      child: Column(
-        mainAxisSize:
-            MainAxisSize.min,
-
-        children: [
-          Icon(
-            icon,
-
-            color: isSelected
-                ? const Color(
-                    0xFF2E7D32,
-                  )
-                : Colors.grey,
-          ),
-
-          Text(
-            page,
-
-            style: TextStyle(
-              color: isSelected
-                  ? const Color(
-                      0xFF2E7D32,
-                    )
-                  : Colors.grey,
-
-              fontSize: 12,
             ),
           ),
         ],
