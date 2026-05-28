@@ -525,7 +525,7 @@ class _AdminClinicasPageState extends State<AdminClinicasPage> {
                                       width: 50,
                                       height: 50,
                                       decoration: BoxDecoration(
-                                        color: Colors.teal.withOpacity(0.1),
+                                        color: Colors.teal.withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: const Icon(

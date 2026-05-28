@@ -389,10 +389,10 @@ class _MedicoHomePageState
   Drawer _drawer() {
     return Drawer(
       child: ListView(
-        children: [
+        children: const [
           DrawerHeader(
             decoration:
-                const BoxDecoration(
+                BoxDecoration(
               color:
                   Color(0xFF3FA9C6),
             ),
@@ -400,7 +400,7 @@ class _MedicoHomePageState
               crossAxisAlignment:
                   CrossAxisAlignment
                       .start,
-              children: const [
+              children: [
                 Icon(
                   Icons.medical_services,
                   color:
@@ -422,28 +422,28 @@ class _MedicoHomePageState
             ),
           ),
 
-          const ListTile(
+          ListTile(
             leading:
                 Icon(Icons.home),
             title:
                 Text('Dashboard'),
           ),
 
-          const ListTile(
+          ListTile(
             leading:
                 Icon(Icons.calendar_today),
             title:
                 Text('Consultas'),
           ),
 
-          const ListTile(
+          ListTile(
             leading:
                 Icon(Icons.people),
             title:
                 Text('Pacientes'),
           ),
 
-          const ListTile(
+          ListTile(
             leading:
                 Icon(Icons.logout),
             title: Text('Sair'),

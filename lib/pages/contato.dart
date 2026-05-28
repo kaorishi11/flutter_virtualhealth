@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'clinicas.dart';
 import 'login.dart';
+import 'chatbot.dart';
 import 'cadastro.dart';
 import 'home.dart';
 
@@ -192,14 +193,14 @@ class _ContatoPageState extends State<ContatoPage> {
               SliverToBoxAdapter(
                 child: Container(
                   height: 350,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        const Color(0xFF2E7D32),
-                        const Color(0xFF1B5E20),
-                        const Color(0xFF0A3B0E),
+                        Color(0xFF2E7D32),
+                        Color(0xFF1B5E20),
+                        Color(0xFF0A3B0E),
                       ],
                     ),
                   ),
@@ -269,12 +270,12 @@ class _ContatoPageState extends State<ContatoPage> {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withValues(alpha: 0.05),
                           blurRadius: 15,
                           offset: const Offset(0, -5),
                         ),
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
+                          color: Colors.black.withValues(alpha: 0.08),
                           blurRadius: 15,
                           offset: const Offset(0, 5),
                         ),
@@ -425,17 +426,17 @@ class _ContatoPageState extends State<ContatoPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.85),
+        color: Colors.white.withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(50),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 15,
             offset: const Offset(0, 4),
           ),
         ],
         border: Border.all(
-          color: Colors.white.withOpacity(0.3),
+          color: Colors.white.withValues(alpha: 0.3),
         ),
       ),
       child: Row(
@@ -489,7 +490,7 @@ class _ContatoPageState extends State<ContatoPage> {
             child: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFF2E7D32).withOpacity(0.1),
+                color: const Color(0xFF2E7D32).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(
@@ -612,7 +613,7 @@ class _ContatoPageState extends State<ContatoPage> {
                   Navigator.pop(context);
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const LoginPage()),
+                    MaterialPageRoute(builder: (_) => const ChatbotPage()),
                   );
                 },
               ),
@@ -684,13 +685,13 @@ class _ContatoPageState extends State<ContatoPage> {
     return Container(
       margin: const EdgeInsets.only(top: 30),
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [Color(0xFF1B5E20), Color(0xFF0A3B0E)],
         ),
-        borderRadius: const BorderRadius.only(
+        borderRadius: BorderRadius.only(
           topLeft: Radius.circular(25),
           topRight: Radius.circular(25),
         ),

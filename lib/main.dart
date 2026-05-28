@@ -5,6 +5,7 @@ import 'pages/home.dart';
 import 'pages/cadastro.dart';
 import 'pages/clinicas.dart';
 import 'pages/contato.dart';
+import 'pages/chatbot.dart';
 import '../adm/admin_home.dart';
 import '../medico/medico_home.dart';
 
@@ -45,6 +46,7 @@ class MyApp extends StatelessWidget {
         '/cadastro': (context) => const CadastroPage(),
         '/clinicas': (context) => const ClinicasPage(),
         '/contato': (context) => const ContatoPage(),
+        '/chatbot': (context) => const ChatbotPage(),
         '/admin': (context) => const AdminHomePage(),
         '/medico': (context) => const MedicoHomePage(),
       },

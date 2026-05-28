@@ -13,7 +13,7 @@ dependencies:
     sdk: flutter
   
   # Intl para formatação de datas
-  intl: ^0.18.1
+  intl: 0.20.2
   
   # Supabase
   supabase_flutter: ^2.0.0
@@ -29,6 +29,7 @@ dependencies:
   
   # Utilitários
   cupertino_icons: ^1.0.6
+  flutter_ai_chatbot: ^0.0.3
 
 dev_dependencies:
   flutter_test:

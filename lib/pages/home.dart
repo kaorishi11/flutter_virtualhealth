@@ -4,6 +4,7 @@ import 'cadastro.dart';
 import 'login.dart';
 import 'clinicas.dart';
 import 'contato.dart';
+import 'chatbot.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -41,7 +42,12 @@ void _onPageChanged(String page) {
   } else if (page == 'Fazer Consulta') {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const LoginPage()),
+      MaterialPageRoute(builder: (_) => const ChatbotPage()),
+    );
+  } else if (page == 'Chatbot') {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ChatbotPage()),
     );
   }
 }
@@ -51,14 +57,14 @@ void _onPageChanged(String page) {
     return Scaffold(
       body: Stack(
         children: [
-          SingleChildScrollView(
+          const SingleChildScrollView(
             child: Column(
               children: [
-                const SizedBox(height: 80),
-                const HeroSection(),
-                const VideoPitchSection(),
-                const VirtualPlanCard(),
-                const FooterSection(),
+                SizedBox(height: 80),
+                HeroSection(),
+                VideoPitchSection(),
+                VirtualPlanCard(),
+                FooterSection(),
               ],
             ),
           ),
@@ -103,23 +109,23 @@ class _TopNavigationBarState extends State<TopNavigationBar> {
       'Início',
       'Clínicas',
       'Contato',
-      'Fazer Consulta',
+      'Chatbot',
     ];
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.80),
+        color: Colors.white.withValues(alpha: 0.80),
         borderRadius: BorderRadius.circular(50),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 15,
             offset: const Offset(0, 4),
           ),
         ],
         border: Border.all(
-          color: Colors.white.withOpacity(0.3),
+          color: Colors.white.withValues(alpha: 0.3),
         ),
       ),
       child: Row(
@@ -243,13 +249,13 @@ class HeroSection extends StatelessWidget {
         ),
       ),
       child: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
             colors: [
-              const Color.fromRGBO(0, 40, 60, 0.75),
-              const Color.fromRGBO(0, 40, 60, 0.25),
+              Color.fromRGBO(0, 40, 60, 0.75),
+              Color.fromRGBO(0, 40, 60, 0.25),
               Colors.transparent,
             ],
           ),
@@ -394,7 +400,7 @@ class _VideoPitchSectionState extends State<VideoPitchSection> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             decoration: BoxDecoration(
-              color: const Color(0xFF2E7D32).withOpacity(0.1),
+              color: const Color(0xFF2E7D32).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
             ),
             child: const Text(
@@ -434,7 +440,7 @@ class _VideoPitchSectionState extends State<VideoPitchSection> {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.15),
+                  color: Colors.black.withValues(alpha: 0.15),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
@@ -541,7 +547,7 @@ class VirtualPlanCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -584,7 +590,7 @@ class VirtualPlanCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2E7D32).withOpacity(0.1),
+                    color: const Color(0xFF2E7D32).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: const Text(
@@ -614,7 +620,7 @@ class VirtualPlanCard extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.all(4),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF2E7D32).withOpacity(0.1),
+                              color: const Color(0xFF2E7D32).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Icon(
