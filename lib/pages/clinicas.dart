@@ -101,8 +101,8 @@ class _ClinicasPageState extends State<ClinicasPage> {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        Colors.white.withOpacity(0.95),
-                        Colors.white.withOpacity(0.65),
+                        Colors.white.withValues(alpha: 0.95),
+                        Colors.white.withValues(alpha: 0.65),
                         Colors.transparent,
                       ],
                       begin: Alignment.centerLeft,
@@ -327,7 +327,7 @@ class _ClinicasPageState extends State<ClinicasPage> {
                 vertical: 45,
               ),
               color: const Color(0xFF148A96),
-              child: Row(
+              child: const Row(
                 mainAxisAlignment:
                     MainAxisAlignment.spaceBetween,
                 crossAxisAlignment:
@@ -337,7 +337,7 @@ class _ClinicasPageState extends State<ClinicasPage> {
                   Column(
                     crossAxisAlignment:
                         CrossAxisAlignment.start,
-                    children: const [
+                    children: [
 
                       Text(
                         'Serviços',
@@ -381,7 +381,7 @@ class _ClinicasPageState extends State<ClinicasPage> {
                   Column(
                     crossAxisAlignment:
                         CrossAxisAlignment.start,
-                    children: const [
+                    children: [
 
                       Text(
                         'Virtual Health',
@@ -404,7 +404,7 @@ class _ClinicasPageState extends State<ClinicasPage> {
                   Column(
                     crossAxisAlignment:
                         CrossAxisAlignment.start,
-                    children: const [
+                    children: [
 
                       Text(
                         'Contato',

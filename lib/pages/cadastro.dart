@@ -167,7 +167,7 @@ class _CadastroPageState extends State<CadastroPage> {
           boxShadow: [
             BoxShadow(
               blurRadius: 15,
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               offset: const Offset(0, 5),
             ),
           ],
@@ -460,7 +460,7 @@ class _CadastroPageState extends State<CadastroPage> {
                   boxShadow: [
                     BoxShadow(
                       blurRadius: 15,
-                      color: Colors.black.withOpacity(0.08),
+                      color: Colors.black.withValues(alpha: 0.08),
                       offset: const Offset(0, 5),
                     ),
                   ],
@@ -765,7 +765,7 @@ class _CadastroPageState extends State<CadastroPage> {
           boxShadow: [
             BoxShadow(
               blurRadius: 6,
-              color: Colors.black.withOpacity(0.12),
+              color: Colors.black.withValues(alpha: 0.12),
               offset: const Offset(0, 4),
             ),
           ],
@@ -881,7 +881,7 @@ class _CadastroPageState extends State<CadastroPage> {
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
-          value: valor,
+          initialValue: valor,
           decoration: InputDecoration(
             filled: true,
             fillColor: const Color(0xFFF2F2F2),

@@ -286,7 +286,7 @@ class _LoginPageState extends State<LoginPage> {
           boxShadow: [
             BoxShadow(
               blurRadius: 15,
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               offset: const Offset(0, 5),
             ),
           ],
@@ -555,10 +555,10 @@ class _LoginPageState extends State<LoginPage> {
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                     minimumSize: Size.zero,
                   ),
-                  child: Text(
+                  child: const Text(
                     'Esqueceu a senha?',
                     style: TextStyle(
-                      color: const Color(0xFF3FA9C6),
+                      color: Color(0xFF3FA9C6),
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
@@ -621,7 +621,7 @@ class _LoginPageState extends State<LoginPage> {
                   boxShadow: [
                     BoxShadow(
                       blurRadius: 15,
-                      color: Colors.black.withOpacity(0.08),
+                      color: Colors.black.withValues(alpha: 0.08),
                       offset: const Offset(0, 5),
                     ),
                   ],
@@ -879,10 +879,10 @@ class _LoginPageState extends State<LoginPage> {
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                             minimumSize: Size.zero,
                           ),
-                          child: Text(
+                          child: const Text(
                             'Esqueceu a senha?',
                             style: TextStyle(
-                              color: const Color(0xFF3FA9C6),
+                              color: Color(0xFF3FA9C6),
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                             ),
@@ -929,7 +929,7 @@ class _LoginPageState extends State<LoginPage> {
           boxShadow: [
             BoxShadow(
               blurRadius: 6,
-              color: Colors.black.withOpacity(0.12),
+              color: Colors.black.withValues(alpha: 0.12),
               offset: const Offset(0, 4),
             ),
           ],

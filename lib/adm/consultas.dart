@@ -401,7 +401,7 @@ class _AdminConsultasPageState extends State<AdminConsultasPage> {
                                       vertical: 2,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: getStatusColor(status).withOpacity(0.2),
+                                      color: getStatusColor(status).withValues(alpha: 0.2),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Text(

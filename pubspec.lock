@@ -222,6 +222,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_ai_chatbot:
+    dependency: "direct main"
+    description:
+      name: flutter_ai_chatbot
+      sha256: ee11995deee75cea1db86b80285ee2d306d6a378d456789c4588452f552c963f
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.3"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -428,9 +436,12 @@ packages:
     dependency: "direct main"
     description:
       name: intl
-      sha256: "3bc132a9dbce73a7e4a21a17d06e1878839ffbf975568bc875c60537824b0c4d"
+      sha256: "3df61194eb431efc39c4ceba583b95633a403f46c9fd341e550ce0bfa50e9aa5"
       url: "https://pub.dev"
     source: hosted
+<<<<<<< HEAD
+    version: "0.20.2"
+=======
     version: "0.18.1"
   jitsi_meet_flutter_sdk:
     dependency: "direct main"
@@ -440,6 +451,7 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "10.3.0"
+>>>>>>> 93fff73856976b72d6e7d9bcaaafc2484bfbf6a1
   jni:
     dependency: transitive
     description:

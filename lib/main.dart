@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/date_symbol_data_local.dart';
-
 import 'pages/login.dart';
 import 'pages/home.dart';
 import 'pages/cadastro.dart';
 import 'pages/clinicas.dart';
 import 'pages/contato.dart';
-
+import 'pages/chatbot.dart';
 import '../adm/admin_home.dart';
-
 import '../medico/medico_home.dart';
 import '../medico/agendamentos.dart';
 import '../medico/dicas.dart';
@@ -68,6 +66,7 @@ class MyApp extends StatelessWidget {
         '/cadastro': (context) => const CadastroPage(),
         '/clinicas': (context) => const ClinicasPage(),
         '/contato': (context) => const ContatoPage(),
+        '/chatbot': (context) => const ChatbotPage(),
         '/admin': (context) => const AdminHomePage(),
         '/medico': (context) => const MedicoHomePage(),
         '/medico/agenda': (context) => const MinhaAgendaPage(),

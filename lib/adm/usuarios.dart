@@ -219,7 +219,7 @@ class _AdminUsuariosPageState extends State<AdminUsuariosPage> {
                                         ),
                                         decoration: BoxDecoration(
                                           color: getFuncaoColor(user['funcao'])
-                                              .withOpacity(0.2),
+                                              .withValues(alpha: 0.2),
                                           borderRadius:
                                               BorderRadius.circular(12),
                                         ),
@@ -240,7 +240,7 @@ class _AdminUsuariosPageState extends State<AdminUsuariosPage> {
                                             vertical: 2,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: Colors.red.withOpacity(0.2),
+                                            color: Colors.red.withValues(alpha: 0.2),
                                             borderRadius:
                                                 BorderRadius.circular(12),
                                           ),

@@ -167,10 +167,10 @@ class _AdminHomePageState extends State<AdminHomePage> {
                   borderRadius:
                       BorderRadius.circular(20),
                 ),
-                child: Column(
+                child: const Column(
                   crossAxisAlignment:
                       CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text(
                       'Mensal',
                       style: TextStyle(

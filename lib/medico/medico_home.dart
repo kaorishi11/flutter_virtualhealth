@@ -341,6 +341,36 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
 
   Widget _buildDrawer() {
     return Drawer(
+<<<<<<< HEAD
+      child: ListView(
+        children: const [
+          DrawerHeader(
+            decoration:
+                BoxDecoration(
+              color:
+                  Color(0xFF3FA9C6),
+            ),
+            child: Column(
+              crossAxisAlignment:
+                  CrossAxisAlignment
+                      .start,
+              children: [
+                Icon(
+                  Icons.medical_services,
+                  color:
+                      Colors.white,
+                  size: 50,
+                ),
+                SizedBox(height: 10),
+                Text(
+                  'Painel Médico',
+                  style: TextStyle(
+                    color:
+                        Colors.white,
+                    fontSize: 24,
+                    fontWeight:
+                        FontWeight.bold,
+=======
       child: Column(
         children: [
           Container(
@@ -361,6 +391,7 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
                   decoration: const BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
+>>>>>>> 93fff73856976b72d6e7d9bcaaafc2484bfbf6a1
                   ),
                   child: Icon(Icons.medical_services, color: primaryColor, size: 32),
                 ),
@@ -432,6 +463,13 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
     );
   }
 
+<<<<<<< HEAD
+          ListTile(
+            leading:
+                Icon(Icons.home),
+            title:
+                Text('Dashboard'),
+=======
   Widget _buildDrawerItem(IconData icon, String title, VoidCallback onTap, {bool isDestructive = false}) {
     return ListTile(
       leading: Icon(icon, color: isDestructive ? Colors.red : Colors.grey[700]),
@@ -460,6 +498,7 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
             child: const Center(
               child: Icon(Icons.medical_services, color: Color(0xFF3FA9C6), size: 24),
             ),
+>>>>>>> 93fff73856976b72d6e7d9bcaaafc2484bfbf6a1
           ),
           const SizedBox(width: 10),
           const Text('Área Médica'),
@@ -503,6 +542,26 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
     );
   }
 
+<<<<<<< HEAD
+          ListTile(
+            leading:
+                Icon(Icons.calendar_today),
+            title:
+                Text('Consultas'),
+          ),
+
+          ListTile(
+            leading:
+                Icon(Icons.people),
+            title:
+                Text('Pacientes'),
+          ),
+
+          ListTile(
+            leading:
+                Icon(Icons.logout),
+            title: Text('Sair'),
+=======
   Widget _buildWelcomeSection() {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -548,6 +607,7 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
                 ),
               ],
             ),
+>>>>>>> 93fff73856976b72d6e7d9bcaaafc2484bfbf6a1
           ),
         ],
       ),
