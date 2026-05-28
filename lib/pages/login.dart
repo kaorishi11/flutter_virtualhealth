@@ -347,35 +347,15 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                     children: [
                                       Container(
                                         padding: const EdgeInsets.all(16),
-                                        decoration: BoxDecoration(
-                                          gradient: const LinearGradient(
-                                            colors: [Color(0xFF3FA9C6), Color(0xFF5FC7E4)],
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                          ),
-                                          borderRadius: BorderRadius.circular(25),
-                                        ),
                                         child: Image.asset(
                                           'assets/logo.png',
-                                          height: 70,
-                                          width: 70,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 16),
-                                      const Text(
-                                        'VIRTUAL HEALTH',
-                                        style: TextStyle(
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.bold,
-                                          letterSpacing: 1.5,
-                                          color: Color(0xFF2C3E50),
+                                          height: 90,
+                                          width: 90,
                                         ),
                                       ),
                                     ],
                                   ),
                                   
-                                  const SizedBox(height: 30),
                                   
                                   // Subtítulo
                                   const Text(
