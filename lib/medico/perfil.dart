@@ -191,44 +191,81 @@ class _PerfilMedicoPageState extends State<PerfilMedicoPage> {
   }
   
   Future<void> _alterarSenha() async {
-    if (_novaSenhaController.text != _confirmarSenhaController.text) {
-      _mostrarSnackbar('As senhas não coincidem');
-      return;
+  if (_senhaAtualController.text.trim().isEmpty) {
+    _mostrarSnackbar('Digite sua senha atual');
+    return;
+  }
+
+  if (_novaSenhaController.text.trim().isEmpty) {
+    _mostrarSnackbar('Digite a nova senha');
+    return;
+  }
+
+  if (_novaSenhaController.text !=
+      _confirmarSenhaController.text) {
+    _mostrarSnackbar('As senhas não coincidem');
+    return;
+  }
+
+  if (_novaSenhaController.text.length < 6) {
+    _mostrarSnackbar(
+      'A nova senha deve ter pelo menos 6 caracteres',
+    );
+    return;
+  }
+
+  setState(() {
+    _isSaving = true;
+  });
+
+  try {
+    final user = supabase.auth.currentUser;
+
+    if (user == null) {
+      throw Exception('Usuário não autenticado');
     }
-    
-    if (_novaSenhaController.text.length < 6) {
-      _mostrarSnackbar('A nova senha deve ter pelo menos 6 caracteres');
-      return;
+
+    final email = user.email;
+
+    if (email == null || email.isEmpty) {
+      throw Exception('Email do usuário não encontrado');
     }
-    
-    setState(() {
-      _isSaving = true;
-    });
-    
-    try {
-      final user = supabase.auth.currentUser;
-      if (user == null) throw Exception('Usuário não autenticado');
-      
-      // Atualizar senha no Supabase Auth
-      await supabase.auth.updateUser(
-        UserAttributes(password: _novaSenhaController.text)
-      );
-      
-      _senhaAtualController.clear();
-      _novaSenhaController.clear();
-      _confirmarSenhaController.clear();
-      
-      _mostrarSnackbar('Senha alterada com sucesso!');
-      
-    } catch (e) {
-      debugPrint('Erro ao alterar senha: $e');
-      _mostrarSnackbar('Erro ao alterar senha. Verifique sua senha atual.');
-    }
-    
+
+    // 1. Verifica se a senha atual está correta
+    await supabase.auth.signInWithPassword(
+      email: email,
+      password: _senhaAtualController.text.trim(),
+    );
+
+    // 2. Atualiza senha
+    await supabase.auth.updateUser(
+      UserAttributes(
+        password: _novaSenhaController.text.trim(),
+      ),
+    );
+
+    // limpa campos
+    _senhaAtualController.clear();
+    _novaSenhaController.clear();
+    _confirmarSenhaController.clear();
+
+    _mostrarSnackbar(
+      'Senha alterada com sucesso!',
+    );
+  } catch (e) {
+    debugPrint('Erro ao alterar senha: $e');
+
+    _mostrarSnackbar(
+      'Senha atual incorreta ou erro ao alterar senha',
+    );
+  }
+
+  if (mounted) {
     setState(() {
       _isSaving = false;
     });
   }
+}
   
   Future<void> _salvarValoresConsultas() async {
     setState(() {
@@ -333,12 +370,30 @@ class _PerfilMedicoPageState extends State<PerfilMedicoPage> {
         final fileExtension = imagem.path.split('.').last;
         final fileName = '${user.id}_${DateTime.now().millisecondsSinceEpoch}.$fileExtension';
         
-        await supabase.storage.from('perfil_fotos').upload(fileName, _imagemSelecionada!);
+        await supabase.storage
+        .from('perfil_fotos')
+        .upload(
+          fileName,
+          _imagemSelecionada!,
+          fileOptions: const FileOptions(upsert: true),
+        );
+
         final fotoUrl = supabase.storage.from('perfil_fotos').getPublicUrl(fileName);
-        
-        // Atualizar URL no perfil
+
+        final perfil = await supabase
+            .from('perfis')
+            .select('metadados')
+            .eq('auth_id', user.id)
+            .single();
+
+        final metadadosAtuais =
+            Map<String, dynamic>.from(
+                perfil['metadados'] ?? {});
+
+        metadadosAtuais['foto_url'] = fotoUrl;
+
         await supabase.from('perfis').update({
-          'metadados': {'foto_url': fotoUrl}
+          'metadados': metadadosAtuais,
         }).eq('auth_id', user.id);
         
         setState(() {
@@ -546,10 +601,6 @@ class _PerfilMedicoPageState extends State<PerfilMedicoPage> {
                     const SizedBox(width: 16),
                     Icon(Icons.calendar_today, size: 12, color: Colors.grey[500]),
                     const SizedBox(width: 4),
-                    Text(
-                      'Paciente desde 2026',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                    ),
                   ],
                 ),
               ],
@@ -832,8 +883,11 @@ class _PerfilMedicoPageState extends State<PerfilMedicoPage> {
               child: TextField(
                 controller: TextEditingController(
                   text: _dataNascimento.isNotEmpty
-                      ? DateFormat('dd/MM/yyyy').format(DateTime.parse(_dataNascimento))
-                      : '',
+                    ? DateFormat('dd/MM/yyyy').format(
+                        DateTime.tryParse(_dataNascimento) ??
+                            DateTime.now(),
+                      )
+                    : '',
                 ),
                 decoration: InputDecoration(
                   labelText: 'Aniversário',
@@ -986,9 +1040,14 @@ class _PerfilMedicoPageState extends State<PerfilMedicoPage> {
   }
   
   String _getIniciais(String nome) {
-    final partes = nome.trim().split(' ');
-    if (partes.isEmpty) return 'M';
-    if (partes.length == 1) return partes[0][0].toUpperCase();
-    return '${partes[0][0]}${partes[1][0]}'.toUpperCase();
+  if (nome.trim().isEmpty) return 'M';
+
+  final partes = nome.trim().split(' ');
+
+  if (partes.length == 1) {
+    return partes[0][0].toUpperCase();
   }
+
+  return '${partes[0][0]}${partes[1][0]}'.toUpperCase();
+}
 }

@@ -102,10 +102,6 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
         ));
       }
       
-      // Se não houver dados reais, usar dados mock para demonstração
-      if (agendamentosTemp.isEmpty) {
-        agendamentosTemp.addAll(_getMockAgendamentos());
-      }
       
       setState(() {
         _agendamentos = agendamentosTemp;
@@ -117,7 +113,7 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
       debugPrint('Erro ao carregar agendamentos: $e');
       // Usar dados mock em caso de erro
       setState(() {
-        _agendamentos = _getMockAgendamentos();
+        _agendamentos = [];
         _aplicarFiltros();
         _isLoading = false;
       });

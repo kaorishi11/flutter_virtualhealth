@@ -75,7 +75,6 @@ class _DicasSaudePageState extends State<DicasSaudePage> {
     try {
       final user = supabase.auth.currentUser;
       if (user == null) {
-        _carregarDicasMock();
         return;
       }
       
@@ -121,12 +120,18 @@ class _DicasSaudePageState extends State<DicasSaudePage> {
           _isLoading = false;
         });
       } else {
-        _carregarDicasMock();
+        setState(() {
+          _dicas = [];
+          _isLoading = false;
+        });
       }
       
     } catch (e) {
       debugPrint('Erro ao carregar dicas: $e');
-      _carregarDicasMock();
+      setState(() {
+        _dicas = [];
+        _isLoading = false;
+      });
     }
   }
   
