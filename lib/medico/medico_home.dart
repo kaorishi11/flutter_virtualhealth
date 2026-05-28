@@ -27,8 +27,8 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
   
   String nomeMedico = 'Médico';
   String especialidade = 'Médico';
-  String profissionalId = '';  // Inicializado como string vazia
-  String perfilId = '';        // Inicializado como string vazia
+  String profissionalId = '';
+  String perfilId = '';
   
   List<Map<String, dynamic>> consultas = [];
   List<Map<String, dynamic>> consultasSemana = [];
@@ -97,7 +97,7 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
               nome_completo
             )
           ''')
-          .eq('profissional_id', profissionalId)  // profissionalId já é String não-nula
+          .eq('profissional_id', profissionalId)
           .eq('data_agendada', hoje);
 
       // 5. Buscar consultas pendentes
@@ -240,6 +240,27 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
     ).then((_) => carregarDados());
   }
 
+  void _iniciarPrimeiraTeleconsulta() {
+    final teleconsulta = consultas.firstWhere(
+      (c) => c['modo'] == 'teleconsulta' && c['status'] == 'confirmada',
+      orElse: () => {},
+    );
+
+    if (teleconsulta.isNotEmpty) {
+      _irParaTeleconsulta(
+        teleconsulta['id'],
+        teleconsulta['perfis']?['nome_completo'] ?? 'Paciente',
+        teleconsulta['perfis']?['id'] ?? '',
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Nenhuma teleconsulta confirmada disponível'),
+        ),
+      );
+    }
+  }
+
   void _confirmLogout() {
     showDialog(
       context: context,
@@ -280,11 +301,11 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
   }
 
   void _irParaNotificacoes() {
-  Navigator.push(
-    context,
-    MaterialPageRoute(builder: (_) => const NotificacoesPage()),
-  ).then((_) => carregarDados()); // Recarrega dados ao voltar
-}
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const NotificacoesPage()),
+    ).then((_) => carregarDados());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -383,9 +404,14 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
             _irParaMinhaAgenda();
           }),
           const Divider(),
-          _buildDrawerItem(Icons.video_call_outlined, 'Iniciar consulta', () {
-            Navigator.pop(context);
-          }),
+          _buildDrawerItem(
+            Icons.video_call_outlined,
+            'Iniciar consulta',
+            () {
+              Navigator.pop(context);
+              _iniciarPrimeiraTeleconsulta();
+            },
+          ),
           _buildDrawerItem(Icons.health_and_safety_outlined, 'Dicas de saúde', () {
             Navigator.pop(context);
             _irParaDicasSaude();
@@ -908,7 +934,7 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: consultasSemana.map((day) {
               final qtd = day['qtd'] as int;
-              final double altura = maxQtd > 0 ? (qtd / maxQtd) * 40 : 0; // Explicitamente double
+              final double altura = maxQtd > 0 ? (qtd / maxQtd) * 40 : 0;
               
               return Column(
                 children: [
@@ -923,7 +949,7 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
                         if (qtd > 0)
                           Container(
                             width: 24,
-                            height: altura, // Agora altura é double
+                            height: altura,
                             decoration: BoxDecoration(
                               color: primaryColor,
                               borderRadius: BorderRadius.circular(8),
