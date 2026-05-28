@@ -11,17 +11,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  
-  # Intl para formatação de datas
-<<<<<<< HEAD
-  intl: 0.20.2
-  
-=======
-  intl: ^0.18.1
+  intl: ^0.20.2
   table_calendar: ^3.0.9
   image_picker: ^1.0.4
   jitsi_meet_flutter_sdk: ^10.3.0
->>>>>>> 93fff73856976b72d6e7d9bcaaafc2484bfbf6a1
+
   # Supabase
   supabase_flutter: ^2.0.0
   

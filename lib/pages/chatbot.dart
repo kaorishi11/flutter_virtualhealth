@@ -18,10 +18,6 @@ class _ChatbotPageState
     extends State<ChatbotPage> {
   String _currentPage = 'Chatbot';
 
-  // ===================================
-  // COLE SUA CHAVE DO DEEPSEEK AQUI
-  // A CHAVE DEVE COMEÇAR COM "sk-"
-  // ===================================
 
   final String deepseekApiKey =
       'sk-473f4e82283942a1a6f07ef37dfbc511';
