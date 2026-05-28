@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'pages/login.dart';
@@ -7,16 +8,19 @@ import 'pages/cadastro.dart';
 import 'pages/clinicas.dart';
 import 'pages/contato.dart';
 import 'pages/chatbot.dart';
-import '../adm/admin_home.dart';
-import '../medico/medico_home.dart';
-import '../medico/agendamentos.dart';
-import '../medico/dicas.dart';
-import '../medico/perfil.dart';
-import '../medico/teleconsulta.dart';
+import 'adm/admin_home.dart';
+import 'medico/medico_home.dart';
+import 'medico/agendamentos.dart';
+import 'medico/dicas.dart';
+import 'medico/perfil.dart';
+import 'medico/teleconsulta.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  
+  // Configura URL sem o # (hash)
+  usePathUrlStrategy();
+  
   // Inicializa locale pt_BR
   await initializeDateFormatting('pt_BR', null);
 
@@ -24,7 +28,7 @@ Future<void> main() async {
     url: 'https://yxhvmckqfjymmrcognta.supabase.co',
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4aHZtY2txZmp5bW1yY29nbnRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MjAxNTcsImV4cCI6MjA5NDk5NjE1N30.KYEPDk5u8-rscXhLuDN2OIGi-w-STjFPhFFPe58LK6o',
   );
-
+  
   runApp(const MyApp());
 }
 

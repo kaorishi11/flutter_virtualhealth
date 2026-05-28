@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:video_player/video_player.dart';
 import 'cadastro.dart';
 import 'login.dart';
@@ -7,6 +8,8 @@ import 'contato.dart';
 import 'chatbot.dart';
 
 void main() {
+  // Remove o # da URL para rotas limpas
+  usePathUrlStrategy();
   runApp(const MyApp());
 }
 
@@ -21,7 +24,15 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const HomePage(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const HomePage(),
+        '/login': (context) => const LoginPage(),
+        '/cadastro': (context) => const CadastroPage(),
+        '/clinicas': (context) => const ClinicasPage(),
+        '/contato': (context) => const ContatoPage(),
+        '/chatbot': (context) => const ChatbotPage(),
+      },
       debugShowCheckedModeBanner: false,
     );
   }
@@ -36,6 +47,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String _currentPage = 'Início';
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   void _onPageChanged(String page) {
     setState(() {
@@ -43,65 +55,133 @@ class _HomePageState extends State<HomePage> {
     });
 
     if (page == 'Clínicas') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const ClinicasPage()),
-      ).then((_) {
+      Navigator.pushNamed(context, '/clinicas').then((_) {
         setState(() {
           _currentPage = 'Início';
         });
       });
     } else if (page == 'Contato') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const ContatoPage()),
-      ).then((_) {
+      Navigator.pushNamed(context, '/contato').then((_) {
         setState(() {
           _currentPage = 'Início';
         });
       });
     } else if (page == 'Fazer Consulta') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginPage()),
-      );
+      Navigator.pushNamed(context, '/login');
     } else if (page == 'Chatbot') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const ChatbotPage()),
-      );
+      Navigator.pushNamed(context, '/chatbot');
     } else if (page == 'Cadastro') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const CadastroPage()),
-      );
+      Navigator.pushNamed(context, '/cadastro');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: Drawer(
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF0D47A1), Color(0xFF1565C0)],
+            ),
+          ),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.only(top: 60, bottom: 30),
+                child: Center(
+                  child: Image.asset(
+                    'assets/logo.png',
+                    width: 120,
+                    height: 120,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+              const Divider(color: Colors.white54, thickness: 1),
+              Expanded(
+                child: ListView(
+                  children: [
+                    _buildDrawerItem('Início', Icons.home, () {
+                      Navigator.pop(context);
+                      _onPageChanged('Início');
+                    }),
+                    _buildDrawerItem('Clínicas', Icons.local_hospital, () {
+                      Navigator.pop(context);
+                      _onPageChanged('Clínicas');
+                    }),
+                    _buildDrawerItem('Contato', Icons.contact_mail, () {
+                      Navigator.pop(context);
+                      _onPageChanged('Contato');
+                    }),
+                    _buildDrawerItem('Chatbot', Icons.chat, () {
+                      Navigator.pop(context);
+                      _onPageChanged('Chatbot');
+                    }),
+                    _buildDrawerItem('Fazer Consulta', Icons.calendar_today, () {
+                      Navigator.pop(context);
+                      _onPageChanged('Fazer Consulta');
+                    }),
+                    const Divider(color: Colors.white54, thickness: 1),
+                    _buildDrawerItem('Cadastro', Icons.app_registration, () {
+                      Navigator.pop(context);
+                      _onPageChanged('Cadastro');
+                    }),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
       body: LayoutBuilder(
         builder: (context, constraints) {
           final isMobile = constraints.maxWidth < 800;
           
-          return SingleChildScrollView(
-            child: Column(
-              children: [
-                TopNavigationBar(
+          return Stack(
+            children: [
+              SingleChildScrollView(
+                child: Column(
+                  children: [
+                    SizedBox(height: isMobile ? 100 : 160),
+                    HeroSection(isMobile: isMobile),
+                    VideoPitchSection(isMobile: isMobile),
+                    VirtualPlanCard(isMobile: isMobile),
+                    ModernFooterSection(isMobile: isMobile),
+                  ],
+                ),
+              ),
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: TopNavigationBar(
                   currentPage: _currentPage,
                   onPageChanged: _onPageChanged,
                   isMobile: isMobile,
+                  scaffoldKey: _scaffoldKey,
                 ),
-                HeroSection(isMobile: isMobile),
-                VideoPitchSection(isMobile: isMobile),
-                VirtualPlanCard(isMobile: isMobile),
-                ModernFooterSection(isMobile: isMobile),
-              ],
-            ),
+              ),
+            ],
           );
         }
       ),
+    );
+  }
+
+  Widget _buildDrawerItem(String title, IconData icon, VoidCallback onTap) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.white),
+      title: Text(
+        title,
+        style: const TextStyle(color: Colors.white, fontSize: 18),
+      ),
+      onTap: onTap,
+      hoverColor: Colors.white.withOpacity(0.1),
+      splashColor: Colors.white.withOpacity(0.2),
     );
   }
 }
@@ -110,12 +190,14 @@ class TopNavigationBar extends StatelessWidget {
   final String currentPage;
   final Function(String) onPageChanged;
   final bool isMobile;
+  final GlobalKey<ScaffoldState>? scaffoldKey;
 
   const TopNavigationBar({
     super.key,
     required this.currentPage,
     required this.onPageChanged,
     this.isMobile = false,
+    this.scaffoldKey,
   });
 
   @override
@@ -124,105 +206,35 @@ class TopNavigationBar extends StatelessWidget {
 
     if (isMobile) {
       return Container(
+        margin: const EdgeInsets.all(16),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        color: Colors.white,
-        child: Column(
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.95),
+          borderRadius: BorderRadius.circular(50),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1565C0),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(
-                        Icons.medical_services,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'VIRTUAL HEALTH',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1565C0),
-                          ),
-                        ),
-                        Text(
-                          'Sua saúde em boas mãos',
-                          style: TextStyle(
-                            fontSize: 9,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                GestureDetector(
-                  onTap: () => onPageChanged('Fazer Consulta'),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF1565C0), Color(0xFF0D47A1)],
-                      ),
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                    child: const Text(
-                      'Entrar',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+            IconButton(
+              onPressed: () {
+                scaffoldKey?.currentState?.openDrawer();
+              },
+              icon: const Icon(Icons.menu, size: 28, color: Color(0xFF1565C0)),
             ),
-            const SizedBox(height: 12),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: navItems.map((item) {
-                  final isActive = currentPage == item;
-                  return GestureDetector(
-                    onTap: () => onPageChanged(item),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      decoration: BoxDecoration(
-                        color: isActive 
-                            ? const Color(0xFF1565C0).withOpacity(0.1)
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                      child: Text(
-                        item,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: isActive 
-                              ? const Color(0xFF1565C0)
-                              : Colors.grey[700],
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
+            Image.asset(
+              'assets/logo.png',
+              width: 60,
+              height: 60,
+              fit: BoxFit.contain,
             ),
+            Container(width: 40),
           ],
         ),
       );
@@ -230,16 +242,64 @@ class TopNavigationBar extends StatelessWidget {
 
     // Desktop layout
     return Container(
-      margin: const EdgeInsets.only(top: 20),
-      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+      margin: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 24),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.92),
+        borderRadius: BorderRadius.circular(60),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(
+          color: Colors.white.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          
+          Image.asset(
+            'assets/logo.png',
+            width: 80,
+            height: 80,
+            fit: BoxFit.contain,
+          ),
           Row(
             children: navItems.map((item) {
               final isActive = currentPage == item;
-              return _buildNavItem(item, isActive);
+              return GestureDetector(
+                onTap: () => onPageChanged(item),
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Column(
+                    children: [
+                      Text(
+                        item,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: isActive ? const Color(0xFF1565C0) : Colors.grey[700],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        height: 2,
+                        width: isActive ? 24 : 0,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1565C0),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
             }).toList(),
           ),
           MouseRegion(
@@ -252,59 +312,20 @@ class TopNavigationBar extends StatelessWidget {
                   gradient: const LinearGradient(
                     colors: [Color(0xFF1565C0), Color(0xFF0D47A1)],
                   ),
-                  borderRadius: BorderRadius.circular(30),
+                  borderRadius: BorderRadius.circular(40),
                 ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.calendar_today, color: Colors.white, size: 16),
-                    SizedBox(width: 8),
-                    Text(
-                      'Cadastre-se / Logar',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
+                child: const Text(
+                  'Entrar',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
                 ),
               ),
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildNavItem(String title, bool isActive) {
-    return GestureDetector(
-      onTap: () => onPageChanged(title),
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: isActive ? const Color(0xFF1565C0) : Colors.grey[700],
-              ),
-            ),
-            const SizedBox(height: 4),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              height: 2,
-              width: isActive ? 24 : 0,
-              decoration: BoxDecoration(
-                color: const Color(0xFF1565C0),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -347,18 +368,18 @@ class HeroSection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Você escolhe suas',
+                'SEJA BEM VINDO AO',
                 style: TextStyle(
-                  fontSize: isMobile ? 28 : 72,
-                  fontWeight: FontWeight.bold,
+                  fontSize: isMobile ? 24 : 50,
+                  fontWeight: FontWeight.w600,
                   color: Colors.white,
-                  height: 1.1,
+                  letterSpacing: 2,
                 ),
               ),
               Text(
-                'consultas e exames',
+                'VIVIDO EM VIDA!',
                 style: TextStyle(
-                  fontSize: isMobile ? 28 : 72,
+                  fontSize: isMobile ? 32 : 80,
                   fontWeight: FontWeight.bold,
                   color: const Color(0xFF4FC3F7),
                   height: 1.1,
@@ -654,16 +675,11 @@ class VirtualPlanCard extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(16),
-                  child: Container(
+                  child: Image.asset(
+                    'assets/computadorhome.jpg',
                     height: 200,
-                    color: const Color(0xFF1565C0).withOpacity(0.1),
-                    child: const Center(
-                      child: Icon(
-                        Icons.computer,
-                        size: 80,
-                        color: Color(0xFF1565C0),
-                      ),
-                    ),
+                    width: double.infinity,
+                    fit: BoxFit.cover,
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -731,16 +747,11 @@ class VirtualPlanCard extends StatelessWidget {
                   flex: 4,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16),
-                    child: Container(
+                    child: Image.asset(
+                      'assets/computadorhome.jpg',
                       height: 275,
-                      color: const Color(0xFF1565C0).withOpacity(0.1),
-                      child: const Center(
-                        child: Icon(
-                          Icons.computer,
-                          size: 100,
-                          color: Color(0xFF1565C0),
-                        ),
-                      ),
+                      width: double.infinity,
+                      fit: BoxFit.cover,
                     ),
                   ),
                 ),
@@ -839,184 +850,105 @@ class ModernFooterSection extends StatelessWidget {
         padding: EdgeInsets.all(isMobile ? 24 : 48),
         child: Column(
           children: [
-            // Logo e descrição
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  flex: isMobile ? 1 : 2,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: isMobile ? 45 : 60,
-                            height: isMobile ? 45 : 60,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              Icons.medical_services,
-                              color: Color(0xFF1565C0),
-                              size: 30,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          const Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'VIRTUAL HEALTH',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              Text(
-                                'Sua saúde em boas mãos',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: Colors.white70,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Cuidando da sua saúde com tecnologia e humanidade. Disponíveis 24 horas por dia, 7 dias por semana.',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: isMobile ? 12 : 13,
-                          height: 1.5,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Row(
-                        children: [
-                          _buildSocialIcon(Icons.facebook),
-                          const SizedBox(width: 12),
-                          _buildSocialIcon(Icons.phone_android),
-                          const SizedBox(width: 12),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                
-                if (!isMobile) ...[
-                  const SizedBox(width: 60),
-                  Expanded(
-                    child: _buildFooterLinks('Serviços', [
-                      'Teleconsultas 24h',
-                      'Agendamento online',
-                      'Especialidades',
-                      'Exames',
-                      'Prontuário digital',
-                    ]),
-                  ),
-                  Expanded(
-                    child: _buildFooterLinks('Institucional', [
-                      'Sobre nós',
-                      'Carreiras',
-                      'Blog',
-                      'Imprensa',
-                      'Seja parceiro',
-                    ]),
-                  ),
-                  Expanded(
-                    child: _buildFooterLinks('Suporte', [
-                      'Central de ajuda',
-                      'FAQ',
-                      'Contato',
-                      'Termos de uso',
-                      'Privacidade',
-                    ]),
-                  ),
-                ],
-              ],
+            Center(
+              child: Image.asset(
+                'assets/logo.png',
+                width: isMobile ? 150 : 200,
+                height: isMobile ? 150 : 200,
+                fit: BoxFit.contain,
+              ),
             ),
-            
+            const SizedBox(height: 24),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: isMobile ? 20 : 100),
+              child: Text(
+                'Cuidando da sua saúde com tecnologia e humanidade. Disponível 24 horas por dia, 7 dias por semana.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: isMobile ? 14 : 16,
+                  height: 1.5,
+                ),
+              ),
+            ),
+            const SizedBox(height: 40),
             if (isMobile) ...[
-              const SizedBox(height: 30),
-              _buildFooterLinks('Serviços', [
+              _buildFooterLinksCentralizado('Serviços', [
                 'Teleconsultas 24h',
                 'Agendamento online',
                 'Especialidades',
                 'Exames',
                 'Prontuário digital',
               ]),
-              const SizedBox(height: 24),
-              _buildFooterLinks('Institucional', [
+              const SizedBox(height: 30),
+              _buildFooterLinksCentralizado('Institucional', [
                 'Sobre nós',
                 'Carreiras',
                 'Blog',
                 'Imprensa',
                 'Seja parceiro',
               ]),
-              const SizedBox(height: 24),
-              _buildFooterLinks('Suporte', [
+              const SizedBox(height: 30),
+              _buildFooterLinksCentralizado('Suporte', [
                 'Central de ajuda',
                 'FAQ',
                 'Contato',
                 'Termos de uso',
                 'Privacidade',
               ]),
+            ] else ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildFooterLinksCentralizado('Serviços', [
+                    'Teleconsultas 24h',
+                    'Agendamento online',
+                    'Especialidades',
+                    'Exames',
+                    'Prontuário digital',
+                  ]),
+                  _buildFooterLinksCentralizado('Institucional', [
+                    'Sobre nós',
+                    'Carreiras',
+                    'Blog',
+                    'Imprensa',
+                    'Seja parceiro',
+                  ]),
+                  _buildFooterLinksCentralizado('Suporte', [
+                    'Central de ajuda',
+                    'FAQ',
+                    'Contato',
+                    'Termos de uso',
+                    'Privacidade',
+                  ]),
+                ],
+              ),
             ],
-            
             const SizedBox(height: 40),
             Divider(color: Colors.white.withOpacity(0.2)),
             const SizedBox(height: 24),
-            
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Column(
               children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildSocialIcon(Icons.facebook),
+                    const SizedBox(width: 16),
+                    _buildSocialIcon(Icons.phone_android),
+                    const SizedBox(width: 16),
+                    _buildSocialIcon(Icons.email),
+                  ],
+                ),
+                const SizedBox(height: 16),
                 Text(
                   '© 2026 Virtual Health - Todos os direitos reservados',
                   style: TextStyle(
                     color: Colors.white54,
                     fontSize: isMobile ? 10 : 12,
                   ),
+                  textAlign: TextAlign.center,
                 ),
-                if (!isMobile)
-                  Row(
-                    children: [
-                      TextButton(
-                        onPressed: () {},
-                        child: Text(
-                          'Política de privacidade',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {},
-                        child: Text(
-                          'Termos de serviço',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {},
-                        child: Text(
-                          'Cookies',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
               ],
             ),
           ],
@@ -1029,43 +961,45 @@ class ModernFooterSection extends StatelessWidget {
     return InkWell(
       onTap: () {},
       child: Container(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Icon(
           icon,
           color: Colors.white,
-          size: 20,
+          size: 24,
         ),
       ),
     );
   }
 
-  Widget _buildFooterLinks(String title, List<String> links) {
+  Widget _buildFooterLinksCentralizado(String title, List<String> links) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
           title,
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
-            fontSize: 15,
+            fontSize: 18,
           ),
+          textAlign: TextAlign.center,
         ),
         const SizedBox(height: 16),
         ...links.map((link) => Padding(
-              padding: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.only(bottom: 12),
               child: InkWell(
                 onTap: () {},
                 child: Text(
                   link,
                   style: TextStyle(
                     color: Colors.white70,
-                    fontSize: 13,
+                    fontSize: 14,
                   ),
+                  textAlign: TextAlign.center,
                 ),
               ),
             )),
