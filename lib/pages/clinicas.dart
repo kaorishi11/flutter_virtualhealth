@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import '../services/auth_service.dart';
+import 'home.dart';
+import 'login.dart';
+import 'cadastro.dart';
+import 'contato.dart';
+import 'chatbot.dart';
 
 class ClinicasPage extends StatefulWidget {
   const ClinicasPage({super.key});
@@ -10,7 +16,14 @@ class ClinicasPage extends StatefulWidget {
 }
 
 class _ClinicasPageState extends State<ClinicasPage> {
-
+  final AuthService _auth = AuthService();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  
+  bool _isLoggedIn = false;
+  String? _userName;
+  String? _userFuncao;
+  Map<String, dynamic>? _userProfile;
+  
   String _selectedEspecialidade = 'Especialista';
   String _selectedLocalizacao = 'Caçapava, São Paulo - SP';
 
@@ -27,7 +40,6 @@ class _ClinicasPageState extends State<ClinicasPage> {
   ];
 
   final List<Map<String, dynamic>> _medicos = [
-
     {
       'nome': 'Dra Marta',
       'especialidade': 'Dentista',
@@ -35,12 +47,9 @@ class _ClinicasPageState extends State<ClinicasPage> {
       'totalAvaliacoes': 38,
       'endereco': 'Clínica Sul - Santa Casa São José dos Campos',
       'preco': 90.00,
-
-      // LOCALIZAÇÃO 1
       'lat': -23.1896,
       'lng': -45.8841,
     },
-
     {
       'nome': 'Dr Andrey',
       'especialidade': 'Oftalmologista',
@@ -48,12 +57,9 @@ class _ClinicasPageState extends State<ClinicasPage> {
       'totalAvaliacoes': 38,
       'endereco': 'Av. Andrômeda - Jardim Satélite',
       'preco': 60.00,
-
-      // LOCALIZAÇÃO 2
       'lat': -23.2237,
       'lng': -45.9009,
     },
-
     {
       'nome': 'Dra Sheila',
       'especialidade': 'Ginecologista',
@@ -61,195 +67,708 @@ class _ClinicasPageState extends State<ClinicasPage> {
       'totalAvaliacoes': 38,
       'endereco': 'R. Cel. João Dias Guimarães - Centro',
       'preco': 60.00,
-
-      // LOCALIZAÇÃO 3
       'lat': -23.1005,
       'lng': -45.7075,
     },
   ];
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF7F7F7),
+  void initState() {
+    super.initState();
+    _checkAuthState();
+  }
 
-      body: SingleChildScrollView(
+  Future<void> _checkAuthState() async {
+    try {
+      final user = _auth.usuarioAtual;
+      if (user != null) {
+        final profile = await _auth.getPerfilUsuario();
+        if (mounted && profile != null) {
+          setState(() {
+            _isLoggedIn = true;
+            _userProfile = profile;
+            _userName = profile['nome_completo']?.split(' ')[0] ?? 'Usuário';
+            _userFuncao = profile['funcao'];
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            _isLoggedIn = false;
+            _userName = null;
+            _userProfile = null;
+            _userFuncao = null;
+          });
+        }
+      }
+    } catch (e) {
+      print('Erro ao verificar auth: $e');
+    }
+  }
+
+  Future<void> _logout() async {
+    await _auth.logout();
+    if (mounted) {
+      setState(() {
+        _isLoggedIn = false;
+        _userName = null;
+        _userProfile = null;
+        _userFuncao = null;
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Logout realizado com sucesso!'),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  void _showUserMenu() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircleAvatar(
+              radius: 40,
+              backgroundColor: const Color(0xFF3FA9C6),
+              child: Text(
+                _userName != null && _userName!.isNotEmpty 
+                    ? _userName![0].toUpperCase() 
+                    : 'U',
+                style: const TextStyle(fontSize: 32, color: Colors.white),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              _userProfile?['nome_completo'] ?? 'Usuário',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              _userFuncao == 'paciente' ? 'Paciente' : 'Médico',
+              style: TextStyle(color: Colors.grey[600], fontSize: 14),
+            ),
+            const SizedBox(height: 20),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.person_outline, color: Color(0xFF3FA9C6)),
+              title: const Text('Meu Perfil'),
+              onTap: () {
+                Navigator.pop(context);
+                _navigateToProfile();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.calendar_today, color: Color(0xFF3FA9C6)),
+              title: const Text('Minhas Consultas'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings_outlined, color: Color(0xFF3FA9C6)),
+              title: const Text('Configurações'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.logout, color: Colors.red),
+              title: const Text('Sair', style: TextStyle(color: Colors.red)),
+              onTap: () {
+                Navigator.pop(context);
+                _logout();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _navigateToProfile() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Perfil de ${_userProfile?['nome_completo'] ?? 'Usuário'}'),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _onPageChanged(String page) {
+    if (page == 'Início') {
+      Navigator.pushReplacementNamed(context, '/');
+    } else if (page == 'Contato') {
+      Navigator.pushNamed(context, '/contato');
+    } else if (page == 'Chatbot') {
+      Navigator.pushNamed(context, '/chatbot');
+    } else if (page == 'Fazer Consulta') {
+      if (_isLoggedIn) {
+        _showUserMenu();
+      } else {
+        Navigator.pushNamed(context, '/login');
+      }
+    } else if (page == 'Cadastro') {
+      Navigator.pushNamed(context, '/cadastro');
+    } else if (page == 'Perfil') {
+      _showUserMenu();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 800;
+    
+    return Scaffold(
+      key: _scaffoldKey,
+      drawer: _buildDrawer(isMobile),
+      backgroundColor: const Color(0xFFF7F7F7),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                SizedBox(height: isMobile ? 80 : 100),
+                _buildHeader(isMobile),
+                const SizedBox(height: 40),
+                _buildTitle(isMobile),
+                const SizedBox(height: 40),
+                _buildFilters(isMobile),
+                const SizedBox(height: 50),
+                _buildMedicosList(isMobile),
+                const SizedBox(height: 50),
+                _buildFooter(isMobile),
+              ],
+            ),
+          ),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: _buildTopNavigationBar(isMobile),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDrawer(bool isMobile) {
+    return Drawer(
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF0D47A1), Color(0xFF1565C0)],
+          ),
+        ),
         child: Column(
           children: [
-
-            // ================= HEADER =================
-
-            Stack(
-              children: [
-
-                Container(
-                  height: 330,
-                  width: double.infinity,
-                  decoration: const BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage(
-                        'assets/images/banner_medico.png',
-                      ),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
+            Container(
+              padding: const EdgeInsets.only(top: 60, bottom: 30),
+              child: Center(
+                child: Image.asset(
+                  'assets/logo.png',
+                  width: 120,
+                  height: 120,
+                  fit: BoxFit.contain,
                 ),
-
-                Container(
-                  height: 330,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.white.withValues(alpha: 0.95),
-                        Colors.white.withValues(alpha: 0.65),
-                        Colors.transparent,
-                      ],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                    ),
-                  ),
+              ),
+            ),
+            if (_isLoggedIn && _userProfile != null) ...[
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(15),
                 ),
-
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 50,
-                    vertical: 60,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-
-                      RichText(
-                        text: const TextSpan(
-                          children: [
-
-                            TextSpan(
-                              text: 'CONHEÇA TODAS AS\n',
-                              style: TextStyle(
-                                fontSize: 52,
-                                fontWeight: FontWeight.w800,
-                                color: Color(0xFF0057A5),
-                                height: 1,
-                              ),
-                            ),
-
-                            TextSpan(
-                              text: 'CLÍNICAS ',
-                              style: TextStyle(
-                                fontSize: 52,
-                                fontWeight: FontWeight.w800,
-                                color: Color(0xFF0057A5),
-                              ),
-                            ),
-
-                            TextSpan(
-                              text: 'PRESENCIAIS',
-                              style: TextStyle(
-                                fontSize: 52,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 25,
+                      backgroundColor: Colors.white.withOpacity(0.3),
+                      child: Text(
+                        _userName != null && _userName!.isNotEmpty 
+                            ? _userName![0].toUpperCase() 
+                            : 'U',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
                       ),
-
-                      const SizedBox(height: 20),
-
-                      const SizedBox(
-                        width: 520,
-                        child: Text(
-                          'Encontre especialistas próximos a você e agende sua consulta.',
-                          style: TextStyle(
-                            fontSize: 22,
-                            color: Color(0xFF0057A5),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _userProfile?['nome_completo'] ?? 'Usuário',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
+                          Text(
+                            _userFuncao == 'paciente' ? 'Paciente' : 'Médico',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(color: Colors.white54, thickness: 1),
+            ],
+            Expanded(
+              child: ListView(
+                children: [
+                  _buildDrawerItem('Início', Icons.home, () {
+                    Navigator.pop(context);
+                    _onPageChanged('Início');
+                  }),
+                  _buildDrawerItem('Clínicas', Icons.local_hospital, () {
+                    Navigator.pop(context);
+                  }),
+                  _buildDrawerItem('Contato', Icons.contact_mail, () {
+                    Navigator.pop(context);
+                    _onPageChanged('Contato');
+                  }),
+                  _buildDrawerItem('Chatbot', Icons.chat, () {
+                    Navigator.pop(context);
+                    _onPageChanged('Chatbot');
+                  }),
+                  _buildDrawerItem('Fazer Consulta', Icons.calendar_today, () {
+                    Navigator.pop(context);
+                    _onPageChanged('Fazer Consulta');
+                  }),
+                  const Divider(color: Colors.white54, thickness: 1),
+                  if (!_isLoggedIn) ...[
+                    _buildDrawerItem('Cadastro', Icons.app_registration, () {
+                      Navigator.pop(context);
+                      _onPageChanged('Cadastro');
+                    }),
+                    _buildDrawerItem('Login', Icons.login, () {
+                      Navigator.pop(context);
+                      Navigator.pushNamed(context, '/login');
+                    }),
+                  ] else ...[
+                    _buildDrawerItem('Meu Perfil', Icons.person, () {
+                      Navigator.pop(context);
+                      _showUserMenu();
+                    }),
+                    _buildDrawerItem('Sair', Icons.logout, () {
+                      Navigator.pop(context);
+                      _logout();
+                    }),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDrawerItem(String title, IconData icon, VoidCallback onTap) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.white),
+      title: Text(
+        title,
+        style: const TextStyle(color: Colors.white, fontSize: 18),
+      ),
+      onTap: onTap,
+      hoverColor: Colors.white.withOpacity(0.1),
+      splashColor: Colors.white.withOpacity(0.2),
+    );
+  }
+
+  Widget _buildTopNavigationBar(bool isMobile) {
+    final navItems = ['Início', 'Clínicas', 'Contato', 'Fazer Consulta'];
+
+    if (isMobile) {
+      return Container(
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.95),
+          borderRadius: BorderRadius.circular(50),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            IconButton(
+              onPressed: () {
+                _scaffoldKey.currentState?.openDrawer();
+              },
+              icon: const Icon(Icons.menu, size: 28, color: Color(0xFF1565C0)),
+            ),
+            GestureDetector(
+              onTap: () {
+                Navigator.pushReplacementNamed(context, '/');
+              },
+              child: Image.asset(
+                'assets/logo.png',
+                width: 60,
+                height: 60,
+                fit: BoxFit.contain,
+              ),
+            ),
+            if (_isLoggedIn && _userName != null)
+              GestureDetector(
+                onTap: () => _onPageChanged('Perfil'),
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF3FA9C6).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircleAvatar(
+                        radius: 16,
+                        backgroundColor: const Color(0xFF3FA9C6),
+                        child: Text(
+                          _userName!.isNotEmpty ? _userName![0].toUpperCase() : 'U',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        _userName ?? 'Perfil',
+                        style: const TextStyle(
+                          color: Color(0xFF1565C0),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                  ),
+                ),
+              )
+            else
+              Container(width: 40),
+          ],
+        ),
+      );
+    }
+
+    // Desktop layout
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 24),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.92),
+        borderRadius: BorderRadius.circular(60),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(
+          color: Colors.white.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          GestureDetector(
+            onTap: () {
+              Navigator.pushReplacementNamed(context, '/');
+            },
+            child: Image.asset(
+              'assets/logo.png',
+              width: 80,
+              height: 80,
+              fit: BoxFit.contain,
+            ),
+          ),
+          Row(
+            children: navItems.map((item) {
+              final isActive = item == 'Clínicas';
+              return GestureDetector(
+                onTap: () => _onPageChanged(item),
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Column(
+                    children: [
+                      Text(
+                        item,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: isActive ? const Color(0xFF1565C0) : Colors.grey[700],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        height: 2,
+                        width: isActive ? 24 : 0,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1565C0),
+                          borderRadius: BorderRadius.circular(2),
                         ),
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
-
-            const SizedBox(height: 40),
-
-            // ================= TITULO =================
-
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 50),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-
-                  const Text(
-                    'Clínicas e especialistas para você',
+              );
+            }).toList(),
+          ),
+          if (!_isLoggedIn)
+            MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onTap: () => _onPageChanged('Fazer Consulta'),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF1565C0), Color(0xFF0D47A1)],
+                    ),
+                    borderRadius: BorderRadius.circular(40),
+                  ),
+                  child: const Text(
+                    'Entrar',
                     style: TextStyle(
-                      fontSize: 42,
-                      fontWeight: FontWeight.w300,
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  Container(
-                    width: 520,
-                    height: 3,
-                    color: const Color(0xFF1194F6),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 40),
-
-            // ================= FILTROS =================
-
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 50),
-              child: Row(
-                children: [
-
-                  Container(
-                    width: 55,
-                    height: 55,
-                    decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
                     ),
-                    child: const Icon(Icons.search),
                   ),
-
-                  const SizedBox(width: 15),
-
-                  Expanded(
-                    flex: 4,
-                    child: Container(
-                      height: 55,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEFF5FF),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const TextField(
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          hintText:
-                              'Procure clínicas ou especialistas...',
-                          contentPadding:
-                              EdgeInsets.symmetric(horizontal: 20),
+                ),
+              ),
+            )
+          else
+            MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onTap: () => _onPageChanged('Perfil'),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF3FA9C6).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(50),
+                    border: Border.all(color: const Color(0xFF3FA9C6).withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircleAvatar(
+                        radius: 18,
+                        backgroundColor: const Color(0xFF3FA9C6),
+                        child: Text(
+                          _userName != null && _userName!.isNotEmpty 
+                              ? _userName![0].toUpperCase() 
+                              : 'U',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Olá, ${_userName ?? "Usuário"}',
+                        style: const TextStyle(
+                          color: Color(0xFF1565C0),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(
+                        Icons.arrow_drop_down,
+                        color: Color(0xFF1565C0),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // ================= HEADER COM IMAGEM DE FUNDO =================
+  Widget _buildHeader(bool isMobile) {
+    return Container(
+      height: isMobile ? 280 : 400,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/images/doutorclinica.png'),
+          fit: BoxFit.cover,
+          onError: (exception, stackTrace) {
+            print('Erro ao carregar imagem: $exception');
+            // Fallback para cor sólida se a imagem não existir
+          },
+        ),
+        color: const Color(0xFF0D47A1), // Cor de fallback
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [
+              const Color(0xFF0D47A1).withOpacity(0.85),
+              const Color(0xFF1565C0).withOpacity(0.5),
+              Colors.transparent,
+            ],
+          ),
+        ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: isMobile ? 20 : 50,
+            vertical: isMobile ? 20 : 40,
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                isMobile ? 'CONHEÇA TODAS AS\nCLÍNICAS' : 'CONHEÇA TODAS AS\nCLÍNICAS',
+                style: TextStyle(
+                  fontSize: isMobile ? 32 : 64,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  height: 1.1,
+                ),
+              ),
+              Text(
+                'PRESENCIAIS',
+                style: TextStyle(
+                  fontSize: isMobile ? 28 : 52,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF4FC3F7),
+                  height: 1.1,
+                ),
+              ),
+              SizedBox(height: isMobile ? 16 : 24),
+              Container(
+                width: isMobile ? double.infinity : 500,
+                child: Text(
+                  'Encontre especialistas próximos a você e agende sua consulta.',
+                  style: TextStyle(
+                    fontSize: isMobile ? 16 : 22,
+                    color: Colors.white70,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ================= TITULO =================
+  Widget _buildTitle(bool isMobile) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 20 : 50),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Clínicas e especialistas para você',
+            style: TextStyle(
+              fontSize: isMobile ? 24 : 42,
+              fontWeight: FontWeight.w300,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            width: isMobile ? 200 : 520,
+            height: 3,
+            color: const Color(0xFF1194F6),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ================= FILTROS RESPONSIVOS =================
+  Widget _buildFilters(bool isMobile) {
+    if (isMobile) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.search),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Container(
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEFF5FF),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const TextField(
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: 'Procure clínicas ou especialistas...',
+                        contentPadding: EdgeInsets.symmetric(horizontal: 15),
+                      ),
                     ),
                   ),
-
-                  const SizedBox(width: 20),
-
-                  Container(
-                    width: 190,
-                    height: 55,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 15),
+                ),
+              ],
+            ),
+            const SizedBox(height: 15),
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 50,
+                    padding: const EdgeInsets.symmetric(horizontal: 15),
                     decoration: BoxDecoration(
                       color: const Color(0xFFEFF5FF),
                       borderRadius: BorderRadius.circular(10),
@@ -257,6 +776,7 @@ class _ClinicasPageState extends State<ClinicasPage> {
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
                         value: _selectedEspecialidade,
+                        isExpanded: true,
                         items: _especialidades.map((e) {
                           return DropdownMenuItem(
                             value: e,
@@ -271,14 +791,12 @@ class _ClinicasPageState extends State<ClinicasPage> {
                       ),
                     ),
                   ),
-
-                  const SizedBox(width: 20),
-
-                  Container(
-                    width: 300,
-                    height: 55,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 15),
+                ),
+                const SizedBox(width: 15),
+                Expanded(
+                  child: Container(
+                    height: 50,
+                    padding: const EdgeInsets.symmetric(horizontal: 15),
                     decoration: BoxDecoration(
                       color: const Color(0xFFEFF5FF),
                       borderRadius: BorderRadius.circular(10),
@@ -286,6 +804,7 @@ class _ClinicasPageState extends State<ClinicasPage> {
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
                         value: _selectedLocalizacao,
+                        isExpanded: true,
                         items: _localizacoes.map((e) {
                           return DropdownMenuItem(
                             value: e,
@@ -300,373 +819,252 @@ class _ClinicasPageState extends State<ClinicasPage> {
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-
-            const SizedBox(height: 50),
-
-            // ================= LISTA =================
-
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 50),
-              child: Column(
-                children: _medicos
-                    .map((medico) => _buildCard(medico))
-                    .toList(),
-              ),
-            ),
-
-            const SizedBox(height: 50),
-
-            // ================= FOOTER =================
-
+          ],
+        ),
+      );
+    } else {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 50),
+        child: Row(
+          children: [
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 60,
-                vertical: 45,
+              width: 55,
+              height: 55,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
               ),
-              color: const Color(0xFF148A96),
-              child: const Row(
-                mainAxisAlignment:
-                    MainAxisAlignment.spaceBetween,
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
-                children: [
-
-                  Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
-                    children: [
-
-                      Text(
-                        'Serviços',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 34,
-                          fontWeight: FontWeight.w300,
-                        ),
-                      ),
-
-                      SizedBox(height: 20),
-
-                      Text(
-                        '✓ Teleconsulta 24h',
-                        style: TextStyle(color: Colors.white),
-                      ),
-
-                      SizedBox(height: 12),
-
-                      Text(
-                        '✓ Agendamento online',
-                        style: TextStyle(color: Colors.white),
-                      ),
-
-                      SizedBox(height: 12),
-
-                      Text(
-                        '✓ Especialidades',
-                        style: TextStyle(color: Colors.white),
-                      ),
-
-                      SizedBox(height: 12),
-
-                      Text(
-                        '✓ Perguntas frequentes',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ],
+              child: const Icon(Icons.search),
+            ),
+            const SizedBox(width: 15),
+            Expanded(
+              flex: 4,
+              child: Container(
+                height: 55,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEFF5FF),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const TextField(
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: 'Procure clínicas ou especialistas...',
+                    contentPadding: EdgeInsets.symmetric(horizontal: 20),
                   ),
-
-                  Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
-                    children: [
-
-                      Text(
-                        'Virtual Health',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 34,
-                          fontWeight: FontWeight.w300,
-                        ),
-                      ),
-
-                      SizedBox(height: 20),
-
-                      Text(
-                        'Seu médico virtual 24h',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ],
-                  ),
-
-                  Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
-                    children: [
-
-                      Text(
-                        'Contato',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 34,
-                          fontWeight: FontWeight.w300,
-                        ),
-                      ),
-
-                      SizedBox(height: 20),
-
-                      Text(
-                        '📍 Endereço: Sesi Caçapava SP',
-                        style: TextStyle(color: Colors.white),
-                      ),
-
-                      SizedBox(height: 12),
-
-                      Text(
-                        '📞 Telefone: (12) 9966-9732',
-                        style: TextStyle(color: Colors.white),
-                      ),
-
-                      SizedBox(height: 12),
-
-                      Text(
-                        '✉️ virtualhealthassistencia@gmail.com',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ],
-                  ),
-                ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 20),
+            Container(
+              width: 190,
+              height: 55,
+              padding: const EdgeInsets.symmetric(horizontal: 15),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEFF5FF),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: _selectedEspecialidade,
+                  items: _especialidades.map((e) {
+                    return DropdownMenuItem(
+                      value: e,
+                      child: Text(e),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedEspecialidade = value!;
+                    });
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(width: 20),
+            Container(
+              width: 300,
+              height: 55,
+              padding: const EdgeInsets.symmetric(horizontal: 15),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEFF5FF),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: _selectedLocalizacao,
+                  items: _localizacoes.map((e) {
+                    return DropdownMenuItem(
+                      value: e,
+                      child: Text(e),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedLocalizacao = value!;
+                    });
+                  },
+                ),
               ),
             ),
           ],
         ),
+      );
+    }
+  }
+
+  // ================= LISTA DE MÉDICOS RESPONSIVA =================
+  Widget _buildMedicosList(bool isMobile) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 20 : 50),
+      child: Column(
+        children: _medicos
+            .map((medico) => _buildCard(medico, isMobile))
+            .toList(),
       ),
     );
   }
 
-  // ================= CARD =================
-
-  Widget _buildCard(Map<String, dynamic> medico) {
+  // ================= CARD RESPONSIVO =================
+  Widget _buildCard(Map<String, dynamic> medico, bool isMobile) {
     return Container(
       margin: const EdgeInsets.only(bottom: 35),
-      padding: const EdgeInsets.all(25),
+      padding: EdgeInsets.all(isMobile ? 15 : 25),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: Colors.grey.shade300,
-        ),
+        border: Border.all(color: Colors.grey.shade300),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-
-          // ================= ESQUERDA =================
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+      child: isMobile
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 Row(
                   children: [
-
                     const CircleAvatar(
-                      radius: 40,
-                      backgroundImage: AssetImage(
-                        'assets/images/doctor.jpg',
+                      radius: 35,
+                      backgroundImage: AssetImage('assets/images/doctor.jpg'),
+                    ),
+                    const SizedBox(width: 15),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            medico['nome'],
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            medico['especialidade'],
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                          const SizedBox(height: 5),
+                          Row(
+                            children: [
+                              const Icon(Icons.star, color: Colors.orange, size: 16),
+                              const SizedBox(width: 5),
+                              Text(
+                                '(${medico['avaliacao']} · ${medico['totalAvaliacoes']})',
+                                style: const TextStyle(color: Colors.grey, fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-
-                    const SizedBox(width: 18),
-
-                    Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
-                      children: [
-
-                        Text(
-                          medico['nome'],
-                          style: const TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-
-                        Text(
-                          medico['especialidade'],
-                          style: const TextStyle(
-                            fontSize: 20,
-                          ),
-                        ),
-
-                        const SizedBox(height: 5),
-
-                        Row(
-                          children: [
-
-                            const Icon(
-                              Icons.star,
-                              color: Colors.orange,
-                              size: 18,
-                            ),
-
-                            const SizedBox(width: 5),
-
-                            Text(
-                              '(${medico['avaliacao']} · ${medico['totalAvaliacoes']} avaliações)',
-                              style: const TextStyle(
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
                   ],
                 ),
-
-                const SizedBox(height: 25),
-
-                Row(
-                  children: [
-
-                    _buttonBlue('Endereço'),
-
-                    const SizedBox(width: 12),
-
-                    _buttonOutline('Teleconsulta'),
-                  ],
-                ),
-
                 const SizedBox(height: 20),
-
                 Row(
                   children: [
-
-                    const Icon(
-                      Icons.location_on,
-                      color: Color(0xFF148A96),
-                    ),
-
+                    _buttonBlue('Endereço', isMobile),
                     const SizedBox(width: 10),
-
+                    _buttonOutline('Teleconsulta', isMobile),
+                  ],
+                ),
+                const SizedBox(height: 15),
+                Row(
+                  children: [
+                    const Icon(Icons.location_on, color: Color(0xFF148A96), size: 20),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         medico['endereco'],
-                        style:
-                            const TextStyle(fontSize: 18),
+                        style: const TextStyle(fontSize: 14),
                       ),
                     ),
                   ],
                 ),
-
-                const SizedBox(height: 20),
-
+                const SizedBox(height: 15),
                 Text(
                   'Consulta: R\$${medico['preco']}',
                   style: const TextStyle(
-                    fontSize: 30,
+                    fontSize: 24,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-
-                const SizedBox(height: 25),
-
+                const SizedBox(height: 20),
                 SizedBox(
-                  width: 260,
-                  height: 55,
+                  width: double.infinity,
+                  height: 50,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          const Color(0xFF148A96),
+                      backgroundColor: const Color(0xFF148A96),
                       shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                     ),
                     onPressed: () {},
                     child: const Text(
                       'Agendar Consulta',
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 16,
                         color: Colors.white,
                       ),
                     ),
                   ),
                 ),
-              ],
-            ),
-          ),
-
-          const SizedBox(width: 30),
-
-          // ================= MAPA INDIVIDUAL =================
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-              children: [
-
+                const SizedBox(height: 20),
                 const Text(
                   'Localização',
-                  style: TextStyle(
-                    fontSize: 28,
-                  ),
+                  style: TextStyle(fontSize: 20),
                 ),
-
                 const SizedBox(height: 15),
-
                 ClipRRect(
-                  borderRadius:
-                      BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(14),
                   child: SizedBox(
-                    height: 250,
-
-                    // CADA CARD TEM SEU MAPA
+                    height: 200,
                     child: FlutterMap(
                       options: MapOptions(
-
-                        // LOCALIZAÇÃO ÚNICA
                         initialCenter: LatLng(
                           medico['lat'],
                           medico['lng'],
                         ),
-
                         initialZoom: 15,
                       ),
-
                       children: [
-
                         TileLayer(
-                          urlTemplate:
-                              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-
-                          userAgentPackageName:
-                              'com.example.app',
+                          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          userAgentPackageName: 'com.example.app',
                         ),
-
-                        // MARCADOR INDIVIDUAL
                         MarkerLayer(
                           markers: [
-
                             Marker(
                               point: LatLng(
                                 medico['lat'],
                                 medico['lng'],
                               ),
-
                               width: 50,
                               height: 50,
-
                               child: const Icon(
                                 Icons.location_on,
                                 color: Colors.red,
-                                size: 45,
+                                size: 35,
                               ),
                             ),
                           ],
@@ -676,18 +1074,164 @@ class _ClinicasPageState extends State<ClinicasPage> {
                   ),
                 ),
               ],
+            )
+          : Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const CircleAvatar(
+                            radius: 40,
+                            backgroundImage: AssetImage('assets/images/doctor.jpg'),
+                          ),
+                          const SizedBox(width: 18),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                medico['nome'],
+                                style: const TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                medico['especialidade'],
+                                style: const TextStyle(fontSize: 20),
+                              ),
+                              const SizedBox(height: 5),
+                              Row(
+                                children: [
+                                  const Icon(Icons.star, color: Colors.orange, size: 18),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    '(${medico['avaliacao']} · ${medico['totalAvaliacoes']} avaliações)',
+                                    style: const TextStyle(color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 25),
+                      Row(
+                        children: [
+                          _buttonBlue('Endereço', isMobile),
+                          const SizedBox(width: 12),
+                          _buttonOutline('Teleconsulta', isMobile),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          const Icon(Icons.location_on, color: Color(0xFF148A96)),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              medico['endereco'],
+                              style: const TextStyle(fontSize: 18),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        'Consulta: R\$${medico['preco']}',
+                        style: const TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 25),
+                      SizedBox(
+                        width: 260,
+                        height: 55,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF148A96),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          onPressed: () {},
+                          child: const Text(
+                            'Agendar Consulta',
+                            style: TextStyle(
+                              fontSize: 20,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 30),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Localização',
+                        style: TextStyle(fontSize: 28),
+                      ),
+                      const SizedBox(height: 15),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(14),
+                        child: SizedBox(
+                          height: 250,
+                          child: FlutterMap(
+                            options: MapOptions(
+                              initialCenter: LatLng(
+                                medico['lat'],
+                                medico['lng'],
+                              ),
+                              initialZoom: 15,
+                            ),
+                            children: [
+                              TileLayer(
+                                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                userAgentPackageName: 'com.example.app',
+                              ),
+                              MarkerLayer(
+                                markers: [
+                                  Marker(
+                                    point: LatLng(
+                                      medico['lat'],
+                                      medico['lng'],
+                                    ),
+                                    width: 50,
+                                    height: 50,
+                                    child: const Icon(
+                                      Icons.location_on,
+                                      color: Colors.red,
+                                      size: 45,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 
-  Widget _buttonBlue(String text) {
+  Widget _buttonBlue(String text, bool isMobile) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 20,
-        vertical: 14,
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 15 : 20,
+        vertical: isMobile ? 10 : 14,
       ),
       decoration: BoxDecoration(
         color: const Color(0xFF148A96),
@@ -695,33 +1239,209 @@ class _ClinicasPageState extends State<ClinicasPage> {
       ),
       child: Text(
         text,
-        style: const TextStyle(
+        style: TextStyle(
           color: Colors.white,
-          fontSize: 18,
+          fontSize: isMobile ? 14 : 18,
         ),
       ),
     );
   }
 
-  Widget _buttonOutline(String text) {
+  Widget _buttonOutline(String text, bool isMobile) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 20,
-        vertical: 14,
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 15 : 20,
+        vertical: isMobile ? 10 : 14,
       ),
       decoration: BoxDecoration(
-        border: Border.all(
-          color: const Color(0xFF148A96),
-        ),
+        border: Border.all(color: const Color(0xFF148A96)),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
         text,
-        style: const TextStyle(
-          color: Color(0xFF148A96),
-          fontSize: 18,
+        style: TextStyle(
+          color: const Color(0xFF148A96),
+          fontSize: isMobile ? 14 : 18,
         ),
       ),
+    );
+  }
+
+  // ================= FOOTER IGUAL AO DA HOME =================
+  Widget _buildFooter(bool isMobile) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF0D47A1), Color(0xFF1565C0)],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 20,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(isMobile ? 24 : 48),
+        child: Column(
+          children: [
+            Center(
+              child: Image.asset(
+                'assets/logo.png',
+                width: isMobile ? 150 : 200,
+                height: isMobile ? 150 : 200,
+                fit: BoxFit.contain,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: isMobile ? 20 : 100),
+              child: Text(
+                'Cuidando da sua saúde com tecnologia e humanidade. Disponível 24 horas por dia, 7 dias por semana.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: isMobile ? 14 : 16,
+                  height: 1.5,
+                ),
+              ),
+            ),
+            const SizedBox(height: 40),
+            if (isMobile) ...[
+              _buildFooterLinksCentralizado('Serviços', [
+                'Teleconsultas 24h',
+                'Agendamento online',
+                'Especialidades',
+                'Exames',
+                'Prontuário digital',
+              ]),
+              const SizedBox(height: 30),
+              _buildFooterLinksCentralizado('Institucional', [
+                'Sobre nós',
+                'Carreiras',
+                'Blog',
+                'Imprensa',
+                'Seja parceiro',
+              ]),
+              const SizedBox(height: 30),
+              _buildFooterLinksCentralizado('Suporte', [
+                'Central de ajuda',
+                'FAQ',
+                'Contato',
+                'Termos de uso',
+                'Privacidade',
+              ]),
+            ] else ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildFooterLinksCentralizado('Serviços', [
+                    'Teleconsultas 24h',
+                    'Agendamento online',
+                    'Especialidades',
+                    'Exames',
+                    'Prontuário digital',
+                  ]),
+                  _buildFooterLinksCentralizado('Institucional', [
+                    'Sobre nós',
+                    'Carreiras',
+                    'Blog',
+                    'Imprensa',
+                    'Seja parceiro',
+                  ]),
+                  _buildFooterLinksCentralizado('Suporte', [
+                    'Central de ajuda',
+                    'FAQ',
+                    'Contato',
+                    'Termos de uso',
+                    'Privacidade',
+                  ]),
+                ],
+              ),
+            ],
+            const SizedBox(height: 40),
+            Divider(color: Colors.white.withOpacity(0.2)),
+            const SizedBox(height: 24),
+            Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildSocialIcon(Icons.facebook),
+                    const SizedBox(width: 16),
+                    _buildSocialIcon(Icons.phone_android),
+                    const SizedBox(width: 16),
+                    _buildSocialIcon(Icons.email),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  '© 2026 Virtual Health - Todos os direitos reservados',
+                  style: TextStyle(
+                    color: Colors.white54,
+                    fontSize: isMobile ? 10 : 12,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSocialIcon(IconData icon) {
+    return InkWell(
+      onTap: () {},
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(
+          icon,
+          color: Colors.white,
+          size: 24,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFooterLinksCentralizado(String title, List<String> links) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 16),
+        ...links.map((link) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: InkWell(
+                onTap: () {},
+                child: Text(
+                  link,
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            )),
+      ],
     );
   }
 }
