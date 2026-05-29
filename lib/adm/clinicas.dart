@@ -426,12 +426,28 @@ class _AdminClinicasPageState extends State<AdminClinicasPage> {
   }
 
   void _navigateToPage(String page) {
-    if (page == 'Dashboard') {
-      Navigator.pop(context);
-    }
     setState(() {
       _currentPage = page;
     });
+
+    if (page == 'Dashboard') {
+      Navigator.pop(context);
+    } 
+    else if (page == 'Usuários') {
+      Navigator.pushNamed(context, '/admin-usuarios');
+    } 
+    else if (page == 'Profissionais') {
+      Navigator.pushNamed(context, '/admin-profissionais');
+    } 
+    else if (page == 'Consultas') {
+      Navigator.pushNamed(context, '/admin-consultas');
+    } 
+    else if (page == 'Clínicas') {
+      // já está na página
+    } 
+    else if (page == 'Mensagens') {
+      Navigator.pushNamed(context, '/admin-mensagens');
+    }
   }
 
   @override
@@ -455,7 +471,7 @@ class _AdminClinicasPageState extends State<AdminClinicasPage> {
             children: [
               Column(
                 children: [
-                  SizedBox(height: isMobile ? 80 : 100),
+                  SizedBox(height: isMobile ? 120 : 180),
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.all(16),
@@ -605,7 +621,6 @@ class _AdminClinicasPageState extends State<AdminClinicasPage> {
                                                     ),
                                                     onTap: () => showDetalhesClinica(clinica),
                                                   ),
-                                                  // Informações adicionais
                                                   Padding(
                                                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                                                     child: Row(
@@ -775,24 +790,7 @@ class _AdminClinicasPageState extends State<AdminClinicasPage> {
             children: navItems.map((item) {
               final isActive = _currentPage == item;
               return GestureDetector(
-                onTap: () {
-                  if (item == 'Dashboard') {
-                    Navigator.pop(context);
-                  } else if (item == 'Usuários') {
-                    Navigator.pop(context);
-                  } else if (item == 'Profissionais') {
-                    Navigator.pop(context);
-                  } else if (item == 'Consultas') {
-                    // Navegar para consultas
-                  } else if (item == 'Clínicas') {
-                    // Já está na página de clínicas
-                  } else if (item == 'Mensagens') {
-                    // Navegar para mensagens
-                  }
-                  setState(() {
-                    _currentPage = item;
-                  });
-                },
+                onTap: () => _navigateToPage(item),
                 child: Container(
                   margin: const EdgeInsets.symmetric(horizontal: 12),
                   padding: const EdgeInsets.symmetric(vertical: 8),
@@ -860,25 +858,33 @@ class _AdminClinicasPageState extends State<AdminClinicasPage> {
                 children: [
                   _buildDrawerItem('Dashboard', Icons.dashboard, () {
                     Navigator.pop(context);
+                    _navigateToPage('Dashboard');
                   }),
                   _buildDrawerItem('Usuários', Icons.people, () {
                     Navigator.pop(context);
+                    _navigateToPage('Usuários');
                   }),
                   _buildDrawerItem('Profissionais', Icons.medical_services, () {
                     Navigator.pop(context);
+                    _navigateToPage('Profissionais');
                   }),
                   _buildDrawerItem('Consultas', Icons.calendar_today, () {
                     Navigator.pop(context);
+                    _navigateToPage('Consultas');
                   }),
                   _buildDrawerItem('Clínicas', Icons.business, () {
                     Navigator.pop(context);
+                    _navigateToPage('Clínicas');
                   }),
                   _buildDrawerItem('Mensagens', Icons.mail, () {
                     Navigator.pop(context);
+                    _navigateToPage('Mensagens');
                   }),
                   const Divider(color: Colors.white54, thickness: 1),
                   _buildDrawerItem('Sair', Icons.logout, () {
                     Navigator.pop(context);
+                    _navigateToPage('Sair');
+                    // Implementar logout
                   }),
                 ],
               ),

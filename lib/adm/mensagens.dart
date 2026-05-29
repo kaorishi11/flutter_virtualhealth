@@ -1,6 +1,11 @@
 // lib/adm/admin_mensagens.dart
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'admin_home.dart';
+import 'usuarios.dart';
+import 'profissionais.dart';
+import 'consultas.dart';
+import 'clinicas.dart';
 
 class AdminMensagensPage extends StatefulWidget {
   const AdminMensagensPage({super.key});
@@ -73,7 +78,7 @@ class _AdminMensagensPageState extends State<AdminMensagensPage> {
   List<Map<String, dynamic>> get mensagensFiltradas {
     var resultado = mensagens;
     
-    // Filtro por status
+    // Filtro por status (apenas pendente e visto)
     if (filtroStatus != 'todos') {
       resultado = resultado.where((msg) => msg['status'] == filtroStatus).toList();
     }
@@ -106,7 +111,7 @@ class _AdminMensagensPageState extends State<AdminMensagensPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Mensagem marcada como $novoStatus'),
+            content: Text('Mensagem marcada como ${novoStatus == 'visto' ? 'vista' : 'pendente'}'),
             backgroundColor: Colors.green,
           ),
         );
@@ -263,8 +268,6 @@ class _AdminMensagensPageState extends State<AdminMensagensPage> {
         return Colors.orange;
       case 'visto':
         return Colors.green;
-      case 'excluida':
-        return Colors.red;
       default:
         return Colors.grey;
     }
@@ -276,8 +279,6 @@ class _AdminMensagensPageState extends State<AdminMensagensPage> {
         return 'Pendente';
       case 'visto':
         return 'Visto';
-      case 'excluida':
-        return 'Arquivada';
       default:
         return status;
     }
@@ -295,11 +296,38 @@ class _AdminMensagensPageState extends State<AdminMensagensPage> {
 
   void _navigateToPage(String page) {
     if (page == 'Dashboard') {
-      Navigator.pop(context);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const AdminHomePage()),
+      );
+    } 
+    else if (page == 'Usuários') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const AdminUsuariosPage()),
+      );
+    } 
+    else if (page == 'Profissionais') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const AdminProfissionaisPage()),
+      );
+    } 
+    else if (page == 'Consultas') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const AdminConsultasPage()),
+      );
+    } 
+    else if (page == 'Clínicas') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const AdminClinicasPage()),
+      );
+    } 
+    else if (page == 'Mensagens') {
+      // já está na página
     }
-    setState(() {
-      _currentPage = page;
-    });
   }
 
   void _showDetalhesMensagem(Map<String, dynamic> msg) {
@@ -479,15 +507,6 @@ class _AdminMensagensPageState extends State<AdminMensagensPage> {
                                     carregarMensagens();
                                   },
                                 ),
-                                const SizedBox(width: 8),
-                                FilterChip(
-                                  label: const Text('Arquivadas'),
-                                  selected: filtroStatus == 'excluida',
-                                  onSelected: (_) {
-                                    setState(() => filtroStatus = 'excluida');
-                                    carregarMensagens();
-                                  },
-                                ),
                               ],
                             ),
                           ),
@@ -609,7 +628,7 @@ class _AdminMensagensPageState extends State<AdminMensagensPage> {
                                                         onPressed: () => excluirMensagem(msg['id'], remetente),
                                                         tooltip: 'Excluir',
                                                       ),
-                                                      // Botão de ação baseado no status
+                                                      // Botão de marcar como visto
                                                       if (status == 'pendente')
                                                         IconButton(
                                                           icon: const Icon(Icons.done_all, color: Colors.green),
@@ -618,9 +637,9 @@ class _AdminMensagensPageState extends State<AdminMensagensPage> {
                                                         ),
                                                       if (status == 'visto')
                                                         IconButton(
-                                                          icon: const Icon(Icons.archive, color: Colors.orange),
-                                                          onPressed: () => atualizarStatus(msg['id'], 'excluida'),
-                                                          tooltip: 'Arquivar',
+                                                          icon: const Icon(Icons.mark_email_unread, color: Colors.orange),
+                                                          onPressed: () => atualizarStatus(msg['id'], 'pendente'),
+                                                          tooltip: 'Marcar como não lido',
                                                         ),
                                                     ],
                                                   ),
@@ -718,7 +737,7 @@ class _AdminMensagensPageState extends State<AdminMensagensPage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           GestureDetector(
-            onTap: () => Navigator.pop(context),
+            onTap: () => _navigateToPage('Dashboard'),
             child: Image.asset(
               'assets/logo.png',
               width: 70,
@@ -733,14 +752,7 @@ class _AdminMensagensPageState extends State<AdminMensagensPage> {
             children: navItems.map((item) {
               final isActive = _currentPage == item;
               return GestureDetector(
-                onTap: () {
-                  if (item == 'Dashboard') {
-                    Navigator.pop(context);
-                  }
-                  setState(() {
-                    _currentPage = item;
-                  });
-                },
+                onTap: () => _navigateToPage(item),
                 child: Container(
                   margin: const EdgeInsets.symmetric(horizontal: 12),
                   padding: const EdgeInsets.symmetric(vertical: 8),
@@ -808,26 +820,32 @@ class _AdminMensagensPageState extends State<AdminMensagensPage> {
                 children: [
                   _buildDrawerItem('Dashboard', Icons.dashboard, () {
                     Navigator.pop(context);
+                    _navigateToPage('Dashboard');
                   }),
                   _buildDrawerItem('Usuários', Icons.people, () {
                     Navigator.pop(context);
+                    _navigateToPage('Usuários');
                   }),
                   _buildDrawerItem('Profissionais', Icons.medical_services, () {
                     Navigator.pop(context);
+                    _navigateToPage('Profissionais');
                   }),
                   _buildDrawerItem('Consultas', Icons.calendar_today, () {
                     Navigator.pop(context);
+                    _navigateToPage('Consultas');
                   }),
                   _buildDrawerItem('Clínicas', Icons.business, () {
                     Navigator.pop(context);
+                    _navigateToPage('Clínicas');
                   }),
                   _buildDrawerItem('Mensagens', Icons.mail, () {
                     Navigator.pop(context);
+                    _navigateToPage('Mensagens');
                   }),
                   const Divider(color: Colors.white54, thickness: 1),
                   _buildDrawerItem('Sair', Icons.logout, () {
-                    // Implementar logout
                     Navigator.pop(context);
+                    // Implementar logout
                   }),
                 ],
               ),
