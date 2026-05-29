@@ -141,14 +141,8 @@ class _HomePageState extends State<HomePage> {
       _currentPage = page;
     });
 
-    if (page == 'Clínicas') {
-      Navigator.pushNamed(context, '/clinicas').then((_) {
-        if (mounted) {
-          setState(() {
-            _currentPage = 'Início';
-          });
-        }
-      });
+    if (page == 'Início') {
+      Navigator.pop(context);
     } else if (page == 'Contato') {
       Navigator.pushNamed(context, '/contato').then((_) {
         if (mounted) {
@@ -157,18 +151,22 @@ class _HomePageState extends State<HomePage> {
           });
         }
       });
-    } else if (page == 'Fazer Consulta') {
-      if (_isLoggedIn) {
-        _showUserMenu();
-      } else {
-        Navigator.pushNamed(context, '/login');
-      }
     } else if (page == 'Chatbot') {
-      Navigator.pushNamed(context, '/chatbot');
+      Navigator.pushNamed(context, '/chatbot').then((_) {
+        if (mounted) {
+          setState(() {
+            _currentPage = 'Início';
+          });
+        }
+      });
     } else if (page == 'Cadastro') {
-      Navigator.pushNamed(context, '/cadastro');
-    } else if (page == 'Perfil') {
-      _showUserMenu();
+      Navigator.pushNamed(context, '/cadastro').then((_) {
+        if (mounted) {
+          setState(() {
+            _currentPage = 'Início';
+          });
+        }
+      });
     }
   }
 
@@ -205,31 +203,6 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 20),
             const Divider(),
             ListTile(
-              leading: const Icon(Icons.person_outline, color: Color(0xFF3FA9C6)),
-              title: const Text('Meu Perfil'),
-              onTap: () {
-                Navigator.pop(context);
-                _navigateToProfile();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.calendar_today, color: Color(0xFF3FA9C6)),
-              title: const Text('Minhas Consultas'),
-              onTap: () {
-                Navigator.pop(context);
-                // Navegar para consultas
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings_outlined, color: Color(0xFF3FA9C6)),
-              title: const Text('Configurações'),
-              onTap: () {
-                Navigator.pop(context);
-                // Navegar para configurações
-              },
-            ),
-            const Divider(),
-            ListTile(
               leading: const Icon(Icons.logout, color: Colors.red),
               title: const Text('Sair', style: TextStyle(color: Colors.red)),
               onTap: () {
@@ -239,15 +212,6 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _navigateToProfile() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Perfil de ${_userProfile?['nome_completo'] ?? 'Usuário'}'),
-        duration: const Duration(seconds: 2),
       ),
     );
   }
@@ -379,10 +343,6 @@ class _HomePageState extends State<HomePage> {
                     Navigator.pop(context);
                     _onPageChanged('Início');
                   }),
-                  _buildDrawerItem('Clínicas', Icons.local_hospital, () {
-                    Navigator.pop(context);
-                    _onPageChanged('Clínicas');
-                  }),
                   _buildDrawerItem('Contato', Icons.contact_mail, () {
                     Navigator.pop(context);
                     _onPageChanged('Contato');
@@ -390,10 +350,6 @@ class _HomePageState extends State<HomePage> {
                   _buildDrawerItem('Chatbot', Icons.chat, () {
                     Navigator.pop(context);
                     _onPageChanged('Chatbot');
-                  }),
-                  _buildDrawerItem('Fazer Consulta', Icons.calendar_today, () {
-                    Navigator.pop(context);
-                    _onPageChanged('Fazer Consulta');
                   }),
                   const Divider(color: Colors.white54, thickness: 1),
                   if (!_isLoggedIn) ...[
@@ -406,10 +362,6 @@ class _HomePageState extends State<HomePage> {
                       Navigator.pushNamed(context, '/login');
                     }),
                   ] else ...[
-                    _buildDrawerItem('Meu Perfil', Icons.person, () {
-                      Navigator.pop(context);
-                      _showUserMenu();
-                    }),
                     _buildDrawerItem('Sair', Icons.logout, () {
                       Navigator.pop(context);
                       _logout();
@@ -462,7 +414,7 @@ class TopNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final navItems = ['Início', 'Clínicas', 'Contato', 'Chatbot'];
+    final navItems = ['Início', 'Contato', 'Chatbot'];
 
     if (isMobile) {
       return Container(
@@ -628,7 +580,7 @@ class TopNavigationBar extends StatelessWidget {
             MouseRegion(
               cursor: SystemMouseCursors.click,
               child: GestureDetector(
-                onTap: () => onPageChanged('Perfil'),
+                onTap: () => onPageChanged('Fazer Consulta'),
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(

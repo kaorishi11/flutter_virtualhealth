@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/auth_service.dart';
-import 'clinicas.dart';
 import 'login.dart';
 import 'chatbot.dart';
 import 'cadastro.dart';
@@ -102,6 +101,9 @@ class _ContatoPageState extends State<ContatoPage> {
           behavior: SnackBarBehavior.floating,
         ),
       );
+      
+      // Voltar para Home após logout
+      Navigator.pushReplacementNamed(context, '/');
     }
   }
 
@@ -136,28 +138,6 @@ class _ContatoPageState extends State<ContatoPage> {
               style: TextStyle(color: Colors.grey[600], fontSize: 14),
             ),
             const SizedBox(height: 20),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.person_outline, color: Color(0xFF3FA9C6)),
-              title: const Text('Meu Perfil'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.calendar_today, color: Color(0xFF3FA9C6)),
-              title: const Text('Minhas Consultas'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings_outlined, color: Color(0xFF3FA9C6)),
-              title: const Text('Configurações'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
             const Divider(),
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.red),
@@ -250,21 +230,14 @@ class _ContatoPageState extends State<ContatoPage> {
 
   void _onPageChanged(String page) {
     if (page == 'Início') {
-      Navigator.pushReplacementNamed(context, '/');
-    } else if (page == 'Clínicas') {
-      Navigator.pushNamed(context, '/clinicas');
+      Navigator.pushReplacementNamed(context, '/home');
+    } else if (page == 'Contato') {
+      // Já está na página de contato
+      Navigator.pop(context);
     } else if (page == 'Chatbot') {
-      Navigator.pushNamed(context, '/chatbot');
-    } else if (page == 'Fazer Consulta') {
-      if (_isLoggedIn) {
-        _showUserMenu();
-      } else {
-        Navigator.pushNamed(context, '/login');
-      }
+      Navigator.pushReplacementNamed(context, '/chatbot');
     } else if (page == 'Cadastro') {
-      Navigator.pushNamed(context, '/cadastro');
-    } else if (page == 'Perfil') {
-      _showUserMenu();
+      Navigator.pushReplacementNamed(context, '/cadastro');
     }
   }
 
@@ -274,7 +247,7 @@ class _ContatoPageState extends State<ContatoPage> {
     
     return Scaffold(
       key: _scaffoldKey,
-      drawer: _buildDrawer(isMobile),
+      drawer: _buildDrawer(),
       backgroundColor: const Color(0xFFF7F7F7),
       body: Stack(
         children: [
@@ -302,7 +275,7 @@ class _ContatoPageState extends State<ContatoPage> {
     );
   }
 
-  Widget _buildDrawer(bool isMobile) {
+  Widget _buildDrawer() {
     return Drawer(
       child: Container(
         decoration: const BoxDecoration(
@@ -385,17 +358,12 @@ class _ContatoPageState extends State<ContatoPage> {
                     Navigator.pop(context);
                     _onPageChanged('Início');
                   }),
-                  _buildDrawerItem('Clínicas', Icons.local_hospital, () {
+                  _buildDrawerItem('Contato', Icons.contact_mail, () {
                     Navigator.pop(context);
-                    _onPageChanged('Clínicas');
                   }),
                   _buildDrawerItem('Chatbot', Icons.chat, () {
                     Navigator.pop(context);
                     _onPageChanged('Chatbot');
-                  }),
-                  _buildDrawerItem('Fazer Consulta', Icons.calendar_today, () {
-                    Navigator.pop(context);
-                    _onPageChanged('Fazer Consulta');
                   }),
                   const Divider(color: Colors.white54, thickness: 1),
                   if (!_isLoggedIn) ...[
@@ -403,15 +371,7 @@ class _ContatoPageState extends State<ContatoPage> {
                       Navigator.pop(context);
                       _onPageChanged('Cadastro');
                     }),
-                    _buildDrawerItem('Login', Icons.login, () {
-                      Navigator.pop(context);
-                      Navigator.pushNamed(context, '/login');
-                    }),
                   ] else ...[
-                    _buildDrawerItem('Meu Perfil', Icons.person, () {
-                      Navigator.pop(context);
-                      _showUserMenu();
-                    }),
                     _buildDrawerItem('Sair', Icons.logout, () {
                       Navigator.pop(context);
                       _logout();
@@ -440,7 +400,7 @@ class _ContatoPageState extends State<ContatoPage> {
   }
 
   Widget _buildTopNavigationBar(bool isMobile) {
-    final navItems = ['Início', 'Clínicas', 'Contato', 'Chatbot'];
+    final navItems = ['Início', 'Contato', 'Chatbot'];
 
     if (isMobile) {
       return Container(
@@ -479,7 +439,6 @@ class _ContatoPageState extends State<ContatoPage> {
             ),
             if (_isLoggedIn && _userName != null)
               GestureDetector(
-                onTap: () => _onPageChanged('Perfil'),
                 child: Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
@@ -592,7 +551,6 @@ class _ContatoPageState extends State<ContatoPage> {
             MouseRegion(
               cursor: SystemMouseCursors.click,
               child: GestureDetector(
-                onTap: () => _onPageChanged('Fazer Consulta'),
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   decoration: BoxDecoration(
@@ -616,7 +574,6 @@ class _ContatoPageState extends State<ContatoPage> {
             MouseRegion(
               cursor: SystemMouseCursors.click,
               child: GestureDetector(
-                onTap: () => _onPageChanged('Perfil'),
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
@@ -926,7 +883,7 @@ class _ContatoPageState extends State<ContatoPage> {
     );
   }
 
-  // ================= FOOTER IGUAL AO DA HOME =================
+  // ================= FOOTER =================
   Widget _buildFooter(bool isMobile) {
     return Container(
       decoration: BoxDecoration(
