@@ -11,6 +11,8 @@ class DicasSaudePage extends StatefulWidget {
 
 class _DicasSaudePageState extends State<DicasSaudePage> {
   final supabase = Supabase.instance.client;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  String _currentPage = 'Dicas de Saúde';
   
   final TextEditingController _tituloController = TextEditingController();
   final TextEditingController _conteudoController = TextEditingController();
@@ -19,7 +21,10 @@ class _DicasSaudePageState extends State<DicasSaudePage> {
   bool _isLoading = true;
   bool _isPublicando = false;
   String _nomeMedico = '';
+  String _nomeCompleto = '';
   String _especialidade = '';
+  String _perfilId = '';
+  String _profissionalId = '';
   
   final Color primaryColor = const Color(0xFF3FA9C6);
   
@@ -48,21 +53,26 @@ class _DicasSaudePageState extends State<DicasSaudePage> {
           .eq('auth_id', user.id)
           .single();
       
+      _perfilId = perfil['id'].toString();
+      _nomeCompleto = perfil['nome_completo'] ?? 'Médico';
+      
       final profissional = await supabase
           .from('profissionais')
           .select()
           .eq('perfil_id', perfil['id'])
           .single();
       
+      _profissionalId = profissional['id'].toString();
+      
       setState(() {
         _nomeMedico = perfil['nome_completo']?.split(' ')[0] ?? 'Médico';
-        _especialidade = profissional['especialidade'] ?? 'Dentista';
+        _especialidade = profissional['especialidade'] ?? 'Médico';
       });
     } catch (e) {
       debugPrint('Erro ao carregar perfil: $e');
       setState(() {
-        _nomeMedico = 'Marta';
-        _especialidade = 'Dentista';
+        _nomeMedico = 'Médico';
+        _especialidade = 'Médico';
       });
     }
   }
@@ -75,6 +85,7 @@ class _DicasSaudePageState extends State<DicasSaudePage> {
     try {
       final user = supabase.auth.currentUser;
       if (user == null) {
+        setState(() => _isLoading = false);
         return;
       }
       
@@ -109,7 +120,7 @@ class _DicasSaudePageState extends State<DicasSaudePage> {
             id: dica['id'],
             titulo: dica['titulo'] ?? 'Dica de saúde',
             conteudo: dica['conteudo'] ?? '',
-            autor: dica['perfis']?['nome_completo']?.split(' ')[0] ?? 'Médico',
+            autor: dica['perfis']?['nome_completo']?.split(' ')[0] ?? _nomeMedico,
             especialidade: _especialidade,
             dataPublicacao: DateTime.parse(dica['criado_em']),
             curtidas: dica['curtidas'] ?? 0,
@@ -133,41 +144,6 @@ class _DicasSaudePageState extends State<DicasSaudePage> {
         _isLoading = false;
       });
     }
-  }
-  
-  void _carregarDicasMock() {
-    setState(() {
-      _dicas = [
-        DicaSaude(
-          id: '1',
-          titulo: 'Escovação Noturna',
-          conteudo: 'O ideal é escovar os dentes pelo menos três vezes ao dia, principalmente antes de dormir, pois durante a noite a produção de saliva diminui e as bactérias se proliferam com mais facilidade.',
-          autor: 'Dra Marta',
-          especialidade: 'Dentista',
-          dataPublicacao: DateTime.now().subtract(const Duration(days: 2)),
-          curtidas: 128,
-        ),
-        DicaSaude(
-          id: '2',
-          titulo: 'Visitas Regulares',
-          conteudo: 'É fundamental visitar o dentista regularmente, pelo menos a cada seis meses, para fazer avaliações e limpezas profissionais. Pequenos cuidados diários fazem uma grande diferença na saúde do seu sorriso.',
-          autor: 'Dra Marta',
-          especialidade: 'Dentista',
-          dataPublicacao: DateTime.now().subtract(const Duration(days: 5)),
-          curtidas: 95,
-        ),
-        DicaSaude(
-          id: '3',
-          titulo: 'Alimentação e Saúde Bucal',
-          conteudo: 'Alimentos ricos em açúcar aumentam o risco de cáries. Prefira frutas, vegetais e laticínios que fortalecem os dentes e gengivas.',
-          autor: 'Dra Marta',
-          especialidade: 'Dentista',
-          dataPublicacao: DateTime.now().subtract(const Duration(days: 10)),
-          curtidas: 67,
-        ),
-      ];
-      _isLoading = false;
-    });
   }
   
   Future<void> _publicarDica() async {
@@ -221,7 +197,7 @@ class _DicasSaudePageState extends State<DicasSaudePage> {
       
     } catch (e) {
       debugPrint('Erro ao publicar: $e');
-      // Para demonstração, adicionar localmente
+      // Fallback local
       setState(() {
         _dicas.insert(0, DicaSaude(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -284,53 +260,368 @@ class _DicasSaudePageState extends State<DicasSaudePage> {
     );
   }
   
+  void _onPageChanged(String page) {
+    if (page == 'Dashboard') {
+      Navigator.pop(context);
+    } else if (page == 'Minha Agenda') {
+      Navigator.pop(context);
+    } else if (page == 'Teleconsulta') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Selecione uma consulta para iniciar a teleconsulta'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    } else if (page == 'Dicas de Saúde') {
+      // Já está na página atual
+    } else if (page == 'Meu Perfil') {
+      Navigator.pop(context);
+    } else if (page == 'Sair') {
+      _confirmLogout();
+    }
+  }
+  
+  void _confirmLogout() {
+    showDialog(
+      context: context,
+      builder: (_) {
+        return AlertDialog(
+          title: const Text('Sair'),
+          content: const Text('Deseja realmente sair?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () async {
+                await supabase.auth.signOut();
+                if (mounted) {
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    '/login',
+                    (route) => false,
+                  );
+                }
+              },
+              child: const Text(
+                'Sair',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+  
+  void _mostrarAjuda() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Como publicar dicas'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Escreva dicas de saúde para seus pacientes'),
+            SizedBox(height: 8),
+            Text('Compartilhe conhecimentos e orientações'),
+            SizedBox(height: 8),
+            Text('Os pacientes podem curtir suas dicas'),
+            SizedBox(height: 8),
+            Text('As dicas aparecem no feed dos pacientes'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Entendi'),
+          ),
+        ],
+      ),
+    );
+  }
+  
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 800;
+    
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: isMobile ? _buildDrawer() : null,
       backgroundColor: const Color(0xfff5f7fa),
-      appBar: _buildAppBar(),
-      body: RefreshIndicator(
-        onRefresh: _carregarDicas,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isMobile = constraints.maxWidth < 800;
+          
+          return Stack(
             children: [
-              _buildPublicarSection(),
-              const SizedBox(height: 24),
-              _buildUltimasDicasSection(),
+              RefreshIndicator(
+                onRefresh: _carregarDicas,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.only(
+                    top: isMobile ? 120 : 160,
+                    left: 16,
+                    right: 16,
+                    bottom: 16,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildPublicarSection(),
+                      const SizedBox(height: 24),
+                      _buildUltimasDicasSection(),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: _buildTopNavigationBar(isMobile),
+              ),
             ],
+          );
+        },
+      ),
+    );
+  }
+  
+  Widget _buildTopNavigationBar(bool isMobile) {
+    final navItems = ['Dashboard', 'Minha Agenda', 'Teleconsulta', 'Dicas de Saúde', 'Meu Perfil'];
+
+    if (isMobile) {
+      return Container(
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.95),
+          borderRadius: BorderRadius.circular(50),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            IconButton(
+              onPressed: () {
+                _scaffoldKey.currentState?.openDrawer();
+              },
+              icon: const Icon(Icons.menu, size: 28, color: Color(0xFF3FA9C6)),
+            ),
+            Image.asset(
+              'assets/logo.png',
+              width: 60,
+              height: 60,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                return const Icon(Icons.medical_services, size: 50, color: Color(0xFF3FA9C6));
+              },
+            ),
+            IconButton(
+              onPressed: _mostrarAjuda,
+              icon: const Icon(Icons.help_outline, size: 28, color: Color(0xFF3FA9C6)),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Desktop layout
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.92),
+        borderRadius: BorderRadius.circular(60),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
           ),
+        ],
+        border: Border.all(
+          color: Colors.white.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Image.asset(
+            'assets/logo.png',
+            width: 70,
+            height: 70,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) {
+              return const Icon(Icons.medical_services, size: 60, color: Color(0xFF3FA9C6));
+            },
+          ),
+          Row(
+            children: navItems.map((item) {
+              final isActive = _currentPage == item;
+              return GestureDetector(
+                onTap: () => _onPageChanged(item),
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 12),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Column(
+                    children: [
+                      Text(
+                        item,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: isActive ? primaryColor : Colors.grey[700],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        height: 2,
+                        width: isActive ? 24 : 0,
+                        decoration: BoxDecoration(
+                          color: primaryColor,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+          MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              onTap: () => _confirmLogout(),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Colors.red, Colors.redAccent],
+                  ),
+                  borderRadius: BorderRadius.circular(40),
+                ),
+                child: const Text(
+                  'Sair',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildDrawer() {
+    final navItems = [
+      {'title': 'Dashboard', 'icon': Icons.dashboard},
+      {'title': 'Minha Agenda', 'icon': Icons.calendar_today},
+      {'title': 'Teleconsulta', 'icon': Icons.video_call},
+      {'title': 'Dicas de Saúde', 'icon': Icons.health_and_safety},
+      {'title': 'Meu Perfil', 'icon': Icons.person},
+    ];
+
+    return Drawer(
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [primaryColor, primaryColor.withOpacity(0.8)],
+          ),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.only(top: 60, bottom: 30),
+              child: Center(
+                child: Column(
+                  children: [
+                    Image.asset(
+                      'assets/logo.png',
+                      width: 100,
+                      height: 100,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(Icons.medical_services, size: 80, color: Colors.white);
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      _nomeCompleto,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _especialidade,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const Divider(color: Colors.white54, thickness: 1),
+            Expanded(
+              child: ListView(
+                children: [
+                  ...navItems.map((item) => _buildDrawerItem(
+                    item['title'] as String,
+                    item['icon'] as IconData,
+                    () {
+                      Navigator.pop(context);
+                      _onPageChanged(item['title'] as String);
+                    },
+                  )),
+                  const Divider(color: Colors.white54, thickness: 1),
+                  _buildDrawerItem('Sair', Icons.logout, () {
+                    Navigator.pop(context);
+                    _onPageChanged('Sair');
+                  }, isDestructive: true),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
   
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      backgroundColor: primaryColor,
-      elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.white),
-        onPressed: () => Navigator.pop(context),
-      ),
-      title: const Text(
-        'DICAS DE SAÚDE',
+  Widget _buildDrawerItem(String title, IconData icon, VoidCallback onTap, {bool isDestructive = false}) {
+    return ListTile(
+      leading: Icon(icon, color: isDestructive ? Colors.red : Colors.white),
+      title: Text(
+        title,
         style: TextStyle(
-          color: Colors.white,
+          color: isDestructive ? Colors.red : Colors.white,
           fontSize: 18,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1,
         ),
       ),
-      centerTitle: true,
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.help_outline, color: Colors.white),
-          onPressed: () => _mostrarAjuda(),
-        ),
-      ],
+      onTap: onTap,
+      hoverColor: Colors.white.withOpacity(0.1),
+      splashColor: Colors.white.withOpacity(0.2),
     );
   }
   
@@ -454,6 +745,7 @@ class _DicasSaudePageState extends State<DicasSaudePage> {
                             'PUBLICAR',
                             style: TextStyle(
                               fontSize: 16,
+                              color: Colors.white,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 1,
                             ),
@@ -483,11 +775,6 @@ class _DicasSaudePageState extends State<DicasSaudePage> {
                 letterSpacing: 1,
               ),
             ),
-            if (_dicas.length > 3)
-              TextButton(
-                onPressed: () {},
-                child: const Text('Ver todas'),
-              ),
           ],
         ),
         const SizedBox(height: 16),
@@ -697,34 +984,6 @@ class _DicasSaudePageState extends State<DicasSaudePage> {
     } else {
       return DateFormat('dd/MM/yyyy').format(data);
     }
-  }
-  
-  void _mostrarAjuda() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Como publicar dicas'),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('📝 Escreva dicas de saúde para seus pacientes'),
-            SizedBox(height: 8),
-            Text('💡 Compartilhe conhecimentos e orientações'),
-            SizedBox(height: 8),
-            Text('❤️ Os pacientes podem curtir suas dicas'),
-            SizedBox(height: 8),
-            Text('📱 As dicas aparecem no feed dos pacientes'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Entendi'),
-          ),
-        ],
-      ),
-    );
   }
 }
 

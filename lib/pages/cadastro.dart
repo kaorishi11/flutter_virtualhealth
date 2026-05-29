@@ -43,12 +43,14 @@ class _CadastroPageState extends State<CadastroPage> with SingleTickerProviderSt
 
   final List<String> especialidades = [
     'Cardiologia',
+    'Gastroenterologia',
     'Dermatologia',
     'Pediatria',
     'Neurologia',
     'Psiquiatria',
     'Ortopedia',
     'Clínico Geral',
+    'Outros',
   ];
 
   String? _especialidadeSelecionada;

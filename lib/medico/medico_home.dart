@@ -5,7 +5,6 @@ import 'agendamentos.dart';
 import 'dicas.dart';
 import 'perfil.dart';
 import 'teleconsulta.dart';
-import 'notificacoes.dart';
 
 class MedicoHomePage extends StatefulWidget {
   const MedicoHomePage({super.key});
@@ -16,6 +15,8 @@ class MedicoHomePage extends StatefulWidget {
 
 class _MedicoHomePageState extends State<MedicoHomePage> {
   final supabase = Supabase.instance.client;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  String _currentPage = 'Dashboard';
 
   int consultasHoje = 0;
   int consultasPendentes = 0;
@@ -153,57 +154,53 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
     }
   }
 
-  void _irParaMinhaAgenda() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const MinhaAgendaPage(),
-      ),
-    );
-  }
+  void _onPageChanged(String page) {
+    setState(() {
+      _currentPage = page;
+    });
 
-  void _irParaDicasSaude() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const DicasSaudePage(),
-      ),
-    );
-  }
-
-  void _irParaPerfil() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const PerfilMedicoPage(),
-      ),
-    );
-  }
-
-  void _irParaNotificacoes() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const NotificacoesPage(),
-      ),
-    );
-  }
-
-  void _irParaTeleconsulta(
-    String consultaId,
-    String pacienteNome,
-    String pacienteId,
-  ) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => TeleconsultaPage(
-          consultaId: consultaId,
-          pacienteNome: pacienteNome,
-          pacienteId: pacienteId,
+    if (page == 'Dashboard') {
+      // Já está na dashboard
+    } else if (page == 'Minha Agenda') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const MinhaAgendaPage()),
+      ).then((_) {
+        setState(() {
+          _currentPage = 'Dashboard';
+        });
+      });
+    } else if (page == 'Teleconsulta') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Selecione uma consulta para iniciar a teleconsulta'),
+          backgroundColor: Colors.orange,
         ),
-      ),
-    );
+      );
+      setState(() {
+        _currentPage = 'Dashboard';
+      });
+    } else if (page == 'Dicas de Saúde') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const DicasSaudePage()),
+      ).then((_) {
+        setState(() {
+          _currentPage = 'Dashboard';
+        });
+      });
+    } else if (page == 'Meu Perfil') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const PerfilMedicoPage()),
+      ).then((_) {
+        setState(() {
+          _currentPage = 'Dashboard';
+        });
+      });
+    } else if (page == 'Sair') {
+      _confirmLogout();
+    }
   }
 
   void _confirmLogout() {
@@ -243,238 +240,305 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
     );
   }
 
-  Future<int> _getNotificacoesNaoLidas() async {
-    try {
-      if (perfilId.isEmpty) return 0;
-
-      final response = await supabase
-          .from('notificacoes')
-          .select('id')
-          .eq('usuario_id', perfilId)
-          .eq('lida', false);
-
-      return response.length;
-    } catch (_) {
-      return 0;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: _buildDrawer(),
-      backgroundColor: const Color(0xfff5f7fa),
-      appBar: _buildAppBar(),
-      body: RefreshIndicator(
-        onRefresh: carregarDados,
-        child: isLoading
-            ? const Center(
-                child: CircularProgressIndicator(),
-              )
-            : SingleChildScrollView(
-                physics:
-                    const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
-                  children: [
-                    _buildWelcomeSection(),
-                    const SizedBox(height: 20),
-                    _buildStatsGrid(),
-                    const SizedBox(height: 20),
-                    _buildTodayAppointments(),
-                  ],
-                ),
-              ),
+  void _irParaTeleconsulta(
+    String consultaId,
+    String pacienteNome,
+    String pacienteId,
+  ) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TeleconsultaPage(
+          consultaId: consultaId,
+          pacienteNome: pacienteNome,
+          pacienteId: pacienteId,
+        ),
       ),
     );
   }
 
-  Widget _buildDrawer() {
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          DrawerHeader(
-            decoration: const BoxDecoration(
-              color: Color(0xFF3FA9C6),
-            ),
-            child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-              children: [
-                const Icon(
-                  Icons.medical_services,
-                  color: Colors.white,
-                  size: 50,
+  @override
+  Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 800;
+
+    return Scaffold(
+      key: _scaffoldKey,
+      drawer: isMobile ? _buildDrawer() : null,
+      backgroundColor: const Color(0xfff5f7fa),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isMobile = constraints.maxWidth < 800;
+          
+          return Stack(
+            children: [
+              RefreshIndicator(
+                onRefresh: carregarDados,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.only(
+                    top: isMobile ? 120 : 180,
+                    left: 16,
+                    right: 16,
+                    bottom: 16,
+                  ),
+                  child: isLoading
+                      ? const Center(
+                          child: CircularProgressIndicator(),
+                        )
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildWelcomeSection(),
+                            const SizedBox(height: 20),
+                            _buildStatsGrid(),
+                            const SizedBox(height: 20),
+                            _buildTodayAppointments(),
+                          ],
+                        ),
                 ),
-                const SizedBox(height: 10),
-                const Text(
-                  'Painel Médico',
+              ),
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: _buildTopNavigationBar(isMobile),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildTopNavigationBar(bool isMobile) {
+    final navItems = ['Dashboard', 'Minha Agenda', 'Teleconsulta', 'Dicas de Saúde', 'Meu Perfil'];
+
+    if (isMobile) {
+      return Container(
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.95),
+          borderRadius: BorderRadius.circular(50),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            IconButton(
+              onPressed: () {
+                _scaffoldKey.currentState?.openDrawer();
+              },
+              icon: const Icon(Icons.menu, size: 28, color: Color(0xFF3FA9C6)),
+            ),
+            Image.asset(
+              'assets/logo.png',
+              width: 60,
+              height: 60,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                return const Icon(Icons.medical_services, size: 50, color: Color(0xFF3FA9C6));
+              },
+            ),
+            const SizedBox(width: 40),
+          ],
+        ),
+      );
+    }
+
+    // Desktop layout
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.92),
+        borderRadius: BorderRadius.circular(60),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(
+          color: Colors.white.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Image.asset(
+            'assets/logo.png',
+            width: 70,
+            height: 70,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) {
+              return const Icon(Icons.medical_services, size: 60, color: Color(0xFF3FA9C6));
+            },
+          ),
+          Row(
+            children: navItems.map((item) {
+              final isActive = _currentPage == item;
+              return GestureDetector(
+                onTap: () => _onPageChanged(item),
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 12),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Column(
+                    children: [
+                      Text(
+                        item,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: isActive ? primaryColor : Colors.grey[700],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        height: 2,
+                        width: isActive ? 24 : 0,
+                        decoration: BoxDecoration(
+                          color: primaryColor,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+          MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              onTap: () => _confirmLogout(),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Colors.red, Colors.redAccent],
+                  ),
+                  borderRadius: BorderRadius.circular(40),
+                ),
+                child: const Text(
+                  'Sair',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  nomeMedico.toUpperCase(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  especialidade,
-                  style: const TextStyle(
-                    color: Colors.white70,
+                    fontWeight: FontWeight.w600,
                     fontSize: 14,
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
-
-          _buildDrawerItem(
-            Icons.dashboard_outlined,
-            'Visão geral',
-            () {
-              Navigator.pop(context);
-            },
-          ),
-
-          _buildDrawerItem(
-            Icons.calendar_today_outlined,
-            'Minha agenda',
-            () {
-              Navigator.pop(context);
-              _irParaMinhaAgenda();
-            },
-          ),
-
-          _buildDrawerItem(
-            Icons.video_call_outlined,
-            'Teleconsulta',
-            () {
-              Navigator.pop(context);
-            },
-          ),
-
-          _buildDrawerItem(
-            Icons.health_and_safety_outlined,
-            'Dicas de saúde',
-            () {
-              Navigator.pop(context);
-              _irParaDicasSaude();
-            },
-          ),
-
-          _buildDrawerItem(
-            Icons.person_outline,
-            'Meu perfil',
-            () {
-              Navigator.pop(context);
-              _irParaPerfil();
-            },
-          ),
-
-          _buildDrawerItem(
-            Icons.logout_outlined,
-            'Desconectar',
-            () {
-              Navigator.pop(context);
-              _confirmLogout();
-            },
-            isDestructive: true,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildDrawerItem(
-    IconData icon,
-    String title,
-    VoidCallback onTap, {
-    bool isDestructive = false,
-  }) {
-    return ListTile(
-      leading: Icon(
-        icon,
-        color:
-            isDestructive
-                ? Colors.red
-                : Colors.grey[700],
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          color:
-              isDestructive
-                  ? Colors.red
-                  : Colors.black87,
+  Widget _buildDrawer() {
+    final navItems = [
+      {'title': 'Dashboard', 'icon': Icons.dashboard},
+      {'title': 'Minha Agenda', 'icon': Icons.calendar_today},
+      {'title': 'Teleconsulta', 'icon': Icons.video_call},
+      {'title': 'Dicas de Saúde', 'icon': Icons.health_and_safety},
+      {'title': 'Meu Perfil', 'icon': Icons.person},
+    ];
+
+    return Drawer(
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [primaryColor, primaryColor.withOpacity(0.8)],
+          ),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.only(top: 60, bottom: 30),
+              child: Center(
+                child: Column(
+                  children: [
+                    Image.asset(
+                      'assets/logo.png',
+                      width: 100,
+                      height: 100,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(Icons.medical_services, size: 80, color: Colors.white);
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      nomeMedico,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      especialidade,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const Divider(color: Colors.white54, thickness: 1),
+            Expanded(
+              child: ListView(
+                children: [
+                  ...navItems.map((item) => _buildDrawerItem(
+                    item['title'] as String,
+                    item['icon'] as IconData,
+                    () {
+                      Navigator.pop(context);
+                      _onPageChanged(item['title'] as String);
+                    },
+                  )),
+                  const Divider(color: Colors.white54, thickness: 1),
+                  _buildDrawerItem('Sair', Icons.logout, () {
+                    Navigator.pop(context);
+                    _onPageChanged('Sair');
+                  }, isDestructive: true),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
-      onTap: onTap,
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      backgroundColor: primaryColor,
-      elevation: 0,
-      title: const Text(
-        'Área Médica',
+  Widget _buildDrawerItem(String title, IconData icon, VoidCallback onTap, {bool isDestructive = false}) {
+    return ListTile(
+      leading: Icon(icon, color: isDestructive ? Colors.red : Colors.white),
+      title: Text(
+        title,
         style: TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
+          color: isDestructive ? Colors.red : Colors.white,
+          fontSize: 18,
         ),
       ),
-      actions: [
-        FutureBuilder<int>(
-          future: _getNotificacoesNaoLidas(),
-          builder: (context, snapshot) {
-            final count = snapshot.data ?? 0;
-
-            return Stack(
-              children: [
-                IconButton(
-                  icon: const Icon(
-                    Icons.notifications_none,
-                    color: Colors.white,
-                  ),
-                  onPressed: _irParaNotificacoes,
-                ),
-                if (count > 0)
-                  Positioned(
-                    right: 8,
-                    top: 8,
-                    child: Container(
-                      padding:
-                          const EdgeInsets.all(4),
-                      decoration:
-                          const BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Text(
-                        count.toString(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            );
-          },
-        ),
-      ],
+      onTap: onTap,
+      hoverColor: Colors.white.withOpacity(0.1),
+      splashColor: Colors.white.withOpacity(0.2),
     );
   }
 
@@ -537,12 +601,6 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
         'valor': consultasPendentes.toString(),
         'icone': Icons.access_time,
         'cor': Colors.orange,
-      },
-      {
-        'titulo': 'Avaliação',
-        'valor': '$mediaAvaliacao ★',
-        'icone': Icons.star,
-        'cor': Colors.amber,
       },
       {
         'titulo': 'Concluídas',
@@ -610,6 +668,28 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
   }
 
   Widget _buildTodayAppointments() {
+    if (consultas.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: const Center(
+          child: Column(
+            children: [
+              Icon(Icons.calendar_today, size: 48, color: Colors.grey),
+              SizedBox(height: 12),
+              Text(
+                'Nenhuma consulta agendada',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Column(
       crossAxisAlignment:
           CrossAxisAlignment.start,
@@ -640,6 +720,8 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
             final horario =
                 consulta['horario_agendado'] ??
                     '--:--';
+
+            final modo = consulta['modo'] ?? 'presencial';
 
             return Container(
               margin:
@@ -678,10 +760,41 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
                                 FontWeight.bold,
                           ),
                         ),
-                        Text(horario),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(Icons.access_time, size: 14, color: Colors.grey[600]),
+                            const SizedBox(width: 4),
+                            Text(horario, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+                            const SizedBox(width: 12),
+                            Icon(modo == 'online' ? Icons.videocam : Icons.location_on, 
+                                size: 14, color: Colors.grey[600]),
+                            const SizedBox(width: 4),
+                            Text(modo == 'online' ? 'Teleconsulta' : 'Presencial', 
+                                style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+                          ],
+                        ),
                       ],
                     ),
                   ),
+
+                  if (modo == 'online')
+                    ElevatedButton.icon(
+                      onPressed: () => _irParaTeleconsulta(
+                        consulta['id'].toString(),
+                        paciente,
+                        consulta['paciente_id'].toString(),
+                      ),
+                      icon: const Icon(Icons.video_call, size: 16),
+                      label: const Text('Iniciar'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             );
