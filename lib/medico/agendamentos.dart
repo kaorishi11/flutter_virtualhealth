@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
+import 'dicas.dart';
+import 'perfil.dart';
+import 'teleconsulta.dart';
 
 class MinhaAgendaPage extends StatefulWidget {
   const MinhaAgendaPage({super.key});
@@ -11,6 +14,8 @@ class MinhaAgendaPage extends StatefulWidget {
 
 class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
   final supabase = Supabase.instance.client;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  String _currentPage = 'Minha Agenda';
   
   DateTime _dataSelecionada = DateTime.now();
   String _filtroTipo = 'Todos'; // Todos, Online, Presencial
@@ -30,6 +35,33 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
   void initState() {
     super.initState();
     _carregarAgendamentos();
+    _carregarDadosMedico();
+  }
+  
+  Future<void> _carregarDadosMedico() async {
+    try {
+      final user = supabase.auth.currentUser;
+      if (user == null) return;
+      
+      final perfil = await supabase
+          .from('perfis')
+          .select()
+          .eq('auth_id', user.id)
+          .single();
+      
+      final profissional = await supabase
+          .from('profissionais')
+          .select()
+          .eq('perfil_id', perfil['id'])
+          .single();
+      
+      setState(() {
+        _nomeMedico = perfil['nome_completo'] ?? 'Médico';
+        _especialidade = profissional['especialidade'] ?? 'Médico';
+      });
+    } catch (e) {
+      debugPrint('Erro ao carregar dados do médico: $e');
+    }
   }
   
   Future<void> _carregarAgendamentos() async {
@@ -48,8 +80,6 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
           .eq('auth_id', user.id)
           .single();
       
-      _nomeMedico = perfil['nome_completo'] ?? 'Médico';
-      
       // Buscar profissional
       final profissional = await supabase
           .from('profissionais')
@@ -57,7 +87,6 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
           .eq('perfil_id', perfil['id'])
           .single();
       
-      _especialidade = profissional['especialidade'] ?? 'Médico';
       final profissionalId = profissional['id'];
       
       // Formatar data para busca
@@ -94,14 +123,13 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
           pacienteNome: paciente['nome_completo'] ?? 'Paciente',
           pacienteId: paciente['id'],
           horario: _parseHorario(consulta['horario_agendado'] ?? '08:00'),
-          duracao: 30, // minutos
+          duracao: 30,
           tipo: consulta['modo'] ?? 'presencial',
           status: consulta['status'] ?? 'pendente',
           descricao: consulta['observacoes'] ?? 'Consulta',
           isPrimeiraConsulta: consulta['observacoes']?.contains('primeira') ?? false,
         ));
       }
-      
       
       setState(() {
         _agendamentos = agendamentosTemp;
@@ -111,68 +139,12 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
       
     } catch (e) {
       debugPrint('Erro ao carregar agendamentos: $e');
-      // Usar dados mock em caso de erro
       setState(() {
         _agendamentos = [];
         _aplicarFiltros();
         _isLoading = false;
       });
     }
-  }
-  
-  List<Agendamento> _getMockAgendamentos() {
-    return [
-      Agendamento(
-        id: '1',
-        pacienteNome: 'Maria Helena',
-        horario: TimeOfDay(hour: 8, minute: 0),
-        duracao: 30,
-        tipo: 'online',
-        status: 'confirmada',
-        descricao: 'Revisão de lentes',
-        isPrimeiraConsulta: true,
-      ),
-      Agendamento(
-        id: '2',
-        pacienteNome: 'Gabriel Jorge',
-        horario: TimeOfDay(hour: 10, minute: 20),
-        duracao: 30,
-        tipo: 'presencial',
-        status: 'confirmada',
-        descricao: 'Check-up visual',
-        isPrimeiraConsulta: false,
-      ),
-      Agendamento(
-        id: '3',
-        pacienteNome: 'Ana Carolina',
-        horario: TimeOfDay(hour: 11, minute: 40),
-        duracao: 30,
-        tipo: 'online',
-        status: 'pendente',
-        descricao: 'Acompanhamento',
-        isPrimeiraConsulta: false,
-      ),
-      Agendamento(
-        id: '4',
-        pacienteNome: 'Roberto Silva',
-        horario: TimeOfDay(hour: 14, minute: 0),
-        duracao: 30,
-        tipo: 'presencial',
-        status: 'confirmada',
-        descricao: 'Retorno',
-        isPrimeiraConsulta: false,
-      ),
-      Agendamento(
-        id: '5',
-        pacienteNome: 'Fernanda Lima',
-        horario: TimeOfDay(hour: 15, minute: 30),
-        duracao: 30,
-        tipo: 'online',
-        status: 'concluida',
-        descricao: 'Resultado de exames',
-        isPrimeiraConsulta: false,
-      ),
-    ];
   }
   
   TimeOfDay _parseHorario(String horarioStr) {
@@ -213,6 +185,67 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
       _dataSelecionada = _dataSelecionada.add(Duration(days: days));
       _carregarAgendamentos();
     });
+  }
+  
+  void _onPageChanged(String page) {
+    if (page == 'Dashboard') {
+      Navigator.pop(context);
+    } else if (page == 'Minha Agenda') {
+      // Já está na página atual
+    } else if (page == 'Teleconsulta') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Selecione uma consulta para iniciar a teleconsulta'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    } else if (page == 'Dicas de Saúde') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const DicasSaudePage()),
+      );
+    } else if (page == 'Meu Perfil') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const PerfilMedicoPage()),
+      );
+    } else if (page == 'Sair') {
+      _confirmLogout();
+    }
+  }
+  
+  void _confirmLogout() {
+    showDialog(
+      context: context,
+      builder: (_) {
+        return AlertDialog(
+          title: const Text('Sair'),
+          content: const Text('Deseja realmente sair?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () async {
+                await supabase.auth.signOut();
+                if (mounted) {
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    '/login',
+                    (route) => false,
+                  );
+                }
+              },
+              child: const Text(
+                'Sair',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
   
   String _formatarData() {
@@ -257,54 +290,322 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
     }
   }
   
+  void _iniciarConsulta(Agendamento agendamento) {
+    if (agendamento.tipo.toLowerCase() == 'online') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => TeleconsultaPage(
+            consultaId: agendamento.id,
+            pacienteNome: agendamento.pacienteNome,
+            pacienteId: agendamento.pacienteId,
+          ),
+        ),
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Iniciar Consulta'),
+          content: Text('Iniciar consulta presencial com ${agendamento.pacienteNome}?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
+              child: const Text('Iniciar'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+  
+  String _getIniciais(String nome) {
+    final partes = nome.trim().split(' ');
+    if (partes.isEmpty) return 'P';
+    if (partes.length == 1) return partes[0][0].toUpperCase();
+    return '${partes[0][0]}${partes[1][0]}'.toUpperCase();
+  }
+  
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 800;
+    
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: isMobile ? _buildDrawer() : null,
       backgroundColor: const Color(0xfff5f7fa),
-      appBar: _buildAppBar(),
-      body: Column(
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isMobile = constraints.maxWidth < 800;
+          
+          return Stack(
+            children: [
+              Column(
+                children: [
+                  _buildHeader(),
+                  _buildFilterBar(),
+                  Expanded(
+                    child: _isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : _buildAgendaList(),
+                  ),
+                ],
+              ),
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: _buildTopNavigationBar(isMobile),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+  
+  Widget _buildTopNavigationBar(bool isMobile) {
+    final navItems = ['Dashboard', 'Minha Agenda', 'Teleconsulta', 'Dicas de Saúde', 'Meu Perfil'];
+
+    if (isMobile) {
+      return Container(
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.95),
+          borderRadius: BorderRadius.circular(50),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            IconButton(
+              onPressed: () {
+                _scaffoldKey.currentState?.openDrawer();
+              },
+              icon: const Icon(Icons.menu, size: 28, color: Color(0xFF3FA9C6)),
+            ),
+            Image.asset(
+              'assets/logo.png',
+              width: 60,
+              height: 60,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                return const Icon(Icons.medical_services, size: 50, color: Color(0xFF3FA9C6));
+              },
+            ),
+            const SizedBox(width: 40),
+          ],
+        ),
+      );
+    }
+
+    // Desktop layout
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.92),
+        borderRadius: BorderRadius.circular(60),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(
+          color: Colors.white.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildHeader(),
-          _buildFilterBar(),
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _buildAgendaList(),
+          Image.asset(
+            'assets/logo.png',
+            width: 70,
+            height: 70,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) {
+              return const Icon(Icons.medical_services, size: 60, color: Color(0xFF3FA9C6));
+            },
+          ),
+          Row(
+            children: navItems.map((item) {
+              final isActive = _currentPage == item;
+              return GestureDetector(
+                onTap: () => _onPageChanged(item),
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 12),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Column(
+                    children: [
+                      Text(
+                        item,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: isActive ? primaryColor : Colors.grey[700],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        height: 2,
+                        width: isActive ? 24 : 0,
+                        decoration: BoxDecoration(
+                          color: primaryColor,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+          MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              onTap: () => _confirmLogout(),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Colors.red, Colors.redAccent],
+                  ),
+                  borderRadius: BorderRadius.circular(40),
+                ),
+                child: const Text(
+                  'Sair',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),
     );
   }
   
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      backgroundColor: primaryColor,
-      elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.white),
-        onPressed: () => Navigator.pop(context),
+  Widget _buildDrawer() {
+    final navItems = [
+      {'title': 'Dashboard', 'icon': Icons.dashboard},
+      {'title': 'Minha Agenda', 'icon': Icons.calendar_today},
+      {'title': 'Teleconsulta', 'icon': Icons.video_call},
+      {'title': 'Dicas de Saúde', 'icon': Icons.health_and_safety},
+      {'title': 'Meu Perfil', 'icon': Icons.person},
+    ];
+
+    return Drawer(
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [primaryColor, primaryColor.withOpacity(0.8)],
+          ),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.only(top: 60, bottom: 30),
+              child: Center(
+                child: Column(
+                  children: [
+                    Image.asset(
+                      'assets/logo.png',
+                      width: 100,
+                      height: 100,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(Icons.medical_services, size: 80, color: Colors.white);
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      _nomeMedico,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _especialidade,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const Divider(color: Colors.white54, thickness: 1),
+            Expanded(
+              child: ListView(
+                children: [
+                  ...navItems.map((item) => _buildDrawerItem(
+                    item['title'] as String,
+                    item['icon'] as IconData,
+                    () {
+                      Navigator.pop(context);
+                      _onPageChanged(item['title'] as String);
+                    },
+                  )),
+                  const Divider(color: Colors.white54, thickness: 1),
+                  _buildDrawerItem('Sair', Icons.logout, () {
+                    Navigator.pop(context);
+                    _onPageChanged('Sair');
+                  }, isDestructive: true),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
-      title: const Text(
-        'MINHA AGENDA',
+    );
+  }
+  
+  Widget _buildDrawerItem(String title, IconData icon, VoidCallback onTap, {bool isDestructive = false}) {
+    return ListTile(
+      leading: Icon(icon, color: isDestructive ? Colors.red : Colors.white),
+      title: Text(
+        title,
         style: TextStyle(
-          color: Colors.white,
+          color: isDestructive ? Colors.red : Colors.white,
           fontSize: 18,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1,
         ),
       ),
-      centerTitle: true,
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.filter_list, color: Colors.white),
-          onPressed: () => _showFilterDialog(),
-        ),
-      ],
+      onTap: onTap,
+      hoverColor: Colors.white.withOpacity(0.1),
+      splashColor: Colors.white.withOpacity(0.2),
     );
   }
   
   Widget _buildHeader() {
     return Container(
+      margin: EdgeInsets.only(top: MediaQuery.of(context).size.width < 800 ? 100 : 160),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -710,150 +1011,6 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
       ),
     );
   }
-  
-  void _showFilterDialog() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setStateBottomSheet) {
-            return Container(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Filtrar consultas',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Tipo de consulta',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    children: ['Todos', 'Online', 'Presencial'].map((tipo) {
-                      return FilterChip(
-                        label: Text(tipo),
-                        selected: _filtroTipo == (tipo == 'Todos' ? 'Todos' : tipo.toLowerCase()),
-                        onSelected: (_) {
-                          setState(() {
-                            _filtroTipo = tipo == 'Todos' ? 'Todos' : tipo.toLowerCase();
-                            _aplicarFiltros();
-                          });
-                          Navigator.pop(context);
-                        },
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Status',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    children: ['Todos', 'Confirmado', 'Pendente', 'Concluído'].map((status) {
-                      String statusValue = status == 'Todos' 
-                          ? 'Todos' 
-                          : status.toLowerCase();
-                      return FilterChip(
-                        label: Text(status),
-                        selected: _filtroStatus == statusValue,
-                        onSelected: (_) {
-                          setState(() {
-                            _filtroStatus = statusValue;
-                            _aplicarFiltros();
-                          });
-                          Navigator.pop(context);
-                        },
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    child: TextButton(
-                      onPressed: () {
-                        setState(() {
-                          _filtroTipo = 'Todos';
-                          _filtroStatus = 'Todos';
-                          _aplicarFiltros();
-                        });
-                        Navigator.pop(context);
-                      },
-                      child: const Text('Limpar filtros'),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-  
-  void _iniciarConsulta(Agendamento agendamento) {
-    if (agendamento.tipo.toLowerCase() == 'online') {
-      // Navegar para tela de teleconsulta
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Iniciar Teleconsulta'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.videocam, size: 48, color: Color(0xFF3FA9C6)),
-              const SizedBox(height: 16),
-              Text('Conectando com ${agendamento.pacienteNome}...'),
-            ],
-          ),
-        ),
-      );
-    } else {
-      // Consulta presencial
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Iniciar Consulta'),
-          content: Text('Iniciar consulta presencial com ${agendamento.pacienteNome}?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                // Navegar para tela de consulta
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
-              child: const Text('Iniciar'),
-            ),
-          ],
-        ),
-      );
-    }
-  }
-  
-  String _getIniciais(String nome) {
-    final partes = nome.trim().split(' ');
-    if (partes.isEmpty) return 'P';
-    if (partes.length == 1) return partes[0][0].toUpperCase();
-    return '${partes[0][0]}${partes[1][0]}'.toUpperCase();
-  }
 }
 
 class Agendamento {
@@ -862,8 +1019,8 @@ class Agendamento {
   final String pacienteId;
   final TimeOfDay horario;
   final int duracao;
-  final String tipo; // online, presencial
-  final String status; // confirmada, pendente, concluida, cancelada
+  final String tipo;
+  final String status;
   final String descricao;
   final bool isPrimeiraConsulta;
   

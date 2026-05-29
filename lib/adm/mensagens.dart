@@ -6,6 +6,7 @@ import 'usuarios.dart';
 import 'profissionais.dart';
 import 'consultas.dart';
 import 'clinicas.dart';
+import '../services/auth_service.dart';
 
 class AdminMensagensPage extends StatefulWidget {
   const AdminMensagensPage({super.key});
@@ -78,12 +79,10 @@ class _AdminMensagensPageState extends State<AdminMensagensPage> {
   List<Map<String, dynamic>> get mensagensFiltradas {
     var resultado = mensagens;
     
-    // Filtro por status (apenas pendente e visto)
     if (filtroStatus != 'todos') {
       resultado = resultado.where((msg) => msg['status'] == filtroStatus).toList();
     }
     
-    // Filtro por busca
     if (busca.isNotEmpty) {
       final termo = busca.toLowerCase();
       resultado = resultado.where((msg) {
@@ -258,6 +257,38 @@ class _AdminMensagensPageState extends State<AdminMensagensPage> {
           );
         }
         setState(() => isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _confirmLogout() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Sair'),
+        content: const Text('Tem certeza que deseja sair?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Sair'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      await AuthService().logout();
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/login',
+          (route) => false,
+        );
       }
     }
   }
@@ -452,212 +483,216 @@ class _AdminMensagensPageState extends State<AdminMensagensPage> {
           
           return Stack(
             children: [
-              Column(
-                children: [
-                  SizedBox(height: isMobile ? 120 : 180),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
+              SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.only(
+                  top: isMobile ? 120 : 180,
+                  left: 16,
+                  right: 16,
+                  bottom: 16,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Gerenciar Mensagens',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    // Barra de busca
+                    TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Buscar por nome ou email...',
+                        prefixIcon: const Icon(Icons.search),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                      onChanged: (value) {
+                        setState(() => busca = value);
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    // Filtros
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
                         children: [
-                          // Barra de busca
-                          TextField(
-                            decoration: InputDecoration(
-                              hintText: 'Buscar por nome ou email...',
-                              prefixIcon: const Icon(Icons.search),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              filled: true,
-                              fillColor: Colors.white,
-                            ),
-                            onChanged: (value) {
-                              setState(() => busca = value);
+                          FilterChip(
+                            label: const Text('Todas'),
+                            selected: filtroStatus == 'todos',
+                            onSelected: (_) {
+                              setState(() => filtroStatus = 'todos');
+                              carregarMensagens();
                             },
                           ),
-                          const SizedBox(height: 12),
-                          // Filtros
-                          SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children: [
-                                FilterChip(
-                                  label: const Text('Todas'),
-                                  selected: filtroStatus == 'todos',
-                                  onSelected: (_) {
-                                    setState(() => filtroStatus = 'todos');
-                                    carregarMensagens();
-                                  },
-                                ),
-                                const SizedBox(width: 8),
-                                FilterChip(
-                                  label: const Text('Pendentes'),
-                                  selected: filtroStatus == 'pendente',
-                                  onSelected: (_) {
-                                    setState(() => filtroStatus = 'pendente');
-                                    carregarMensagens();
-                                  },
-                                ),
-                                const SizedBox(width: 8),
-                                FilterChip(
-                                  label: const Text('Vistas'),
-                                  selected: filtroStatus == 'visto',
-                                  onSelected: (_) {
-                                    setState(() => filtroStatus = 'visto');
-                                    carregarMensagens();
-                                  },
-                                ),
-                              ],
-                            ),
+                          const SizedBox(width: 8),
+                          FilterChip(
+                            label: const Text('Pendentes'),
+                            selected: filtroStatus == 'pendente',
+                            onSelected: (_) {
+                              setState(() => filtroStatus = 'pendente');
+                              carregarMensagens();
+                            },
                           ),
-                          const SizedBox(height: 16),
-                          // Lista de mensagens
-                          Expanded(
-                            child: isLoading
-                                ? const Center(child: CircularProgressIndicator())
-                                : mensagensFiltradas.isEmpty
-                                    ? const Center(child: Text('Nenhuma mensagem encontrada'))
-                                    : ListView.builder(
-                                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                                        itemCount: mensagensFiltradas.length,
-                                        itemBuilder: (context, index) {
-                                          final msg = mensagensFiltradas[index];
-                                          final perfil = msg['perfis'] as Map<String, dynamic>?;
-                                          final status = msg['status'] ?? 'pendente';
-                                          final isPendente = status == 'pendente';
-                                          final remetente = msg['nome_remetente'] ?? perfil?['nome_completo'] ?? 'Anônimo';
-                                          
-                                          return Card(
-                                            margin: const EdgeInsets.only(bottom: 12),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(16),
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                ListTile(
-                                                  leading: CircleAvatar(
-                                                    backgroundColor: getStatusColor(status),
-                                                    child: Icon(
-                                                      isPendente ? Icons.mark_email_unread : Icons.mark_email_read,
-                                                      color: Colors.white,
-                                                      size: 20,
-                                                    ),
-                                                  ),
-                                                  title: Row(
-                                                    children: [
-                                                      Expanded(
-                                                        child: Text(
-                                                          remetente,
-                                                          style: const TextStyle(
-                                                            fontWeight: FontWeight.bold,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      if (isPendente)
-                                                        Container(
-                                                          padding: const EdgeInsets.symmetric(
-                                                            horizontal: 8,
-                                                            vertical: 2,
-                                                          ),
-                                                          decoration: BoxDecoration(
-                                                            color: Colors.orange.withValues(alpha: 0.2),
-                                                            borderRadius: BorderRadius.circular(12),
-                                                          ),
-                                                          child: const Text(
-                                                            'NOVA',
-                                                            style: TextStyle(
-                                                              color: Colors.orange,
-                                                              fontSize: 11,
-                                                              fontWeight: FontWeight.bold,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                    ],
-                                                  ),
-                                                  subtitle: Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      Text(
-                                                        msg['email_remetente'] ?? perfil?['email'] ?? 'Sem email',
-                                                        style: const TextStyle(fontSize: 12),
-                                                      ),
-                                                      const SizedBox(height: 2),
-                                                      Row(
-                                                        children: [
-                                                          Container(
-                                                            padding: const EdgeInsets.symmetric(
-                                                              horizontal: 8,
-                                                              vertical: 2,
-                                                            ),
-                                                            decoration: BoxDecoration(
-                                                              color: getStatusColor(status).withValues(alpha: 0.2),
-                                                              borderRadius: BorderRadius.circular(12),
-                                                            ),
-                                                            child: Text(
-                                                              getStatusText(status),
-                                                              style: TextStyle(
-                                                                color: getStatusColor(status),
-                                                                fontSize: 11,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                          const SizedBox(width: 8),
-                                                          Text(
-                                                            formatarData(msg['criado_em']),
-                                                            style: const TextStyle(
-                                                              fontSize: 11,
-                                                              color: Colors.grey,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  trailing: Row(
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    children: [
-                                                      // Botão Editar
-                                                      IconButton(
-                                                        icon: const Icon(Icons.edit, color: Colors.blue),
-                                                        onPressed: () => editarMensagem(msg),
-                                                        tooltip: 'Editar',
-                                                      ),
-                                                      // Botão Excluir
-                                                      IconButton(
-                                                        icon: const Icon(Icons.delete, color: Colors.red),
-                                                        onPressed: () => excluirMensagem(msg['id'], remetente),
-                                                        tooltip: 'Excluir',
-                                                      ),
-                                                      // Botão de marcar como visto
-                                                      if (status == 'pendente')
-                                                        IconButton(
-                                                          icon: const Icon(Icons.done_all, color: Colors.green),
-                                                          onPressed: () => atualizarStatus(msg['id'], 'visto'),
-                                                          tooltip: 'Marcar como visto',
-                                                        ),
-                                                      if (status == 'visto')
-                                                        IconButton(
-                                                          icon: const Icon(Icons.mark_email_unread, color: Colors.orange),
-                                                          onPressed: () => atualizarStatus(msg['id'], 'pendente'),
-                                                          tooltip: 'Marcar como não lido',
-                                                        ),
-                                                    ],
-                                                  ),
-                                                  onTap: () {
-                                                    _showDetalhesMensagem(msg);
-                                                  },
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                        },
-                                      ),
+                          const SizedBox(width: 8),
+                          FilterChip(
+                            label: const Text('Vistas'),
+                            selected: filtroStatus == 'visto',
+                            onSelected: (_) {
+                              setState(() => filtroStatus = 'visto');
+                              carregarMensagens();
+                            },
                           ),
                         ],
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 16),
+                    // Lista de mensagens
+                    isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : mensagensFiltradas.isEmpty
+                            ? const Center(child: Text('Nenhuma mensagem encontrada'))
+                            : ListView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: mensagensFiltradas.length,
+                                itemBuilder: (context, index) {
+                                  final msg = mensagensFiltradas[index];
+                                  final perfil = msg['perfis'] as Map<String, dynamic>?;
+                                  final status = msg['status'] ?? 'pendente';
+                                  final isPendente = status == 'pendente';
+                                  final remetente = msg['nome_remetente'] ?? perfil?['nome_completo'] ?? 'Anônimo';
+                                  
+                                  return Card(
+                                    margin: const EdgeInsets.only(bottom: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        ListTile(
+                                          leading: CircleAvatar(
+                                            backgroundColor: getStatusColor(status),
+                                            child: Icon(
+                                              isPendente ? Icons.mark_email_unread : Icons.mark_email_read,
+                                              color: Colors.white,
+                                              size: 20,
+                                            ),
+                                          ),
+                                          title: Row(
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  remetente,
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                              if (isPendente)
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 2,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.orange.withValues(alpha: 0.2),
+                                                    borderRadius: BorderRadius.circular(12),
+                                                  ),
+                                                  child: const Text(
+                                                    'NOVA',
+                                                    style: TextStyle(
+                                                      color: Colors.orange,
+                                                      fontSize: 11,
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
+                                            ],
+                                          ),
+                                          subtitle: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                msg['email_remetente'] ?? perfil?['email'] ?? 'Sem email',
+                                                style: const TextStyle(fontSize: 12),
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Row(
+                                                children: [
+                                                  Container(
+                                                    padding: const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 2,
+                                                    ),
+                                                    decoration: BoxDecoration(
+                                                      color: getStatusColor(status).withValues(alpha: 0.2),
+                                                      borderRadius: BorderRadius.circular(12),
+                                                    ),
+                                                    child: Text(
+                                                      getStatusText(status),
+                                                      style: TextStyle(
+                                                        color: getStatusColor(status),
+                                                        fontSize: 11,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  Text(
+                                                    formatarData(msg['criado_em']),
+                                                    style: const TextStyle(
+                                                      fontSize: 11,
+                                                      color: Colors.grey,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                          trailing: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              IconButton(
+                                                icon: const Icon(Icons.edit, color: Colors.blue),
+                                                onPressed: () => editarMensagem(msg),
+                                                tooltip: 'Editar',
+                                              ),
+                                              IconButton(
+                                                icon: const Icon(Icons.delete, color: Colors.red),
+                                                onPressed: () => excluirMensagem(msg['id'], remetente),
+                                                tooltip: 'Excluir',
+                                              ),
+                                              if (status == 'pendente')
+                                                IconButton(
+                                                  icon: const Icon(Icons.done_all, color: Colors.green),
+                                                  onPressed: () => atualizarStatus(msg['id'], 'visto'),
+                                                  tooltip: 'Marcar como visto',
+                                                ),
+                                              if (status == 'visto')
+                                                IconButton(
+                                                  icon: const Icon(Icons.mark_email_unread, color: Colors.orange),
+                                                  onPressed: () => atualizarStatus(msg['id'], 'pendente'),
+                                                  tooltip: 'Marcar como não lido',
+                                                ),
+                                            ],
+                                          ),
+                                          onTap: () {
+                                            _showDetalhesMensagem(msg);
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                  ],
+                ),
               ),
               Positioned(
                 top: 0,
@@ -708,13 +743,13 @@ class _AdminMensagensPageState extends State<AdminMensagensPage> {
                 return const Icon(Icons.medical_services, size: 50, color: Colors.teal);
               },
             ),
-            const SizedBox(width: 40),
+            Container(width: 40),
           ],
         ),
       );
     }
 
-    // Desktop layout
+    // Desktop layout - idêntico à home
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
       padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
@@ -736,17 +771,14 @@ class _AdminMensagensPageState extends State<AdminMensagensPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          GestureDetector(
-            onTap: () => _navigateToPage('Dashboard'),
-            child: Image.asset(
-              'assets/logo.png',
-              width: 70,
-              height: 70,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) {
-                return const Icon(Icons.medical_services, size: 60, color: Colors.teal);
-              },
-            ),
+          Image.asset(
+            'assets/logo.png',
+            width: 70,
+            height: 70,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) {
+              return const Icon(Icons.medical_services, size: 60, color: Colors.teal);
+            },
           ),
           Row(
             children: navItems.map((item) {
@@ -782,7 +814,29 @@ class _AdminMensagensPageState extends State<AdminMensagensPage> {
               );
             }).toList(),
           ),
-          const SizedBox(width: 80),
+          MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              onTap: () => _confirmLogout(),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Colors.red, Colors.redAccent],
+                  ),
+                  borderRadius: BorderRadius.circular(40),
+                ),
+                child: const Text(
+                  'Sair',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -845,7 +899,7 @@ class _AdminMensagensPageState extends State<AdminMensagensPage> {
                   const Divider(color: Colors.white54, thickness: 1),
                   _buildDrawerItem('Sair', Icons.logout, () {
                     Navigator.pop(context);
-                    // Implementar logout
+                    _confirmLogout();
                   }),
                 ],
               ),
