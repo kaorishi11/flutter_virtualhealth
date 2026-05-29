@@ -20,7 +20,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   final _emailController = TextEditingController();
   final _senhaController = TextEditingController();
 
-  bool _isLoading = false;
+  bool _isLoading = false; // Já está inicializado como false
   bool _rememberMe = false;
   bool _obscurePassword = true;
   String? _errorMessage;
@@ -75,11 +75,13 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
       final rememberMe = prefs.getBool('remember_me') ?? false;
       
       if (rememberMe && savedEmail != null && savedPassword != null) {
-        setState(() {
-          _emailController.text = savedEmail;
-          _senhaController.text = savedPassword;
-          _rememberMe = true;
-        });
+        if (mounted) {
+          setState(() {
+            _emailController.text = savedEmail;
+            _senhaController.text = savedPassword;
+            _rememberMe = true;
+          });
+        }
       }
     } catch (e) {
       print('Erro ao carregar credenciais: $e');
@@ -105,11 +107,17 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   }
 
   Future<void> _handleLogin() async {
+    print('=== INICIANDO LOGIN ===');
+    
     if (!_formKey.currentState!.validate()) {
+      print('Formulário inválido');
       return;
     }
 
-    if (_isLoading) return;
+    if (_isLoading) {
+      print('Já está carregando');
+      return;
+    }
 
     setState(() {
       _isLoading = true;
@@ -117,24 +125,36 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     });
 
     try {
+      print('Tentando login com email: ${_emailController.text.trim()}');
+      
       final error = await _auth.login(
         email: _emailController.text.trim(),
         senha: _senhaController.text.trim(),
       );
 
-      if (!mounted) return;
+      print('Resultado do login: error = $error');
+
+      if (!mounted) {
+        print('Widget não está mais montado');
+        return;
+      }
 
       if (error == null) {
+        print('Login bem sucedido, salvando credenciais');
         await _saveCredentials();
 
+        print('Buscando função do usuário');
         final funcao = await _auth.pegarFuncaoUsuario();
+        print('Função do usuário: $funcao');
 
         if (funcao == null) {
+          print('Usuário sem função cadastrada');
           throw Exception('Usuário sem função cadastrada.');
         }
 
         if (funcao != 'admin') {
           if (funcao != _userType) {
+            print('Tipo de usuário não corresponde: $_userType vs $funcao');
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
@@ -147,14 +167,16 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
 
             await _auth.logout();
 
-            setState(() {
-              _isLoading = false;
-            });
-
+            if (mounted) {
+              setState(() {
+                _isLoading = false;
+              });
+            }
             return;
           }
         }
 
+        print('Login realizado com sucesso!');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Login realizado com sucesso!'),
@@ -165,6 +187,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
         );
 
         Widget destino;
+        print('Determinando destino para função: $funcao');
 
         switch (funcao) {
           case 'admin':
@@ -180,26 +203,36 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
             destino = const HomePage();
         }
 
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => destino),
-          (route) => false,
-        );
+        print('Navegando para: ${destino.runtimeType}');
+        
+        if (mounted) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => destino),
+            (route) => false,
+          );
+        }
       } else {
-        setState(() {
-          _errorMessage = error;
-        });
+        print('Erro no login: $error');
+        if (mounted) {
+          setState(() {
+            _errorMessage = error;
+          });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(error),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 3),
-          ),
-        );
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(error),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('Erro inesperado: $e');
+      print('Stack trace: $stackTrace');
+      
       if (mounted) {
         setState(() {
           _errorMessage = 'Erro inesperado. Tente novamente.';
@@ -215,6 +248,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
       }
     } finally {
       if (mounted) {
+        print('Finalizando, setando _isLoading = false');
         setState(() {
           _isLoading = false;
         });
@@ -317,7 +351,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                 children: [
                   const SizedBox(height: 20),
                   
-                  // Card Principal com animações
                   FadeTransition(
                     opacity: _fadeAnimation,
                     child: SlideTransition(
@@ -330,7 +363,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                             borderRadius: BorderRadius.circular(40),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.08),
+                                color: Colors.black.withOpacity(0.08),
                                 blurRadius: 30,
                                 offset: const Offset(0, 10),
                               ),
@@ -342,7 +375,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                               key: _formKey,
                               child: Column(
                                 children: [
-                                  // Logo Centralizada
                                   Column(
                                     children: [
                                       Container(
@@ -356,8 +388,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                     ],
                                   ),
                                   
-                                  
-                                  // Subtítulo
                                   const Text(
                                     'Bem-vindo de volta!',
                                     style: TextStyle(
@@ -379,7 +409,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                   
                                   const SizedBox(height: 35),
 
-                                  // BOTÕES PACIENTE/MÉDICO
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
@@ -398,7 +427,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                   ),
                                   const SizedBox(height: 35),
 
-                                  // Campo de E-mail
                                   TextFormField(
                                     controller: _emailController,
                                     keyboardType: TextInputType.emailAddress,
@@ -438,7 +466,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                   ),
                                   const SizedBox(height: 18),
 
-                                  // Campo de Senha
                                   TextFormField(
                                     controller: _senhaController,
                                     obscureText: _obscurePassword,
@@ -488,7 +515,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                   ),
                                   const SizedBox(height: 12),
 
-                                  // Lembrar de mim e Esqueceu a senha
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
@@ -541,7 +567,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                     ],
                                   ),
 
-                                  // Mensagem de erro
                                   if (_errorMessage != null) ...[
                                     const SizedBox(height: 20),
                                     Container(
@@ -567,7 +592,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                   ],
                                   const SizedBox(height: 28),
 
-                                  // Botão de Login
                                   SizedBox(
                                     width: double.infinity,
                                     height: 58,
@@ -603,7 +627,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                   ),
                                   const SizedBox(height: 20),
 
-                                  // Divisória
                                   Row(
                                     children: [
                                       Expanded(child: Divider(color: Colors.grey.shade300)),
@@ -619,7 +642,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                   ),
                                   const SizedBox(height: 20),
 
-                                  // Link para Cadastro
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
@@ -706,7 +728,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
             boxShadow: selecionado
                 ? [
                     BoxShadow(
-                      color: const Color(0xFF3FA9C6).withValues(alpha: 0.3),
+                      color: const Color(0xFF3FA9C6).withOpacity(0.3),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
