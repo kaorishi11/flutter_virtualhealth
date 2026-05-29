@@ -11,6 +11,9 @@ class AdminClinicasPage extends StatefulWidget {
 
 class _AdminClinicasPageState extends State<AdminClinicasPage> {
   final supabase = Supabase.instance.client;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  String _currentPage = 'Clínicas';
+  
   List<Map<String, dynamic>> clinicas = [];
   bool isLoading = true;
   String busca = '';
@@ -84,7 +87,6 @@ class _AdminClinicasPageState extends State<AdminClinicasPage> {
       };
 
       if (id == null) {
-        // Criar nova clínica
         await supabase.from('clinicas').insert(data);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -95,7 +97,6 @@ class _AdminClinicasPageState extends State<AdminClinicasPage> {
           );
         }
       } else {
-        // Atualizar clínica existente
         await supabase.from('clinicas').update(data).eq('id', id);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -424,244 +425,480 @@ class _AdminClinicasPageState extends State<AdminClinicasPage> {
     }
   }
 
+  void _navigateToPage(String page) {
+    if (page == 'Dashboard') {
+      Navigator.pop(context);
+    }
+    setState(() {
+      _currentPage = page;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 800;
+
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: isMobile ? _buildDrawer() : null,
       backgroundColor: const Color(0xfff4f6f8),
-      appBar: AppBar(
-        backgroundColor: Colors.teal,
-        title: const Text('Gerenciar Clínicas'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: carregarClinicas,
-          ),
-        ],
-      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => showClinicaDialog(),
         backgroundColor: Colors.teal,
         child: const Icon(Icons.add),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Buscar por nome, cidade ou endereço...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                suffixIcon: busca.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          setState(() => busca = '');
-                        },
-                      )
-                    : null,
-              ),
-              onChanged: (value) {
-                setState(() => busca = value);
-              },
-            ),
-          ),
-          Expanded(
-            child: isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : clinicasFiltradas.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.business,
-                              size: 64,
-                              color: Colors.grey.shade400,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              busca.isEmpty
-                                  ? 'Nenhuma clínica cadastrada'
-                                  : 'Nenhuma clínica encontrada para "$busca"',
-                              style: TextStyle(color: Colors.grey.shade600),
-                            ),
-                            const SizedBox(height: 16),
-                            if (busca.isEmpty)
-                              ElevatedButton.icon(
-                                icon: const Icon(Icons.add),
-                                label: const Text('Adicionar Clínica'),
-                                onPressed: () => showClinicaDialog(),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.teal,
-                                  foregroundColor: Colors.white,
-                                ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isMobile = constraints.maxWidth < 800;
+          
+          return Stack(
+            children: [
+              Column(
+                children: [
+                  SizedBox(height: isMobile ? 80 : 100),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          // Barra de busca
+                          TextField(
+                            decoration: InputDecoration(
+                              hintText: 'Buscar por nome, cidade ou endereço...',
+                              prefixIcon: const Icon(Icons.search),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                          ],
-                        ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: clinicasFiltradas.length,
-                        itemBuilder: (context, index) {
-                          final clinica = clinicasFiltradas[index];
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+                              filled: true,
+                              fillColor: Colors.white,
+                              suffixIcon: busca.isNotEmpty
+                                  ? IconButton(
+                                      icon: const Icon(Icons.clear),
+                                      onPressed: () {
+                                        setState(() => busca = '');
+                                      },
+                                    )
+                                  : null,
                             ),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Column(
-                                children: [
-                                  ListTile(
-                                    leading: Container(
-                                      width: 50,
-                                      height: 50,
-                                      decoration: BoxDecoration(
-                                        color: Colors.teal.withValues(alpha: 0.1),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: const Icon(
-                                        Icons.business,
-                                        color: Colors.teal,
-                                        size: 28,
-                                      ),
-                                    ),
-                                    title: Text(
-                                      clinica['nome'] ?? 'Sem nome',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                    subtitle: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        const SizedBox(height: 4),
-                                        Row(
+                            onChanged: (value) {
+                              setState(() => busca = value);
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          // Lista de clínicas
+                          Expanded(
+                            child: isLoading
+                                ? const Center(child: CircularProgressIndicator())
+                                : clinicasFiltradas.isEmpty
+                                    ? Center(
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
-                                            const Icon(Icons.location_on,
-                                                size: 14, color: Colors.grey),
-                                            const SizedBox(width: 4),
-                                            Expanded(
-                                              child: Text(
-                                                '${clinica['cidade'] ?? ''}, ${clinica['estado'] ?? ''}',
-                                                style: const TextStyle(fontSize: 12),
-                                              ),
+                                            Icon(
+                                              Icons.business,
+                                              size: 64,
+                                              color: Colors.grey.shade400,
                                             ),
-                                          ],
-                                        ),
-                                        Row(
-                                          children: [
-                                            const Icon(Icons.phone,
-                                                size: 14, color: Colors.grey),
-                                            const SizedBox(width: 4),
+                                            const SizedBox(height: 16),
                                             Text(
-                                              clinica['telefone'] ?? 'Sem telefone',
-                                              style: const TextStyle(fontSize: 12),
+                                              busca.isEmpty
+                                                  ? 'Nenhuma clínica cadastrada'
+                                                  : 'Nenhuma clínica encontrada para "$busca"',
+                                              style: TextStyle(color: Colors.grey.shade600),
                                             ),
+                                            const SizedBox(height: 16),
+                                            if (busca.isEmpty)
+                                              ElevatedButton.icon(
+                                                icon: const Icon(Icons.add),
+                                                label: const Text('Adicionar Clínica'),
+                                                onPressed: () => showClinicaDialog(),
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Colors.teal,
+                                                  foregroundColor: Colors.white,
+                                                ),
+                                              ),
                                           ],
                                         ),
-                                      ],
-                                    ),
-                                    trailing: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        IconButton(
-                                          icon: const Icon(Icons.edit, color: Colors.teal),
-                                          onPressed: () => showClinicaDialog(clinica: clinica),
-                                        ),
-                                        IconButton(
-                                          icon: const Icon(Icons.delete, color: Colors.red),
-                                          onPressed: () => excluirClinica(
-                                            clinica['id'],
-                                            clinica['nome'] ?? 'esta clínica',
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    onTap: () => showDetalhesClinica(clinica),
-                                  ),
-                                  // Informações adicionais
-                                  Padding(
-                                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                                    child: Row(
-                                      children: [
-                                        Expanded(
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 8,
-                                              vertical: 4,
+                                      )
+                                    : ListView.builder(
+                                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                                        itemCount: clinicasFiltradas.length,
+                                        itemBuilder: (context, index) {
+                                          final clinica = clinicasFiltradas[index];
+                                          return Card(
+                                            margin: const EdgeInsets.only(bottom: 12),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(16),
                                             ),
-                                            decoration: BoxDecoration(
-                                              color: Colors.grey.shade100,
-                                              borderRadius: BorderRadius.circular(8),
-                                            ),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                const Icon(Icons.email,
-                                                    size: 14, color: Colors.grey),
-                                                const SizedBox(width: 4),
-                                                Expanded(
-                                                  child: Text(
-                                                    clinica['email'] ?? 'Sem email',
-                                                    style: const TextStyle(fontSize: 11),
-                                                    overflow: TextOverflow.ellipsis,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        if (clinica['website'] != null && clinica['website']!.isNotEmpty)
-                                          Expanded(
                                             child: Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                horizontal: 8,
-                                                vertical: 4,
-                                              ),
                                               decoration: BoxDecoration(
-                                                color: Colors.grey.shade100,
-                                                borderRadius: BorderRadius.circular(8),
+                                                borderRadius: BorderRadius.circular(16),
                                               ),
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
+                                              child: Column(
                                                 children: [
-                                                  const Icon(Icons.language,
-                                                      size: 14, color: Colors.grey),
-                                                  const SizedBox(width: 4),
-                                                  Expanded(
-                                                    child: Text(
-                                                      clinica['website']!,
-                                                      style: const TextStyle(fontSize: 11),
-                                                      overflow: TextOverflow.ellipsis,
+                                                  ListTile(
+                                                    leading: Container(
+                                                      width: 50,
+                                                      height: 50,
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.teal.withValues(alpha: 0.1),
+                                                        borderRadius: BorderRadius.circular(12),
+                                                      ),
+                                                      child: const Icon(
+                                                        Icons.business,
+                                                        color: Colors.teal,
+                                                        size: 28,
+                                                      ),
+                                                    ),
+                                                    title: Text(
+                                                      clinica['nome'] ?? 'Sem nome',
+                                                      style: const TextStyle(
+                                                        fontWeight: FontWeight.bold,
+                                                        fontSize: 16,
+                                                      ),
+                                                    ),
+                                                    subtitle: Column(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      children: [
+                                                        const SizedBox(height: 4),
+                                                        Row(
+                                                          children: [
+                                                            const Icon(Icons.location_on,
+                                                                size: 14, color: Colors.grey),
+                                                            const SizedBox(width: 4),
+                                                            Expanded(
+                                                              child: Text(
+                                                                '${clinica['cidade'] ?? ''}, ${clinica['estado'] ?? ''}',
+                                                                style: const TextStyle(fontSize: 12),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        Row(
+                                                          children: [
+                                                            const Icon(Icons.phone,
+                                                                size: 14, color: Colors.grey),
+                                                            const SizedBox(width: 4),
+                                                            Text(
+                                                              clinica['telefone'] ?? 'Sem telefone',
+                                                              style: const TextStyle(fontSize: 12),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    trailing: Row(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+                                                        IconButton(
+                                                          icon: const Icon(Icons.edit, color: Colors.teal),
+                                                          onPressed: () => showClinicaDialog(clinica: clinica),
+                                                        ),
+                                                        IconButton(
+                                                          icon: const Icon(Icons.delete, color: Colors.red),
+                                                          onPressed: () => excluirClinica(
+                                                            clinica['id'],
+                                                            clinica['nome'] ?? 'esta clínica',
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    onTap: () => showDetalhesClinica(clinica),
+                                                  ),
+                                                  // Informações adicionais
+                                                  Padding(
+                                                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                                                    child: Row(
+                                                      children: [
+                                                        Expanded(
+                                                          child: Container(
+                                                            padding: const EdgeInsets.symmetric(
+                                                              horizontal: 8,
+                                                              vertical: 4,
+                                                            ),
+                                                            decoration: BoxDecoration(
+                                                              color: Colors.grey.shade100,
+                                                              borderRadius: BorderRadius.circular(8),
+                                                            ),
+                                                            child: Row(
+                                                              mainAxisSize: MainAxisSize.min,
+                                                              children: [
+                                                                const Icon(Icons.email,
+                                                                    size: 14, color: Colors.grey),
+                                                                const SizedBox(width: 4),
+                                                                Expanded(
+                                                                  child: Text(
+                                                                    clinica['email'] ?? 'Sem email',
+                                                                    style: const TextStyle(fontSize: 11),
+                                                                    overflow: TextOverflow.ellipsis,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        const SizedBox(width: 8),
+                                                        if (clinica['website'] != null && clinica['website']!.isNotEmpty)
+                                                          Expanded(
+                                                            child: Container(
+                                                              padding: const EdgeInsets.symmetric(
+                                                                horizontal: 8,
+                                                                vertical: 4,
+                                                              ),
+                                                              decoration: BoxDecoration(
+                                                                color: Colors.grey.shade100,
+                                                                borderRadius: BorderRadius.circular(8),
+                                                              ),
+                                                              child: Row(
+                                                                mainAxisSize: MainAxisSize.min,
+                                                                children: [
+                                                                  const Icon(Icons.language,
+                                                                      size: 14, color: Colors.grey),
+                                                                  const SizedBox(width: 4),
+                                                                  Expanded(
+                                                                    child: Text(
+                                                                      clinica['website']!,
+                                                                      style: const TextStyle(fontSize: 11),
+                                                                      overflow: TextOverflow.ellipsis,
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          ),
+                                                      ],
                                                     ),
                                                   ),
                                                 ],
                                               ),
                                             ),
-                                          ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
+                                          );
+                                        },
+                                      ),
+                          ),
+                        ],
                       ),
+                    ),
+                  ),
+                ],
+              ),
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: _buildTopNavigationBar(isMobile),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildTopNavigationBar(bool isMobile) {
+    final navItems = ['Dashboard', 'Usuários', 'Profissionais', 'Consultas', 'Clínicas', 'Mensagens'];
+
+    if (isMobile) {
+      return Container(
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.95),
+          borderRadius: BorderRadius.circular(50),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            IconButton(
+              onPressed: () {
+                _scaffoldKey.currentState?.openDrawer();
+              },
+              icon: const Icon(Icons.menu, size: 28, color: Colors.teal),
+            ),
+            Image.asset(
+              'assets/logo.png',
+              width: 60,
+              height: 60,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                return const Icon(Icons.medical_services, size: 50, color: Colors.teal);
+              },
+            ),
+            const SizedBox(width: 40),
+          ],
+        ),
+      );
+    }
+
+    // Desktop layout
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.92),
+        borderRadius: BorderRadius.circular(60),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
           ),
         ],
+        border: Border.all(
+          color: Colors.white.withOpacity(0.3),
+          width: 1,
+        ),
       ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Image.asset(
+              'assets/logo.png',
+              width: 70,
+              height: 70,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                return const Icon(Icons.medical_services, size: 60, color: Colors.teal);
+              },
+            ),
+          ),
+          Row(
+            children: navItems.map((item) {
+              final isActive = _currentPage == item;
+              return GestureDetector(
+                onTap: () {
+                  if (item == 'Dashboard') {
+                    Navigator.pop(context);
+                  } else if (item == 'Usuários') {
+                    Navigator.pop(context);
+                  } else if (item == 'Profissionais') {
+                    Navigator.pop(context);
+                  } else if (item == 'Consultas') {
+                    // Navegar para consultas
+                  } else if (item == 'Clínicas') {
+                    // Já está na página de clínicas
+                  } else if (item == 'Mensagens') {
+                    // Navegar para mensagens
+                  }
+                  setState(() {
+                    _currentPage = item;
+                  });
+                },
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 12),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Column(
+                    children: [
+                      Text(
+                        item,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: isActive ? Colors.teal : Colors.grey[700],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        height: 2,
+                        width: isActive ? 24 : 0,
+                        decoration: BoxDecoration(
+                          color: Colors.teal,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+          const SizedBox(width: 80),
+        ],
+      ),
+    );
+  }
+
+  Drawer _buildDrawer() {
+    return Drawer(
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Colors.teal, Colors.tealAccent],
+          ),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.only(top: 60, bottom: 30),
+              child: Center(
+                child: Image.asset(
+                  'assets/logo.png',
+                  width: 100,
+                  height: 100,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Icon(Icons.medical_services, size: 80, color: Colors.white);
+                  },
+                ),
+              ),
+            ),
+            const Divider(color: Colors.white54, thickness: 1),
+            Expanded(
+              child: ListView(
+                children: [
+                  _buildDrawerItem('Dashboard', Icons.dashboard, () {
+                    Navigator.pop(context);
+                  }),
+                  _buildDrawerItem('Usuários', Icons.people, () {
+                    Navigator.pop(context);
+                  }),
+                  _buildDrawerItem('Profissionais', Icons.medical_services, () {
+                    Navigator.pop(context);
+                  }),
+                  _buildDrawerItem('Consultas', Icons.calendar_today, () {
+                    Navigator.pop(context);
+                  }),
+                  _buildDrawerItem('Clínicas', Icons.business, () {
+                    Navigator.pop(context);
+                  }),
+                  _buildDrawerItem('Mensagens', Icons.mail, () {
+                    Navigator.pop(context);
+                  }),
+                  const Divider(color: Colors.white54, thickness: 1),
+                  _buildDrawerItem('Sair', Icons.logout, () {
+                    Navigator.pop(context);
+                  }),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDrawerItem(String title, IconData icon, VoidCallback onTap) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.white),
+      title: Text(
+        title,
+        style: const TextStyle(color: Colors.white, fontSize: 18),
+      ),
+      onTap: onTap,
+      hoverColor: Colors.white.withOpacity(0.1),
+      splashColor: Colors.white.withOpacity(0.2),
     );
   }
 }

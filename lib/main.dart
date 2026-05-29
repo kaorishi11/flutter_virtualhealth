@@ -8,7 +8,15 @@ import 'pages/cadastro.dart';
 import 'pages/clinicas.dart';
 import 'pages/contato.dart';
 import 'pages/chatbot.dart';
+
 import 'adm/admin_home.dart';
+import 'adm/usuarios.dart';
+import 'adm/consultas.dart';
+import 'adm/clinicas.dart';
+import 'adm/mensagens.dart';
+import 'adm/profissionais.dart';
+
+
 import 'medico/medico_home.dart';
 import 'medico/agendamentos.dart';
 import 'medico/dicas.dart';
@@ -76,6 +84,11 @@ class MyApp extends StatelessWidget {
         '/medico/agenda': (context) => const MinhaAgendaPage(),
         '/medico/dicas': (context) => const DicasSaudePage(),
         '/medico/perfil': (context) => const PerfilMedicoPage(),
+        '/admin-usuarios': (context) => const AdminUsuariosPage(),
+        '/admin-consultas': (context) => const AdminConsultasPage(),
+        '/admin-clinicas': (context) => const AdminClinicasPage(),
+        '/admin-mensagens': (context) => const AdminMensagensPage(),
+        '/admin-profissionais': (context) => const AdminProfissionaisPage(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/medico/teleconsulta') {
