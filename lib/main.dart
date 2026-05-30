@@ -8,6 +8,9 @@ import 'pages/cadastro.dart';
 import 'pages/clinicas.dart';
 import 'pages/contato.dart';
 import 'pages/chatbot.dart';
+import 'pages/teleconsulta.dart';
+import 'pages/termos_uso.dart';
+import 'pages/privacidade.dart';
 
 import 'adm/admin_home.dart';
 import 'adm/usuarios.dart';
@@ -73,12 +76,16 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/login',
       routes: {
+        '/': (context) => const HomePage(),
         '/login': (context) => const LoginPage(),
         '/home': (context) => const HomePage(),
         '/cadastro': (context) => const CadastroPage(),
         '/clinicas': (context) => const ClinicasPage(),
         '/contato': (context) => const ContatoPage(),
         '/chatbot': (context) => const ChatbotPage(),
+        '/teleconsulta': (context) => const TeleconsultaPacientePage(),
+        '/termos-uso': (context) => const TermosUsoPage(),
+        '/privacidade': (context) => const PrivacidadePage(),
         '/admin': (context) => const AdminHomePage(),
         '/medico': (context) => const MedicoHomePage(),
         '/medico/agenda': (context) => const MinhaAgendaPage(),

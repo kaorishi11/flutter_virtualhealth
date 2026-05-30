@@ -7,6 +7,7 @@ import 'login.dart';
 import 'cadastro.dart';
 import 'contato.dart';
 import 'chatbot.dart';
+import '../widgets/custom_bottom_nav_bar.dart';
 
 class ClinicasPage extends StatefulWidget {
   const ClinicasPage({super.key});
@@ -230,402 +231,36 @@ class _ClinicasPageState extends State<ClinicasPage> {
     
     return Scaffold(
       key: _scaffoldKey,
-      drawer: _buildDrawer(isMobile),
       backgroundColor: const Color(0xFFF7F7F7),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            child: Column(
-              children: [
-                SizedBox(height: isMobile ? 80 : 100),
-                _buildHeader(isMobile),
-                const SizedBox(height: 40),
-                _buildTitle(isMobile),
-                const SizedBox(height: 40),
-                _buildFilters(isMobile),
-                const SizedBox(height: 50),
-                _buildMedicosList(isMobile),
-                const SizedBox(height: 50),
-                _buildFooter(isMobile),
-              ],
-            ),
-          ),
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: _buildTopNavigationBar(isMobile),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDrawer(bool isMobile) {
-    return Drawer(
-      child: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF0D47A1), Color(0xFF1565C0)],
-          ),
-        ),
+      body: SingleChildScrollView(
         child: Column(
           children: [
-            Container(
-              padding: const EdgeInsets.only(top: 60, bottom: 30),
-              child: Center(
-                child: Image.asset(
-                  'assets/logo.png',
-                  width: 120,
-                  height: 120,
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ),
-            if (_isLoggedIn && _userProfile != null) ...[
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 25,
-                      backgroundColor: Colors.white.withOpacity(0.3),
-                      child: Text(
-                        _userName != null && _userName!.isNotEmpty 
-                            ? _userName![0].toUpperCase() 
-                            : 'U',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _userProfile?['nome_completo'] ?? 'Usuário',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            _userFuncao == 'paciente' ? 'Paciente' : 'Médico',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Divider(color: Colors.white54, thickness: 1),
-            ],
-            Expanded(
-              child: ListView(
-                children: [
-                  _buildDrawerItem('Início', Icons.home, () {
-                    Navigator.pop(context);
-                    _onPageChanged('Início');
-                  }),
-                  _buildDrawerItem('Clínicas', Icons.local_hospital, () {
-                    Navigator.pop(context);
-                  }),
-                  _buildDrawerItem('Contato', Icons.contact_mail, () {
-                    Navigator.pop(context);
-                    _onPageChanged('Contato');
-                  }),
-                  _buildDrawerItem('Chatbot', Icons.chat, () {
-                    Navigator.pop(context);
-                    _onPageChanged('Chatbot');
-                  }),
-                  _buildDrawerItem('Fazer Consulta', Icons.calendar_today, () {
-                    Navigator.pop(context);
-                    _onPageChanged('Fazer Consulta');
-                  }),
-                  const Divider(color: Colors.white54, thickness: 1),
-                  if (!_isLoggedIn) ...[
-                    _buildDrawerItem('Cadastro', Icons.app_registration, () {
-                      Navigator.pop(context);
-                      _onPageChanged('Cadastro');
-                    }),
-                    _buildDrawerItem('Login', Icons.login, () {
-                      Navigator.pop(context);
-                      Navigator.pushNamed(context, '/login');
-                    }),
-                  ] else ...[
-                    _buildDrawerItem('Meu Perfil', Icons.person, () {
-                      Navigator.pop(context);
-                      _showUserMenu();
-                    }),
-                    _buildDrawerItem('Sair', Icons.logout, () {
-                      Navigator.pop(context);
-                      _logout();
-                    }),
-                  ],
-                ],
-              ),
-            ),
+            _buildHeader(isMobile),
+            const SizedBox(height: 40),
+            _buildTitle(isMobile),
+            const SizedBox(height: 40),
+            _buildFilters(isMobile),
+            const SizedBox(height: 50),
+            _buildMedicosList(isMobile),
+            const SizedBox(height: 50),
+            _buildFooter(isMobile),
           ],
         ),
+      ),
+      bottomNavigationBar: CustomBottomNavBar(
+        currentIndex: 1,
+        isLoggedIn: _isLoggedIn,
+        onProfileTap: () {
+          if (_isLoggedIn) {
+            _showUserMenu();
+          } else {
+            Navigator.pushNamed(context, '/login');
+          }
+        },
       ),
     );
   }
 
-  Widget _buildDrawerItem(String title, IconData icon, VoidCallback onTap) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.white),
-      title: Text(
-        title,
-        style: const TextStyle(color: Colors.white, fontSize: 18),
-      ),
-      onTap: onTap,
-      hoverColor: Colors.white.withOpacity(0.1),
-      splashColor: Colors.white.withOpacity(0.2),
-    );
-  }
-
-  Widget _buildTopNavigationBar(bool isMobile) {
-    final navItems = ['Início', 'Clínicas', 'Contato', 'Fazer Consulta'];
-
-    if (isMobile) {
-      return Container(
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.95),
-          borderRadius: BorderRadius.circular(50),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 20,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            IconButton(
-              onPressed: () {
-                _scaffoldKey.currentState?.openDrawer();
-              },
-              icon: const Icon(Icons.menu, size: 28, color: Color(0xFF1565C0)),
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.pushReplacementNamed(context, '/');
-              },
-              child: Image.asset(
-                'assets/logo.png',
-                width: 60,
-                height: 60,
-                fit: BoxFit.contain,
-              ),
-            ),
-            if (_isLoggedIn && _userName != null)
-              GestureDetector(
-                onTap: () => _onPageChanged('Perfil'),
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF3FA9C6).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircleAvatar(
-                        radius: 16,
-                        backgroundColor: const Color(0xFF3FA9C6),
-                        child: Text(
-                          _userName!.isNotEmpty ? _userName![0].toUpperCase() : 'U',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        _userName ?? 'Perfil',
-                        style: const TextStyle(
-                          color: Color(0xFF1565C0),
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                    ],
-                  ),
-                ),
-              )
-            else
-              Container(width: 40),
-          ],
-        ),
-      );
-    }
-
-    // Desktop layout
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
-      padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 24),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.92),
-        borderRadius: BorderRadius.circular(60),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: Border.all(
-          color: Colors.white.withOpacity(0.3),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          GestureDetector(
-            onTap: () {
-              Navigator.pushReplacementNamed(context, '/');
-            },
-            child: Image.asset(
-              'assets/logo.png',
-              width: 80,
-              height: 80,
-              fit: BoxFit.contain,
-            ),
-          ),
-          Row(
-            children: navItems.map((item) {
-              final isActive = item == 'Clínicas';
-              return GestureDetector(
-                onTap: () => _onPageChanged(item),
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Column(
-                    children: [
-                      Text(
-                        item,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: isActive ? const Color(0xFF1565C0) : Colors.grey[700],
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        height: 2,
-                        width: isActive ? 24 : 0,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1565C0),
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-          if (!_isLoggedIn)
-            MouseRegion(
-              cursor: SystemMouseCursors.click,
-              child: GestureDetector(
-                onTap: () => _onPageChanged('Fazer Consulta'),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF1565C0), Color(0xFF0D47A1)],
-                    ),
-                    borderRadius: BorderRadius.circular(40),
-                  ),
-                  child: const Text(
-                    'Entrar',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              ),
-            )
-          else
-            MouseRegion(
-              cursor: SystemMouseCursors.click,
-              child: GestureDetector(
-                onTap: () => _onPageChanged('Perfil'),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF3FA9C6).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(50),
-                    border: Border.all(color: const Color(0xFF3FA9C6).withOpacity(0.3)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircleAvatar(
-                        radius: 18,
-                        backgroundColor: const Color(0xFF3FA9C6),
-                        child: Text(
-                          _userName != null && _userName!.isNotEmpty 
-                              ? _userName![0].toUpperCase() 
-                              : 'U',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'Olá, ${_userName ?? "Usuário"}',
-                        style: const TextStyle(
-                          color: Color(0xFF1565C0),
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Icon(
-                        Icons.arrow_drop_down,
-                        color: Color(0xFF1565C0),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
 
   // ================= HEADER COM IMAGEM DE FUNDO =================
   Widget _buildHeader(bool isMobile) {

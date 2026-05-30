@@ -7,6 +7,7 @@ import 'clinicas.dart';
 import 'contato.dart';
 import 'chatbot.dart';
 import '../services/auth_service.dart';
+import '../widgets/custom_bottom_nav_bar.dart';
 
 void main() {
   usePathUrlStrategy();
@@ -68,10 +69,10 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _checkAuthState() async {
     if (!mounted) return;
-    
+
     try {
       final isLoggedIn = _auth.isLoggedIn;
-      
+
       if (isLoggedIn) {
         final profile = await _auth.getPerfilUsuario();
         if (profile != null && mounted) {
@@ -122,7 +123,7 @@ class _HomePageState extends State<HomePage> {
           _userProfile = null;
           _userFuncao = null;
         });
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Logout realizado com sucesso!'),
@@ -185,8 +186,8 @@ class _HomePageState extends State<HomePage> {
               radius: 40,
               backgroundColor: const Color(0xFF3FA9C6),
               child: Text(
-                _userName != null && _userName!.isNotEmpty 
-                    ? _userName![0].toUpperCase() 
+                _userName != null && _userName!.isNotEmpty
+                    ? _userName![0].toUpperCase()
                     : 'U',
                 style: const TextStyle(fontSize: 32, color: Colors.white),
               ),
@@ -220,411 +221,30 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      drawer: _buildDrawer(),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final isMobile = constraints.maxWidth < 800;
-          
-          return Stack(
+      body: LayoutBuilder(builder: (context, constraints) {
+        final isMobile = constraints.maxWidth < 800;
+
+        return SingleChildScrollView(
+          child: Column(
             children: [
-              SingleChildScrollView(
-                child: Column(
-                  children: [
-                    SizedBox(height: isMobile ? 100 : 160),
-                    HeroSection(isMobile: isMobile),
-                    VideoPitchSection(isMobile: isMobile),
-                    VirtualPlanCard(isMobile: isMobile),
-                    ModernFooterSection(isMobile: isMobile),
-                  ],
-                ),
-              ),
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: TopNavigationBar(
-                  currentPage: _currentPage,
-                  onPageChanged: _onPageChanged,
-                  isMobile: isMobile,
-                  scaffoldKey: _scaffoldKey,
-                  isLoggedIn: _isLoggedIn,
-                  userName: _userName,
-                  onLogout: _logout,
-                  userProfile: _userProfile,
-                ),
-              ),
+              HeroSection(isMobile: isMobile),
+              VideoPitchSection(isMobile: isMobile),
+              VirtualPlanCard(isMobile: isMobile),
+              ModernFooterSection(isMobile: isMobile),
             ],
-          );
-        }
-      ),
-    );
-  }
-
-  Widget _buildDrawer() {
-    return Drawer(
-      child: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF0D47A1), Color(0xFF1565C0)],
           ),
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.only(top: 60, bottom: 30),
-              child: Center(
-                child: Image.asset(
-                  'assets/logo.png',
-                  width: 120,
-                  height: 120,
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ),
-            if (_isLoggedIn && _userProfile != null) ...[
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 25,
-                      backgroundColor: Colors.white.withOpacity(0.3),
-                      child: Text(
-                        _userName != null && _userName!.isNotEmpty 
-                            ? _userName![0].toUpperCase() 
-                            : 'U',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _userProfile?['nome_completo'] ?? 'Usuário',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            _userFuncao == 'paciente' ? 'Paciente' : 'Médico',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Divider(color: Colors.white54, thickness: 1),
-            ],
-            Expanded(
-              child: ListView(
-                children: [
-                  _buildDrawerItem('Início', Icons.home, () {
-                    Navigator.pop(context);
-                    _onPageChanged('Início');
-                  }),
-                  _buildDrawerItem('Contato', Icons.contact_mail, () {
-                    Navigator.pop(context);
-                    _onPageChanged('Contato');
-                  }),
-                  _buildDrawerItem('Chatbot', Icons.chat, () {
-                    Navigator.pop(context);
-                    _onPageChanged('Chatbot');
-                  }),
-                  const Divider(color: Colors.white54, thickness: 1),
-                  if (!_isLoggedIn) ...[
-                    _buildDrawerItem('Cadastro', Icons.app_registration, () {
-                      Navigator.pop(context);
-                      _onPageChanged('Cadastro');
-                    }),
-                    _buildDrawerItem('Login', Icons.login, () {
-                      Navigator.pop(context);
-                      Navigator.pushNamed(context, '/login');
-                    }),
-                  ] else ...[
-                    _buildDrawerItem('Sair', Icons.logout, () {
-                      Navigator.pop(context);
-                      _logout();
-                    }),
-                  ],
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDrawerItem(String title, IconData icon, VoidCallback onTap) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.white),
-      title: Text(
-        title,
-        style: const TextStyle(color: Colors.white, fontSize: 18),
-      ),
-      onTap: onTap,
-      hoverColor: Colors.white.withOpacity(0.1),
-      splashColor: Colors.white.withOpacity(0.2),
-    );
-  }
-}
-
-class TopNavigationBar extends StatelessWidget {
-  final String currentPage;
-  final Function(String) onPageChanged;
-  final bool isMobile;
-  final GlobalKey<ScaffoldState>? scaffoldKey;
-  final bool isLoggedIn;
-  final String? userName;
-  final VoidCallback? onLogout;
-  final Map<String, dynamic>? userProfile;
-
-  const TopNavigationBar({
-    super.key,
-    required this.currentPage,
-    required this.onPageChanged,
-    this.isMobile = false,
-    this.scaffoldKey,
-    this.isLoggedIn = false,
-    this.userName,
-    this.onLogout,
-    this.userProfile,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final navItems = ['Início', 'Contato', 'Chatbot'];
-
-    if (isMobile) {
-      return Container(
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.95),
-          borderRadius: BorderRadius.circular(50),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 20,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            IconButton(
-              onPressed: () {
-                scaffoldKey?.currentState?.openDrawer();
-              },
-              icon: const Icon(Icons.menu, size: 28, color: Color(0xFF1565C0)),
-            ),
-            Image.asset(
-              'assets/logo.png',
-              width: 60,
-              height: 60,
-              fit: BoxFit.contain,
-            ),
-            if (isLoggedIn && userName != null)
-              GestureDetector(
-                onTap: () => onPageChanged('Perfil'),
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF3FA9C6).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircleAvatar(
-                        radius: 16,
-                        backgroundColor: const Color(0xFF3FA9C6),
-                        child: Text(
-                          userName!.isNotEmpty ? userName![0].toUpperCase() : 'U',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        userName ?? 'Perfil',
-                        style: const TextStyle(
-                          color: Color(0xFF1565C0),
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                    ],
-                  ),
-                ),
-              )
-            else
-              Container(width: 40),
-          ],
-        ),
-      );
-    }
-
-    // Desktop layout
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
-      padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 24),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.92),
-        borderRadius: BorderRadius.circular(60),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: Border.all(
-          color: Colors.white.withOpacity(0.3),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Image.asset(
-            'assets/logo.png',
-            width: 80,
-            height: 80,
-            fit: BoxFit.contain,
-          ),
-          Row(
-            children: navItems.map((item) {
-              final isActive = currentPage == item;
-              return GestureDetector(
-                onTap: () => onPageChanged(item),
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Column(
-                    children: [
-                      Text(
-                        item,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: isActive ? const Color(0xFF1565C0) : Colors.grey[700],
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        height: 2,
-                        width: isActive ? 24 : 0,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1565C0),
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-          if (!isLoggedIn)
-            MouseRegion(
-              cursor: SystemMouseCursors.click,
-              child: GestureDetector(
-                onTap: () => onPageChanged('Fazer Consulta'),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF1565C0), Color(0xFF0D47A1)],
-                    ),
-                    borderRadius: BorderRadius.circular(40),
-                  ),
-                  child: const Text(
-                    'Entrar',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              ),
-            )
-          else
-            MouseRegion(
-              cursor: SystemMouseCursors.click,
-              child: GestureDetector(
-                onTap: () => onPageChanged('Fazer Consulta'),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF3FA9C6).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(50),
-                    border: Border.all(color: const Color(0xFF3FA9C6).withOpacity(0.3)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircleAvatar(
-                        radius: 18,
-                        backgroundColor: const Color(0xFF3FA9C6),
-                        child: Text(
-                          userName != null && userName!.isNotEmpty 
-                              ? userName![0].toUpperCase() 
-                              : 'U',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'Olá, ${userName ?? "Usuário"}',
-                        style: const TextStyle(
-                          color: Color(0xFF1565C0),
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Icon(
-                        Icons.arrow_drop_down,
-                        color: Color(0xFF1565C0),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-        ],
+        );
+      }),
+      bottomNavigationBar: CustomBottomNavBar(
+        currentIndex: 0,
+        isLoggedIn: _isLoggedIn,
+        onProfileTap: () {
+          if (_isLoggedIn) {
+            _showUserMenu();
+          } else {
+            Navigator.pushNamed(context, '/login');
+          }
+        },
       ),
     );
   }
@@ -646,17 +266,6 @@ class HeroSection extends StatelessWidget {
         ),
       ),
       child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-            colors: [
-              const Color(0xFF0D47A1).withOpacity(0.85),
-              const Color(0xFF1565C0).withOpacity(0.5),
-              Colors.transparent,
-            ],
-          ),
-        ),
         child: Padding(
           padding: EdgeInsets.symmetric(
             horizontal: isMobile ? 20 : 140,
@@ -670,17 +279,17 @@ class HeroSection extends StatelessWidget {
                 'SEJA BEM VINDO AO',
                 style: TextStyle(
                   fontSize: isMobile ? 24 : 50,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  color: const Color.fromARGB(255, 16, 155, 102),
                   letterSpacing: 2,
                 ),
               ),
               Text(
-                'VIVIDO EM VIDA!',
+                'VIRTUAL HEALTH',
                 style: TextStyle(
                   fontSize: isMobile ? 32 : 80,
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xFF4FC3F7),
+                  color: const Color.fromARGB(255, 16, 155, 102),
                   height: 1.1,
                 ),
               ),
@@ -689,22 +298,22 @@ class HeroSection extends StatelessWidget {
                 'Tudo que você precisa para cuidar da sua saúde em um só lugar — rápido, seguro e acessível.',
                 style: TextStyle(
                   fontSize: isMobile ? 14 : 22,
-                  color: Colors.white70,
+                  color: const Color.fromARGB(179, 0, 0, 0),
                 ),
               ),
               SizedBox(height: isMobile ? 24 : 40),
               if (!isMobile)
                 Row(
                   children: [
-                    _buildAgendarButton(isMobile),
+                    _buildAgendarButton(context, isMobile),
                     const SizedBox(width: 24),
-                    _buildTeleconsultaButton(isMobile),
+                    _buildTeleconsultaButton(context, isMobile),
                   ],
                 ),
               if (isMobile) ...[
-                _buildAgendarButton(isMobile),
+                _buildAgendarButton(context, isMobile),
                 const SizedBox(height: 12),
-                _buildTeleconsultaButton(isMobile),
+                _buildTeleconsultaButton(context, isMobile),
               ],
             ],
           ),
@@ -713,9 +322,11 @@ class HeroSection extends StatelessWidget {
     );
   }
 
-  Widget _buildAgendarButton(bool isMobile) {
+  Widget _buildAgendarButton(BuildContext context, bool isMobile) {
     return ElevatedButton(
-      onPressed: () {},
+      onPressed: () {
+        Navigator.pushNamed(context, '/clinicas');
+      },
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.white,
         foregroundColor: const Color(0xFF1565C0),
@@ -737,9 +348,11 @@ class HeroSection extends StatelessWidget {
     );
   }
 
-  Widget _buildTeleconsultaButton(bool isMobile) {
+  Widget _buildTeleconsultaButton(BuildContext context, bool isMobile) {
     return OutlinedButton(
-      onPressed: () {},
+      onPressed: () {
+        Navigator.pushNamed(context, '/teleconsulta');
+      },
       style: OutlinedButton.styleFrom(
         foregroundColor: Colors.white,
         side: const BorderSide(
@@ -800,9 +413,8 @@ class _VideoPitchSectionState extends State<VideoPitchSection> {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: widget.isMobile ? 20 : 80, 
-        vertical: widget.isMobile ? 40 : 60
-      ),
+          horizontal: widget.isMobile ? 20 : 80,
+          vertical: widget.isMobile ? 40 : 60),
       color: const Color(0xFFF0F4F8),
       child: Column(
         children: [
@@ -844,7 +456,7 @@ class _VideoPitchSectionState extends State<VideoPitchSection> {
           ),
           const SizedBox(height: 40),
           Container(
-            width: widget.isMobile 
+            width: widget.isMobile
                 ? MediaQuery.of(context).size.width * 0.95
                 : MediaQuery.of(context).size.width * 0.7,
             decoration: BoxDecoration(
@@ -953,9 +565,7 @@ class VirtualPlanCard extends StatelessWidget {
 
     return Container(
       margin: EdgeInsets.symmetric(
-        horizontal: isMobile ? 16 : 80, 
-        vertical: isMobile ? 24 : 40
-      ),
+          horizontal: isMobile ? 16 : 80, vertical: isMobile ? 24 : 40),
       padding: EdgeInsets.all(isMobile ? 20 : 32),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -983,7 +593,8 @@ class VirtualPlanCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1565C0).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
@@ -1061,7 +672,8 @@ class VirtualPlanCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
                           color: const Color(0xFF1565C0).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(20),
@@ -1093,7 +705,8 @@ class VirtualPlanCard extends StatelessWidget {
                                 Container(
                                   padding: const EdgeInsets.all(4),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF1565C0).withOpacity(0.1),
+                                    color: const Color(0xFF1565C0)
+                                        .withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: const Icon(
@@ -1275,34 +888,56 @@ class ModernFooterSection extends StatelessWidget {
   }
 
   Widget _buildFooterLinksCentralizado(String title, List<String> links) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
+    return Builder(
+      builder: (context) => Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+            textAlign: TextAlign.center,
           ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 16),
-        ...links.map((link) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: InkWell(
-                onTap: () {},
-                child: Text(
-                  link,
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
+          const SizedBox(height: 16),
+          ...links.map((link) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: InkWell(
+                  onTap: () {
+                    if (link == 'Contato') {
+                      Navigator.pushNamed(context, '/contato');
+                    } else if (link == 'Termos de uso') {
+                      Navigator.pushNamed(context, '/termos-uso');
+                    } else if (link == 'Privacidade') {
+                      Navigator.pushNamed(context, '/privacidade');
+                    } else if (link == 'Teleconsultas 24h') {
+                      Navigator.pushNamed(context, '/teleconsulta');
+                    } else if (link == 'Agendamento online') {
+                      Navigator.pushNamed(context, '/clinicas');
+                    }
+                  },
+                  child: Text(
+                    link,
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14,
+                      decoration: (link == 'Contato' ||
+                              link == 'Termos de uso' ||
+                              link == 'Privacidade' ||
+                              link == 'Teleconsultas 24h' ||
+                              link == 'Agendamento online')
+                          ? TextDecoration.underline
+                          : TextDecoration.none,
+                      decorationColor: Colors.white54,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
                 ),
-              ),
-            )),
-      ],
+              )),
+        ],
+      ),
     );
   }
 }
