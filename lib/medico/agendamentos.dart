@@ -3,7 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
 import 'dicas.dart';
 import 'perfil.dart';
-import 'teleconsulta.dart';
+import 'teleconsultaMe.dart';
 
 class MinhaAgendaPage extends StatefulWidget {
   const MinhaAgendaPage({super.key});
@@ -16,45 +16,45 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
   final supabase = Supabase.instance.client;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   String _currentPage = 'Minha Agenda';
-  
+
   DateTime _dataSelecionada = DateTime.now();
   String _filtroTipo = 'Todos'; // Todos, Online, Presencial
   String _filtroStatus = 'Todos'; // Todos, Confirmado, Pendente, Concluído
-  
+
   List<Agendamento> _agendamentos = [];
   List<Agendamento> _agendamentosFiltrados = [];
-  
+
   bool _isLoading = true;
   String _nomeMedico = '';
   String _especialidade = '';
-  
+
   // Cores do tema
   final Color primaryColor = const Color(0xFF3FA9C6);
-  
+
   @override
   void initState() {
     super.initState();
     _carregarAgendamentos();
     _carregarDadosMedico();
   }
-  
+
   Future<void> _carregarDadosMedico() async {
     try {
       final user = supabase.auth.currentUser;
       if (user == null) return;
-      
+
       final perfil = await supabase
           .from('perfis')
           .select()
           .eq('auth_id', user.id)
           .single();
-      
+
       final profissional = await supabase
           .from('profissionais')
           .select()
           .eq('perfil_id', perfil['id'])
           .single();
-      
+
       setState(() {
         _nomeMedico = perfil['nome_completo'] ?? 'Médico';
         _especialidade = profissional['especialidade'] ?? 'Médico';
@@ -63,35 +63,35 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
       debugPrint('Erro ao carregar dados do médico: $e');
     }
   }
-  
+
   Future<void> _carregarAgendamentos() async {
     setState(() {
       _isLoading = true;
     });
-    
+
     try {
       final user = supabase.auth.currentUser;
       if (user == null) return;
-      
+
       // Buscar perfil do médico
       final perfil = await supabase
           .from('perfis')
           .select()
           .eq('auth_id', user.id)
           .single();
-      
+
       // Buscar profissional
       final profissional = await supabase
           .from('profissionais')
           .select()
           .eq('perfil_id', perfil['id'])
           .single();
-      
+
       final profissionalId = profissional['id'];
-      
+
       // Formatar data para busca
       final dataStr = DateFormat('yyyy-MM-dd').format(_dataSelecionada);
-      
+
       // Buscar agendamentos do dia
       final consultas = await supabase
           .from('consultas')
@@ -113,7 +113,7 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
           .eq('profissional_id', profissionalId)
           .eq('data_agendada', dataStr)
           .order('horario_agendado', ascending: true);
-      
+
       // Converter para lista de Agendamento
       final List<Agendamento> agendamentosTemp = [];
       for (var consulta in consultas) {
@@ -127,16 +127,16 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
           tipo: consulta['modo'] ?? 'presencial',
           status: consulta['status'] ?? 'pendente',
           descricao: consulta['observacoes'] ?? 'Consulta',
-          isPrimeiraConsulta: consulta['observacoes']?.contains('primeira') ?? false,
+          isPrimeiraConsulta:
+              consulta['observacoes']?.contains('primeira') ?? false,
         ));
       }
-      
+
       setState(() {
         _agendamentos = agendamentosTemp;
         _aplicarFiltros();
         _isLoading = false;
       });
-      
     } catch (e) {
       debugPrint('Erro ao carregar agendamentos: $e');
       setState(() {
@@ -146,47 +146,50 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
       });
     }
   }
-  
+
   TimeOfDay _parseHorario(String horarioStr) {
     final partes = horarioStr.split(':');
     if (partes.length >= 2) {
-      return TimeOfDay(hour: int.parse(partes[0]), minute: int.parse(partes[1]));
+      return TimeOfDay(
+          hour: int.parse(partes[0]), minute: int.parse(partes[1]));
     }
     return TimeOfDay(hour: 8, minute: 0);
   }
-  
+
   void _aplicarFiltros() {
     setState(() {
       _agendamentosFiltrados = _agendamentos.where((agendamento) {
         // Filtro por tipo
         if (_filtroTipo != 'Todos') {
-          final tipoMatch = _filtroTipo.toLowerCase() == agendamento.tipo.toLowerCase();
+          final tipoMatch =
+              _filtroTipo.toLowerCase() == agendamento.tipo.toLowerCase();
           if (!tipoMatch) return false;
         }
-        
+
         // Filtro por status
         if (_filtroStatus != 'Todos') {
-          final statusMatch = _filtroStatus.toLowerCase() == agendamento.status.toLowerCase();
+          final statusMatch =
+              _filtroStatus.toLowerCase() == agendamento.status.toLowerCase();
           if (!statusMatch) return false;
         }
-        
+
         return true;
       }).toList();
-      
+
       // Ordenar por horário
       _agendamentosFiltrados.sort((a, b) {
         return a.horario.hour.compareTo(b.horario.hour);
       });
     });
   }
-  
+
   void _mudarData(int days) {
     setState(() {
       _dataSelecionada = _dataSelecionada.add(Duration(days: days));
       _carregarAgendamentos();
     });
   }
-  
+
   void _onPageChanged(String page) {
     if (page == 'Dashboard') {
       Navigator.pop(context);
@@ -213,7 +216,7 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
       _confirmLogout();
     }
   }
-  
+
   void _confirmLogout() {
     showDialog(
       context: context,
@@ -247,19 +250,19 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
       },
     );
   }
-  
+
   String _formatarData() {
     return DateFormat("EEEE, d 'de' MMMM", 'pt_BR')
         .format(_dataSelecionada)
         .toUpperCase();
   }
-  
+
   String _formatarHorario(TimeOfDay time) {
     final hour = time.hour.toString().padLeft(2, '0');
     final minute = time.minute.toString().padLeft(2, '0');
     return '$hour:$minute';
   }
-  
+
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'confirmada':
@@ -274,7 +277,7 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
         return Colors.grey;
     }
   }
-  
+
   String _getStatusText(String status) {
     switch (status.toLowerCase()) {
       case 'confirmada':
@@ -289,7 +292,7 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
         return status;
     }
   }
-  
+
   void _iniciarConsulta(Agendamento agendamento) {
     if (agendamento.tipo.toLowerCase() == 'online') {
       Navigator.push(
@@ -307,7 +310,8 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('Iniciar Consulta'),
-          content: Text('Iniciar consulta presencial com ${agendamento.pacienteNome}?'),
+          content: Text(
+              'Iniciar consulta presencial com ${agendamento.pacienteNome}?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
@@ -325,18 +329,18 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
       );
     }
   }
-  
+
   String _getIniciais(String nome) {
     final partes = nome.trim().split(' ');
     if (partes.isEmpty) return 'P';
     if (partes.length == 1) return partes[0][0].toUpperCase();
     return '${partes[0][0]}${partes[1][0]}'.toUpperCase();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 800;
-    
+
     return Scaffold(
       key: _scaffoldKey,
       drawer: isMobile ? _buildDrawer() : null,
@@ -344,7 +348,7 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
       body: LayoutBuilder(
         builder: (context, constraints) {
           final isMobile = constraints.maxWidth < 800;
-          
+
           return Stack(
             children: [
               Column(
@@ -370,9 +374,15 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
       ),
     );
   }
-  
+
   Widget _buildTopNavigationBar(bool isMobile) {
-    final navItems = ['Dashboard', 'Minha Agenda', 'Teleconsulta', 'Dicas de Saúde', 'Meu Perfil'];
+    final navItems = [
+      'Dashboard',
+      'Minha Agenda',
+      'Teleconsulta',
+      'Dicas de Saúde',
+      'Meu Perfil'
+    ];
 
     if (isMobile) {
       return Container(
@@ -404,7 +414,8 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
               height: 60,
               fit: BoxFit.contain,
               errorBuilder: (context, error, stackTrace) {
-                return const Icon(Icons.medical_services, size: 50, color: Color(0xFF3FA9C6));
+                return const Icon(Icons.medical_services,
+                    size: 50, color: Color(0xFF3FA9C6));
               },
             ),
             const SizedBox(width: 40),
@@ -441,7 +452,8 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
             height: 70,
             fit: BoxFit.contain,
             errorBuilder: (context, error, stackTrace) {
-              return const Icon(Icons.medical_services, size: 60, color: Color(0xFF3FA9C6));
+              return const Icon(Icons.medical_services,
+                  size: 60, color: Color(0xFF3FA9C6));
             },
           ),
           Row(
@@ -483,7 +495,8 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
             child: GestureDetector(
               onTap: () => _confirmLogout(),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Colors.red, Colors.redAccent],
@@ -505,7 +518,7 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
       ),
     );
   }
-  
+
   Widget _buildDrawer() {
     final navItems = [
       {'title': 'Dashboard', 'icon': Icons.dashboard},
@@ -537,7 +550,8 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
                       height: 100,
                       fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) {
-                        return const Icon(Icons.medical_services, size: 80, color: Colors.white);
+                        return const Icon(Icons.medical_services,
+                            size: 80, color: Colors.white);
                       },
                     ),
                     const SizedBox(height: 16),
@@ -566,13 +580,13 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
               child: ListView(
                 children: [
                   ...navItems.map((item) => _buildDrawerItem(
-                    item['title'] as String,
-                    item['icon'] as IconData,
-                    () {
-                      Navigator.pop(context);
-                      _onPageChanged(item['title'] as String);
-                    },
-                  )),
+                        item['title'] as String,
+                        item['icon'] as IconData,
+                        () {
+                          Navigator.pop(context);
+                          _onPageChanged(item['title'] as String);
+                        },
+                      )),
                   const Divider(color: Colors.white54, thickness: 1),
                   _buildDrawerItem('Sair', Icons.logout, () {
                     Navigator.pop(context);
@@ -586,8 +600,9 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
       ),
     );
   }
-  
-  Widget _buildDrawerItem(String title, IconData icon, VoidCallback onTap, {bool isDestructive = false}) {
+
+  Widget _buildDrawerItem(String title, IconData icon, VoidCallback onTap,
+      {bool isDestructive = false}) {
     return ListTile(
       leading: Icon(icon, color: isDestructive ? Colors.red : Colors.white),
       title: Text(
@@ -602,10 +617,11 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
       splashColor: Colors.white.withOpacity(0.2),
     );
   }
-  
+
   Widget _buildHeader() {
     return Container(
-      margin: EdgeInsets.only(top: MediaQuery.of(context).size.width < 800 ? 100 : 160),
+      margin: EdgeInsets.only(
+          top: MediaQuery.of(context).size.width < 800 ? 100 : 160),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -654,9 +670,9 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Resumo do dia
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -684,7 +700,7 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
       ),
     );
   }
-  
+
   Widget _buildFilterBar() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -712,14 +728,14 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
                 _aplicarFiltros();
               });
             }),
-            
+
             const SizedBox(width: 16),
-            
+
             // Separador
             Container(width: 1, height: 30, color: Colors.grey[300]),
-            
+
             const SizedBox(width: 16),
-            
+
             // Filtro de status
             _buildFilterChip('Todos Status', _filtroStatus == 'Todos', () {
               setState(() {
@@ -744,7 +760,7 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
       ),
     );
   }
-  
+
   Widget _buildFilterChip(String label, bool selected, VoidCallback onTap) {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
@@ -768,7 +784,7 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
       ),
     );
   }
-  
+
   Widget _buildAgendaList() {
     if (_agendamentosFiltrados.isEmpty) {
       return Center(
@@ -800,7 +816,7 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
         ),
       );
     }
-    
+
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: _agendamentosFiltrados.length,
@@ -810,10 +826,10 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
       },
     );
   }
-  
+
   Widget _buildAgendaCard(Agendamento agendamento) {
     final isOnline = agendamento.tipo.toLowerCase() == 'online';
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -864,7 +880,8 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
                   ],
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
                     color: _getStatusColor(agendamento.status).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
@@ -881,7 +898,7 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
               ],
             ),
           ),
-          
+
           // Conteúdo principal
           Padding(
             padding: const EdgeInsets.all(16),
@@ -908,7 +925,7 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
                   ),
                 ),
                 const SizedBox(width: 16),
-                
+
                 // Informações
                 Expanded(
                   child: Column(
@@ -934,7 +951,8 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
                         children: [
                           if (agendamento.isPrimeiraConsulta)
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 2),
                               decoration: BoxDecoration(
                                 color: Colors.purple.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(12),
@@ -948,11 +966,13 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
                                 ),
                               ),
                             ),
-                          if (agendamento.isPrimeiraConsulta) const SizedBox(width: 8),
+                          if (agendamento.isPrimeiraConsulta)
+                            const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
-                              color: isOnline 
+                              color: isOnline
                                   ? Colors.purple.withOpacity(0.1)
                                   : Colors.blue.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(12),
@@ -970,7 +990,8 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
                                   isOnline ? 'Online' : 'Presencial',
                                   style: TextStyle(
                                     fontSize: 10,
-                                    color: isOnline ? Colors.purple : Colors.blue,
+                                    color:
+                                        isOnline ? Colors.purple : Colors.blue,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -982,7 +1003,7 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
                     ],
                   ),
                 ),
-                
+
                 // Botão de ação
                 if (agendamento.status.toLowerCase() == 'confirmada')
                   ElevatedButton(
@@ -991,7 +1012,8 @@ class _MinhaAgendaPageState extends State<MinhaAgendaPage> {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryColor,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 10),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -1023,7 +1045,7 @@ class Agendamento {
   final String status;
   final String descricao;
   final bool isPrimeiraConsulta;
-  
+
   Agendamento({
     required this.id,
     required this.pacienteNome,

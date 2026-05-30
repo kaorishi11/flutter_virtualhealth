@@ -1,43 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:video_player/video_player.dart';
-import 'cadastro.dart';
-import 'login.dart';
-import 'clinicas.dart';
-import 'contato.dart';
-import 'chatbot.dart';
-import '../services/auth_service.dart';
-import '../widgets/custom_bottom_nav_bar.dart';
-
-void main() {
-  usePathUrlStrategy();
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Virtual Health',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      initialRoute: '/',
-      routes: {
-        '/': (context) => const HomePage(),
-        '/login': (context) => const LoginPage(),
-        '/cadastro': (context) => const CadastroPage(),
-        '/clinicas': (context) => const ClinicasPage(),
-        '/contato': (context) => const ContatoPage(),
-        '/chatbot': (context) => const ChatbotPage(),
-      },
-      debugShowCheckedModeBanner: false,
-    );
-  }
-}
+import 'package:virtualhealth/pages/teleconsulta.dart';
+import 'package:virtualhealth/pages/cadastro.dart';
+import 'package:virtualhealth/pages/login.dart';
+import 'package:virtualhealth/pages/clinicas.dart';
+import 'package:virtualhealth/pages/contato.dart';
+import 'package:virtualhealth/pages/chatbot.dart';
+import 'package:virtualhealth/pages/perfil.dart';
+import 'package:virtualhealth/pages/agendamentos.dart';
+import 'package:virtualhealth/services/auth_service.dart';
+import 'package:virtualhealth/widgets/custom_bottom_nav_bar.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -168,52 +140,103 @@ class _HomePageState extends State<HomePage> {
           });
         }
       });
+    } else if (page == 'Teleconsulta') {
+      Navigator.pushNamed(context, '/teleconsulta').then((_) {
+        if (mounted) {
+          setState(() {
+            _currentPage = 'Início';
+          });
+        }
+      });
     }
   }
 
   void _showUserMenu() {
     showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircleAvatar(
-              radius: 40,
-              backgroundColor: const Color(0xFF3FA9C6),
-              child: Text(
-                _userName != null && _userName!.isNotEmpty
-                    ? _userName![0].toUpperCase()
-                    : 'U',
-                style: const TextStyle(fontSize: 32, color: Colors.white),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              _userProfile?['nome_completo'] ?? 'Usuário',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              _userFuncao == 'paciente' ? 'Paciente' : 'Médico',
-              style: TextStyle(color: Colors.grey[600], fontSize: 14),
-            ),
-            const SizedBox(height: 20),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.logout, color: Colors.red),
-              title: const Text('Sair', style: TextStyle(color: Colors.red)),
-              onTap: () {
-                Navigator.pop(context);
-                _logout();
-              },
-            ),
-          ],
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(30),
         ),
       ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircleAvatar(
+                radius: 40,
+                backgroundColor: const Color(0xFF3FA9C6),
+                child: Text(
+                  _userName != null && _userName!.isNotEmpty
+                      ? _userName![0].toUpperCase()
+                      : 'U',
+                  style: const TextStyle(
+                    fontSize: 32,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 15),
+              Text(
+                _userProfile?['nome_completo'] ?? 'Usuário',
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                _userFuncao == 'paciente' ? 'Paciente' : 'Médico',
+                style: const TextStyle(
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Divider(),
+              ListTile(
+                leading: const Icon(
+                  Icons.person_outline,
+                  color: Color(0xFF1565C0),
+                ),
+                title: const Text('Editar perfil'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/perfil');
+                },
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.calendar_month,
+                  color: Color(0xFF1565C0),
+                ),
+                title: const Text('Meus agendamentos'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/agendamentos');
+                },
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.logout,
+                  color: Colors.red,
+                ),
+                title: const Text(
+                  'Sair',
+                  style: TextStyle(
+                    color: Colors.red,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _logout();
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

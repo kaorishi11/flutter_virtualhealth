@@ -3,7 +3,7 @@ import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'pages/login.dart';
-import 'pages/home.dart';
+import 'pages/home.dart'; // CORRETO
 import 'pages/cadastro.dart';
 import 'pages/clinicas.dart';
 import 'pages/contato.dart';
@@ -11,6 +11,8 @@ import 'pages/chatbot.dart';
 import 'pages/teleconsulta.dart';
 import 'pages/termos_uso.dart';
 import 'pages/privacidade.dart';
+import 'pages/perfil.dart';
+import 'pages/agendamentos.dart';
 
 import 'adm/admin_home.dart';
 import 'adm/usuarios.dart';
@@ -19,27 +21,27 @@ import 'adm/clinicas.dart';
 import 'adm/mensagens.dart';
 import 'adm/profissionais.dart';
 
-
 import 'medico/medico_home.dart';
 import 'medico/agendamentos.dart';
 import 'medico/dicas.dart';
 import 'medico/perfil.dart';
-import 'medico/teleconsulta.dart';
+import 'medico/teleconsultaMe.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Configura URL sem o # (hash)
   usePathUrlStrategy();
-  
+
   // Inicializa locale pt_BR
   await initializeDateFormatting('pt_BR', null);
 
   await Supabase.initialize(
     url: 'https://yxhvmckqfjymmrcognta.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4aHZtY2txZmp5bW1yY29nbnRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MjAxNTcsImV4cCI6MjA5NDk5NjE1N30.KYEPDk5u8-rscXhLuDN2OIGi-w-STjFPhFFPe58LK6o',
+    anonKey:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4aHZtY2txZmp5bW1yY29nbnRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MjAxNTcsImV4cCI6MjA5NDk5NjE1N30.KYEPDk5u8-rscXhLuDN2OIGi-w-STjFPhFFPe58LK6o',
   );
-  
+
   runApp(const MyApp());
 }
 
@@ -84,9 +86,12 @@ class MyApp extends StatelessWidget {
         '/contato': (context) => const ContatoPage(),
         '/chatbot': (context) => const ChatbotPage(),
         '/teleconsulta': (context) => const TeleconsultaPacientePage(),
+        // '/perfil': (context) => const PerfilPage(),
+        // '/agendamentos': (context) => const AgendamentosPage(),
         '/termos-uso': (context) => const TermosUsoPage(),
         '/privacidade': (context) => const PrivacidadePage(),
-        '/admin': (context) => const AdminHomePage(),
+        '/admin': (context) =>
+            const AdminHomePage(), // CORRIGIDO: AdminHomePage existe
         '/medico': (context) => const MedicoHomePage(),
         '/medico/agenda': (context) => const MinhaAgendaPage(),
         '/medico/dicas': (context) => const DicasSaudePage(),
@@ -100,7 +105,7 @@ class MyApp extends StatelessWidget {
       onGenerateRoute: (settings) {
         if (settings.name == '/medico/teleconsulta') {
           final args = settings.arguments as Map<String, dynamic>?;
-          
+
           return MaterialPageRoute(
             builder: (context) => TeleconsultaPage(
               consultaId: args?['consultaId'] ?? '',

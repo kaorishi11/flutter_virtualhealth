@@ -19,12 +19,12 @@ class ClinicasPage extends StatefulWidget {
 class _ClinicasPageState extends State<ClinicasPage> {
   final AuthService _auth = AuthService();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  
+
   bool _isLoggedIn = false;
   String? _userName;
   String? _userFuncao;
   Map<String, dynamic>? _userProfile;
-  
+
   String _selectedEspecialidade = 'Especialista';
   String _selectedLocalizacao = 'Caçapava, São Paulo - SP';
 
@@ -116,7 +116,7 @@ class _ClinicasPageState extends State<ClinicasPage> {
         _userProfile = null;
         _userFuncao = null;
       });
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Logout realizado com sucesso!'),
@@ -142,8 +142,8 @@ class _ClinicasPageState extends State<ClinicasPage> {
               radius: 40,
               backgroundColor: const Color(0xFF3FA9C6),
               child: Text(
-                _userName != null && _userName!.isNotEmpty 
-                    ? _userName![0].toUpperCase() 
+                _userName != null && _userName!.isNotEmpty
+                    ? _userName![0].toUpperCase()
                     : 'U',
                 style: const TextStyle(fontSize: 32, color: Colors.white),
               ),
@@ -160,7 +160,8 @@ class _ClinicasPageState extends State<ClinicasPage> {
             const SizedBox(height: 20),
             const Divider(),
             ListTile(
-              leading: const Icon(Icons.person_outline, color: Color(0xFF3FA9C6)),
+              leading:
+                  const Icon(Icons.person_outline, color: Color(0xFF3FA9C6)),
               title: const Text('Meu Perfil'),
               onTap: () {
                 Navigator.pop(context);
@@ -168,14 +169,16 @@ class _ClinicasPageState extends State<ClinicasPage> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.calendar_today, color: Color(0xFF3FA9C6)),
+              leading:
+                  const Icon(Icons.calendar_today, color: Color(0xFF3FA9C6)),
               title: const Text('Minhas Consultas'),
               onTap: () {
                 Navigator.pop(context);
               },
             ),
             ListTile(
-              leading: const Icon(Icons.settings_outlined, color: Color(0xFF3FA9C6)),
+              leading:
+                  const Icon(Icons.settings_outlined, color: Color(0xFF3FA9C6)),
               title: const Text('Configurações'),
               onTap: () {
                 Navigator.pop(context);
@@ -199,7 +202,8 @@ class _ClinicasPageState extends State<ClinicasPage> {
   void _navigateToProfile() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Perfil de ${_userProfile?['nome_completo'] ?? 'Usuário'}'),
+        content:
+            Text('Perfil de ${_userProfile?['nome_completo'] ?? 'Usuário'}'),
         duration: const Duration(seconds: 2),
       ),
     );
@@ -222,13 +226,19 @@ class _ClinicasPageState extends State<ClinicasPage> {
       Navigator.pushNamed(context, '/cadastro');
     } else if (page == 'Perfil') {
       _showUserMenu();
+    } else if (page == 'Teleconsulta') {
+      Navigator.pushNamed(context, '/teleconsulta').then((_) {
+        if (mounted) {
+          setState(() {});
+        }
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 800;
-    
+
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: const Color(0xFFF7F7F7),
@@ -260,7 +270,6 @@ class _ClinicasPageState extends State<ClinicasPage> {
       ),
     );
   }
-
 
   // ================= HEADER COM IMAGEM DE FUNDO =================
   Widget _buildHeader(bool isMobile) {
@@ -300,7 +309,9 @@ class _ClinicasPageState extends State<ClinicasPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                isMobile ? 'CONHEÇA TODAS AS\nCLÍNICAS' : 'CONHEÇA TODAS AS\nCLÍNICAS',
+                isMobile
+                    ? 'CONHEÇA TODAS AS\nCLÍNICAS'
+                    : 'CONHEÇA TODAS AS\nCLÍNICAS',
                 style: TextStyle(
                   fontSize: isMobile ? 32 : 64,
                   fontWeight: FontWeight.bold,
@@ -555,9 +566,8 @@ class _ClinicasPageState extends State<ClinicasPage> {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: isMobile ? 20 : 50),
       child: Column(
-        children: _medicos
-            .map((medico) => _buildCard(medico, isMobile))
-            .toList(),
+        children:
+            _medicos.map((medico) => _buildCard(medico, isMobile)).toList(),
       ),
     );
   }
@@ -601,11 +611,13 @@ class _ClinicasPageState extends State<ClinicasPage> {
                           const SizedBox(height: 5),
                           Row(
                             children: [
-                              const Icon(Icons.star, color: Colors.orange, size: 16),
+                              const Icon(Icons.star,
+                                  color: Colors.orange, size: 16),
                               const SizedBox(width: 5),
                               Text(
                                 '(${medico['avaliacao']} · ${medico['totalAvaliacoes']})',
-                                style: const TextStyle(color: Colors.grey, fontSize: 12),
+                                style: const TextStyle(
+                                    color: Colors.grey, fontSize: 12),
                               ),
                             ],
                           ),
@@ -625,7 +637,8 @@ class _ClinicasPageState extends State<ClinicasPage> {
                 const SizedBox(height: 15),
                 Row(
                   children: [
-                    const Icon(Icons.location_on, color: Color(0xFF148A96), size: 20),
+                    const Icon(Icons.location_on,
+                        color: Color(0xFF148A96), size: 20),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
@@ -684,7 +697,8 @@ class _ClinicasPageState extends State<ClinicasPage> {
                       ),
                       children: [
                         TileLayer(
-                          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          urlTemplate:
+                              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                           userAgentPackageName: 'com.example.app',
                         ),
                         MarkerLayer(
@@ -721,7 +735,8 @@ class _ClinicasPageState extends State<ClinicasPage> {
                         children: [
                           const CircleAvatar(
                             radius: 40,
-                            backgroundImage: AssetImage('assets/images/doctor.jpg'),
+                            backgroundImage:
+                                AssetImage('assets/images/doctor.jpg'),
                           ),
                           const SizedBox(width: 18),
                           Column(
@@ -741,7 +756,8 @@ class _ClinicasPageState extends State<ClinicasPage> {
                               const SizedBox(height: 5),
                               Row(
                                 children: [
-                                  const Icon(Icons.star, color: Colors.orange, size: 18),
+                                  const Icon(Icons.star,
+                                      color: Colors.orange, size: 18),
                                   const SizedBox(width: 5),
                                   Text(
                                     '(${medico['avaliacao']} · ${medico['totalAvaliacoes']} avaliações)',
@@ -764,7 +780,8 @@ class _ClinicasPageState extends State<ClinicasPage> {
                       const SizedBox(height: 20),
                       Row(
                         children: [
-                          const Icon(Icons.location_on, color: Color(0xFF148A96)),
+                          const Icon(Icons.location_on,
+                              color: Color(0xFF148A96)),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
@@ -830,7 +847,8 @@ class _ClinicasPageState extends State<ClinicasPage> {
                             ),
                             children: [
                               TileLayer(
-                                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                urlTemplate:
+                                    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                                 userAgentPackageName: 'com.example.app',
                               ),
                               MarkerLayer(

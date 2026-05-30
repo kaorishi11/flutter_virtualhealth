@@ -17,12 +17,12 @@ class ContatoPage extends StatefulWidget {
 class _ContatoPageState extends State<ContatoPage> {
   final AuthService _auth = AuthService();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  
+
   final _formKey = GlobalKey<FormState>();
   final _nomeController = TextEditingController();
   final _emailController = TextEditingController();
   final _mensagemController = TextEditingController();
-  
+
   bool _isLoading = false;
   bool _isLoggedIn = false;
   String? _userName;
@@ -48,10 +48,10 @@ class _ContatoPageState extends State<ContatoPage> {
 
   Future<void> _checkAuthState() async {
     if (!mounted) return;
-    
+
     try {
       final isLoggedIn = _auth.isLoggedIn;
-      
+
       if (isLoggedIn) {
         final profile = await _auth.getPerfilUsuario();
         if (profile != null && mounted) {
@@ -94,7 +94,7 @@ class _ContatoPageState extends State<ContatoPage> {
         _emailController.clear();
         _mensagemController.clear();
       });
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Logout realizado com sucesso!'),
@@ -102,7 +102,7 @@ class _ContatoPageState extends State<ContatoPage> {
           behavior: SnackBarBehavior.floating,
         ),
       );
-      
+
       // Voltar para Home após logout
       Navigator.pushReplacementNamed(context, '/');
     }
@@ -123,8 +123,8 @@ class _ContatoPageState extends State<ContatoPage> {
               radius: 40,
               backgroundColor: const Color(0xFF3FA9C6),
               child: Text(
-                _userName != null && _userName!.isNotEmpty 
-                    ? _userName![0].toUpperCase() 
+                _userName != null && _userName!.isNotEmpty
+                    ? _userName![0].toUpperCase()
                     : 'U',
                 style: const TextStyle(fontSize: 32, color: Colors.white),
               ),
@@ -156,11 +156,11 @@ class _ContatoPageState extends State<ContatoPage> {
 
   Future<void> _enviarMensagem() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     setState(() {
       _isLoading = true;
     });
-    
+
     try {
       final Map<String, dynamic> dadosMensagem = {
         'nome_remetente': _nomeController.text.trim(),
@@ -168,30 +168,30 @@ class _ContatoPageState extends State<ContatoPage> {
         'mensagem': _mensagemController.text.trim(),
         'status': 'pendente',
       };
-      
+
       if (_isLoggedIn && _usuarioId != null) {
         dadosMensagem['usuario_id'] = _usuarioId;
       }
-      
-      await Supabase.instance.client
-          .from('mensagens')
-          .insert(dadosMensagem);
-      
+
+      await Supabase.instance.client.from('mensagens').insert(dadosMensagem);
+
       if (!mounted) return;
-      
+
       if (!_isLoggedIn) {
         _nomeController.clear();
         _emailController.clear();
       }
       _mensagemController.clear();
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Row(
             children: [
               Icon(Icons.check_circle, color: Colors.white, size: 20),
               SizedBox(width: 12),
-              Expanded(child: Text('Mensagem enviada com sucesso! Nossa equipe retornará em breve.')),
+              Expanded(
+                  child: Text(
+                      'Mensagem enviada com sucesso! Nossa equipe retornará em breve.')),
             ],
           ),
           backgroundColor: Colors.green,
@@ -199,13 +199,12 @@ class _ContatoPageState extends State<ContatoPage> {
           duration: Duration(seconds: 4),
         ),
       );
-      
     } catch (e) {
       debugPrint('Erro detalhado: $e');
       if (!mounted) return;
-      
+
       String mensagemErro = 'Erro ao enviar mensagem. Tente novamente.';
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -239,13 +238,15 @@ class _ContatoPageState extends State<ContatoPage> {
       Navigator.pushReplacementNamed(context, '/chatbot');
     } else if (page == 'Cadastro') {
       Navigator.pushReplacementNamed(context, '/cadastro');
+    } else if (page == 'Teleconsulta') {
+      Navigator.pushReplacementNamed(context, '/teleconsulta');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 800;
-    
+
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: const Color(0xFFF7F7F7),
@@ -274,7 +275,6 @@ class _ContatoPageState extends State<ContatoPage> {
       ),
     );
   }
-
 
   Widget _buildHeader(bool isMobile) {
     return Container(
@@ -381,7 +381,7 @@ class _ContatoPageState extends State<ContatoPage> {
               style: TextStyle(color: Colors.grey[600], fontSize: 14),
             ),
             const SizedBox(height: 24),
-            
+
             // Nome
             _buildTextField(
               label: 'NOME COMPLETO',
@@ -396,9 +396,9 @@ class _ContatoPageState extends State<ContatoPage> {
                 return null;
               },
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Email
             _buildTextField(
               label: 'E-MAIL',
@@ -417,9 +417,9 @@ class _ContatoPageState extends State<ContatoPage> {
                 return null;
               },
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Mensagem
             _buildTextField(
               label: 'SUA MENSAGEM',
@@ -437,9 +437,9 @@ class _ContatoPageState extends State<ContatoPage> {
                 return null;
               },
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Botão Enviar
             SizedBox(
               width: double.infinity,
@@ -460,7 +460,8 @@ class _ContatoPageState extends State<ContatoPage> {
                         width: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
                     : Row(
