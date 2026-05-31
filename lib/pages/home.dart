@@ -1,13 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'package:virtualhealth/pages/teleconsulta.dart';
-import 'package:virtualhealth/pages/cadastro.dart';
-import 'package:virtualhealth/pages/login.dart';
-import 'package:virtualhealth/pages/clinicas.dart';
-import 'package:virtualhealth/pages/contato.dart';
-import 'package:virtualhealth/pages/chatbot.dart';
-import 'package:virtualhealth/pages/perfil.dart';
-import 'package:virtualhealth/pages/agendamentos.dart';
 import 'package:virtualhealth/services/auth_service.dart';
 import 'package:virtualhealth/widgets/custom_bottom_nav_bar.dart';
 
@@ -73,7 +65,7 @@ class _HomePageState extends State<HomePage> {
         }
       }
     } catch (e) {
-      print('Erro ao verificar auth: $e');
+      debugPrint('Erro ao verificar auth: $e');
       if (mounted) {
         setState(() {
           _isLoggedIn = false;
@@ -99,13 +91,13 @@ class _HomePageState extends State<HomePage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Logout realizado com sucesso!'),
-            backgroundColor: Colors.green,
+            backgroundColor: Color(0xFF14B8A6),
             behavior: SnackBarBehavior.floating,
           ),
         );
       }
     } catch (e) {
-      print('Erro ao fazer logout: $e');
+      debugPrint('Erro ao fazer logout: $e');
     }
   }
 
@@ -152,103 +144,105 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _showUserMenu() {
-  showModalBottomSheet(
-    context: context,
-    backgroundColor: Colors.white,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(
-        top: Radius.circular(30),
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFFFFFFFF),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(30),
+        ),
       ),
-    ),
-    isScrollControlled: true,  // ESSA LINHA É ESSENCIAL
-    builder: (context) {
-      return SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            left: 20,
-            right: 20,
-            top: 20,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircleAvatar(
-                radius: 40,
-                backgroundColor: const Color(0xFF3FA9C6),
-                child: Text(
-                  _userName != null && _userName!.isNotEmpty
-                      ? _userName![0].toUpperCase()
-                      : 'U',
-                  style: const TextStyle(
-                    fontSize: 32,
-                    color: Colors.white,
+      isScrollControlled: true,
+      builder: (context) {
+        return SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+              left: 20,
+              right: 20,
+              top: 20,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircleAvatar(
+                  radius: 40,
+                  backgroundColor: const Color(0xFF14B8A6),
+                  child: Text(
+                    _userName != null && _userName!.isNotEmpty
+                        ? _userName![0].toUpperCase()
+                        : 'U',
+                    style: const TextStyle(
+                      fontSize: 32,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 15),
-              Text(
-                _userProfile?['nome_completo'] ?? 'Usuário',
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
+                const SizedBox(height: 15),
+                Text(
+                  _userProfile?['nome_completo'] ?? 'Usuário',
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
-              ),
-              Text(
-                (_userProfile?['funcao'] ?? 'paciente') == 'paciente' ? 'Paciente' : 'Médico',
-                style: const TextStyle(
-                  color: Colors.grey,
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Divider(),
-              ListTile(
-                leading: const Icon(
-                  Icons.person_outline,
-                  color: Color(0xFF1565C0),
-                ),
-                title: const Text('Editar perfil'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/perfil');
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.calendar_month,
-                  color: Color(0xFF1565C0),
-                ),
-                title: const Text('Meus agendamentos'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/agendamentos');
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.logout,
-                  color: Colors.red,
-                ),
-                title: const Text(
-                  'Sair',
+                Text(
+                  (_userProfile?['funcao'] ?? 'paciente') == 'paciente'
+                      ? 'Paciente'
+                      : 'Médico',
                   style: TextStyle(
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const Divider(),
+                ListTile(
+                  leading: const Icon(
+                    Icons.person_outline,
+                    color: Color(0xFF14B8A6),
+                  ),
+                  title: const Text('Editar perfil'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/perfil');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(
+                    Icons.calendar_month,
+                    color: Color(0xFF14B8A6),
+                  ),
+                  title: const Text('Meus agendamentos'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/agendamentos');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(
+                    Icons.logout,
                     color: Colors.red,
                   ),
+                  title: const Text(
+                    'Sair',
+                    style: TextStyle(
+                      color: Colors.red,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _logout();
+                  },
                 ),
-                onTap: () {
-                  Navigator.pop(context);
-                  _logout();
-                },
-              ),
-              const SizedBox(height: 20), // Espaço extra no final
-            ],
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
-        ),
-      );
-    },
-  );
-}
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -263,7 +257,7 @@ class _HomePageState extends State<HomePage> {
               HeroSection(isMobile: isMobile),
               VideoPitchSection(isMobile: isMobile),
               VirtualPlanCard(isMobile: isMobile),
-              ModernFooterSection(isMobile: isMobile),
+              CTASection(isMobile: isMobile),
             ],
           ),
         );
@@ -283,6 +277,7 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
+// Seção Hero Modernizada
 class HeroSection extends StatelessWidget {
   final bool isMobile;
   const HeroSection({super.key, this.isMobile = false});
@@ -290,7 +285,7 @@ class HeroSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: isMobile ? 500 : 550,
+      height: isMobile ? 550 : 600,
       width: double.infinity,
       decoration: const BoxDecoration(
         image: DecorationImage(
@@ -299,6 +294,17 @@ class HeroSection extends StatelessWidget {
         ),
       ),
       child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF0D2C33).withOpacity(0.85),
+              const Color(0xFF0D2C33).withOpacity(0.7),
+              Colors.transparent,
+            ],
+          ),
+        ),
         child: Padding(
           padding: EdgeInsets.symmetric(
             horizontal: isMobile ? 20 : 140,
@@ -308,33 +314,43 @@ class HeroSection extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const SizedBox(height: 24),
               Text(
                 'SEJA BEM VINDO AO',
                 style: TextStyle(
-                  fontSize: isMobile ? 24 : 50,
-                  fontWeight: FontWeight.bold,
-                  color: const Color.fromARGB(255, 16, 155, 102),
+                  fontSize: isMobile ? 20 : 40,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white70,
                   letterSpacing: 2,
                 ),
               ),
+              const SizedBox(height: 8),
               Text(
                 'VIRTUAL HEALTH',
                 style: TextStyle(
-                  fontSize: isMobile ? 32 : 80,
+                  fontSize: isMobile ? 42 : 90,
                   fontWeight: FontWeight.bold,
-                  color: const Color.fromARGB(255, 16, 155, 102),
+                  color: Colors.white,
                   height: 1.1,
+                  letterSpacing: 2,
                 ),
               ),
-              SizedBox(height: isMobile ? 16 : 28),
+              const SizedBox(height: 16),
+              Container(
+                width: isMobile ? 80 : 120,
+                height: 4,
+                color: const Color(0xFF14B8A6),
+              ),
+              const SizedBox(height: 24),
               Text(
-                'Tudo que você precisa para cuidar da sua saúde em um só lugar — rápido, seguro e acessível.',
+                'Tudo que você precisa para cuidar da sua saúde\nem um só lugar — rápido, seguro e acessível.',
                 style: TextStyle(
-                  fontSize: isMobile ? 14 : 22,
-                  color: const Color.fromARGB(179, 0, 0, 0),
+                  fontSize: isMobile ? 14 : 20,
+                  color: Colors.white,
+                  height: 1.5,
                 ),
               ),
-              SizedBox(height: isMobile ? 24 : 40),
+              const SizedBox(height: 40),
               if (!isMobile)
                 Row(
                   children: [
@@ -361,22 +377,30 @@ class HeroSection extends StatelessWidget {
         Navigator.pushNamed(context, '/clinicas');
       },
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF1565C0),
+        backgroundColor: const Color(0xFF14B8A6),
+        foregroundColor: Colors.white,
         padding: EdgeInsets.symmetric(
-          horizontal: isMobile ? 20 : 36,
-          vertical: isMobile ? 12 : 24,
+          horizontal: isMobile ? 24 : 40,
+          vertical: isMobile ? 14 : 20,
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(40),
+          borderRadius: BorderRadius.circular(50),
         ),
+        elevation: 4,
       ),
-      child: Text(
-        'Agendar consulta',
-        style: TextStyle(
-          fontSize: isMobile ? 14 : 18,
-          fontWeight: FontWeight.bold,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.calendar_today, size: 20),
+          const SizedBox(width: 12),
+          Text(
+            'Agendar consulta',
+            style: TextStyle(
+              fontSize: isMobile ? 14 : 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -393,24 +417,65 @@ class HeroSection extends StatelessWidget {
           width: 2,
         ),
         padding: EdgeInsets.symmetric(
-          horizontal: isMobile ? 20 : 36,
-          vertical: isMobile ? 12 : 24,
+          horizontal: isMobile ? 24 : 40,
+          vertical: isMobile ? 14 : 20,
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(40),
+          borderRadius: BorderRadius.circular(50),
         ),
       ),
-      child: Text(
-        'Teleconsulta online',
-        style: TextStyle(
-          fontSize: isMobile ? 14 : 18,
-          fontWeight: FontWeight.bold,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.videocam, size: 20),
+          const SizedBox(width: 12),
+          Text(
+            'Teleconsulta online',
+            style: TextStyle(
+              fontSize: isMobile ? 14 : 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
+Widget _buildStatItem(String number, String label, IconData icon) {
+  return Column(
+    children: [
+      Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFF14B8A6).withOpacity(0.1),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: const Color(0xFF14B8A6), size: 28),
+      ),
+      const SizedBox(height: 12),
+      Text(
+        number,
+        style: const TextStyle(
+          fontSize: 28,
+          fontWeight: FontWeight.bold,
+          color: Color(0xFF0D2C33),
+        ),
+      ),
+      const SizedBox(height: 4),
+      Text(
+        label,
+        style: TextStyle(
+          fontSize: 14,
+          color: Colors.grey[600],
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    ],
+  );
+}
+
+// Seção de Vídeo Modernizada
 class VideoPitchSection extends StatefulWidget {
   final bool isMobile;
   const VideoPitchSection({super.key, this.isMobile = false});
@@ -432,7 +497,7 @@ class _VideoPitchSectionState extends State<VideoPitchSection> {
           _isInitialized = true;
         });
       }).catchError((error) {
-        print('Erro ao carregar vídeo: $error');
+        debugPrint('Erro ao carregar vídeo: $error');
       });
   }
 
@@ -446,16 +511,17 @@ class _VideoPitchSectionState extends State<VideoPitchSection> {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(
-          horizontal: widget.isMobile ? 20 : 80,
-          vertical: widget.isMobile ? 40 : 60),
-      color: const Color(0xFFF0F4F8),
+        horizontal: widget.isMobile ? 20 : 80,
+        vertical: widget.isMobile ? 40 : 60,
+      ),
+      color: Colors.white,
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: const Color(0xFF1565C0).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
+              color: const Color(0xFF14B8A6).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(30),
             ),
             child: const Text(
               'NOSSO PROPÓSITO',
@@ -463,28 +529,36 @@ class _VideoPitchSectionState extends State<VideoPitchSection> {
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1.5,
-                color: Color(0xFF1565C0),
+                color: Color(0xFF14B8A6),
               ),
             ),
           ),
           const SizedBox(height: 16),
           Text(
-            'Criamos uma plataforma acessível, humana e tecnológica',
+            'Criamos uma plataforma acessível,',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: widget.isMobile ? 20 : 28,
+              fontSize: widget.isMobile ? 22 : 36,
+              fontWeight: FontWeight.w300,
+              color: const Color(0xFF0D2C33),
+            ),
+          ),
+          Text(
+            'humana e tecnológica',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: widget.isMobile ? 22 : 36,
               fontWeight: FontWeight.bold,
-              color: const Color(0xFF1565C0),
+              color: const Color(0xFF14B8A6),
             ),
           ),
           const SizedBox(height: 12),
           Text(
-            'que coloca o paciente no centro.',
+            'que coloca o paciente no centro do cuidado.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: widget.isMobile ? 16 : 20,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xFF0D47A1),
+              fontSize: widget.isMobile ? 14 : 18,
+              color: Colors.grey[600],
             ),
           ),
           const SizedBox(height: 40),
@@ -512,7 +586,17 @@ class _VideoPitchSectionState extends State<VideoPitchSection> {
                           height: widget.isMobile ? 250 : 400,
                           child: VideoPlayer(_controller),
                         ),
-                        Positioned(
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(60),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.3),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
                           child: FloatingActionButton(
                             onPressed: () {
                               setState(() {
@@ -523,14 +607,14 @@ class _VideoPitchSectionState extends State<VideoPitchSection> {
                                 }
                               });
                             },
-                            backgroundColor: const Color(0xFF1565C0),
+                            backgroundColor: const Color(0xFF14B8A6),
                             foregroundColor: Colors.white,
                             elevation: 4,
                             child: Icon(
                               _controller.value.isPlaying
                                   ? Icons.pause
                                   : Icons.play_arrow,
-                              size: widget.isMobile ? 24 : 32,
+                              size: widget.isMobile ? 28 : 36,
                             ),
                           ),
                         ),
@@ -538,10 +622,10 @@ class _VideoPitchSectionState extends State<VideoPitchSection> {
                     )
                   : Container(
                       height: widget.isMobile ? 250 : 400,
-                      color: Colors.grey[300],
+                      color: Colors.grey[200],
                       child: const Center(
                         child: CircularProgressIndicator(
-                          color: Color(0xFF1565C0),
+                          color: Color(0xFF14B8A6),
                         ),
                       ),
                     ),
@@ -557,7 +641,7 @@ class _VideoPitchSectionState extends State<VideoPitchSection> {
                     onPressed: () {
                       _controller.seekTo(Duration.zero);
                     },
-                    icon: const Icon(Icons.replay, color: Color(0xFF1565C0)),
+                    icon: const Icon(Icons.replay, color: Color(0xFF14B8A6)),
                     tooltip: 'Reiniciar',
                   ),
                   const SizedBox(width: 16),
@@ -567,9 +651,9 @@ class _VideoPitchSectionState extends State<VideoPitchSection> {
                       _controller,
                       allowScrubbing: true,
                       colors: VideoProgressColors(
-                        playedColor: const Color(0xFF1565C0),
+                        playedColor: const Color(0xFF14B8A6),
                         backgroundColor: Colors.grey[300]!,
-                        bufferedColor: const Color(0xFF64B5F6),
+                        bufferedColor: const Color(0xFF5EEAD4),
                       ),
                     ),
                   ),
@@ -582,6 +666,7 @@ class _VideoPitchSectionState extends State<VideoPitchSection> {
   }
 }
 
+// Card do Plano Virtual Modernizado
 class VirtualPlanCard extends StatelessWidget {
   final bool isMobile;
   const VirtualPlanCard({super.key, this.isMobile = false});
@@ -598,18 +683,30 @@ class VirtualPlanCard extends StatelessWidget {
 
     return Container(
       margin: EdgeInsets.symmetric(
-          horizontal: isMobile ? 16 : 80, vertical: isMobile ? 24 : 40),
+        horizontal: isMobile ? 16 : 80,
+        vertical: isMobile ? 24 : 40,
+      ),
       padding: EdgeInsets.all(isMobile ? 20 : 32),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white,
+            const Color(0xFFF8FAFC),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
         ],
+        border: Border.all(
+          color: const Color(0xFF14B8A6).withOpacity(0.2),
+        ),
       ),
       child: isMobile
           ? Column(
@@ -629,16 +726,16 @@ class VirtualPlanCard extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1565C0).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
+                    color: const Color(0xFF14B8A6).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(30),
                   ),
                   child: const Text(
                     'COM O QUE TRABALHAMOS?',
                     style: TextStyle(
-                      color: Color(0xFF1565C0),
+                      color: Color(0xFF14B8A6),
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.5,
-                      fontSize: 14,
+                      fontSize: 12,
                     ),
                   ),
                 ),
@@ -646,26 +743,26 @@ class VirtualPlanCard extends StatelessWidget {
                 const Text(
                   'Para sua saúde e para a sua família',
                   style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF0D47A1),
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF0D2C33),
                   ),
                 ),
                 const SizedBox(height: 20),
                 ...benefits.map((benefit) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Row(
                         children: [
                           Container(
                             padding: const EdgeInsets.all(4),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF1565C0).withOpacity(0.1),
+                              color: const Color(0xFF14B8A6).withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Icon(
-                              Icons.check,
-                              color: Color(0xFF1565C0),
-                              size: 16,
+                              Icons.check_circle,
+                              color: Color(0xFF14B8A6),
+                              size: 18,
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -673,8 +770,9 @@ class VirtualPlanCard extends StatelessWidget {
                             child: Text(
                               benefit,
                               style: const TextStyle(
-                                color: Color(0xFF333333),
+                                color: Color(0xFF334155),
                                 fontSize: 13,
+                                height: 1.4,
                               ),
                             ),
                           ),
@@ -692,13 +790,13 @@ class VirtualPlanCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                     child: Image.asset(
                       'assets/computadorhome.jpg',
-                      height: 275,
+                      height: 300,
                       width: double.infinity,
                       fit: BoxFit.cover,
                     ),
                   ),
                 ),
-                const SizedBox(width: 32),
+                const SizedBox(width: 40),
                 Expanded(
                   flex: 6,
                   child: Column(
@@ -706,55 +804,58 @@ class VirtualPlanCard extends StatelessWidget {
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1565C0).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
+                          color: const Color(0xFF14B8A6).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(30),
                         ),
                         child: const Text(
-                          'COM O QUE TRABALHAMOS?',
+                          '⚡ COM O QUE TRABALHAMOS?',
                           style: TextStyle(
-                            color: Color(0xFF1565C0),
+                            color: Color(0xFF14B8A6),
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1.5,
-                            fontSize: 21,
+                            fontSize: 14,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 16),
                       const Text(
                         'Para sua saúde e para a sua família',
                         style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF0D47A1),
+                          fontSize: 24,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF0D2C33),
                         ),
                       ),
                       const SizedBox(height: 24),
                       ...benefits.map((benefit) => Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 6),
+                            padding: const EdgeInsets.symmetric(vertical: 8),
                             child: Row(
                               children: [
                                 Container(
                                   padding: const EdgeInsets.all(4),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF1565C0)
+                                    color: const Color(0xFF14B8A6)
                                         .withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: const Icon(
-                                    Icons.check,
-                                    color: Color(0xFF1565C0),
-                                    size: 16,
+                                    Icons.check_circle,
+                                    color: Color(0xFF14B8A6),
+                                    size: 20,
                                   ),
                                 ),
-                                const SizedBox(width: 12),
+                                const SizedBox(width: 16),
                                 Expanded(
                                   child: Text(
                                     benefit,
                                     style: const TextStyle(
-                                      color: Color(0xFF333333),
-                                      fontSize: 14,
+                                      color: Color(0xFF334155),
+                                      fontSize: 15,
+                                      height: 1.5,
                                     ),
                                   ),
                                 ),
@@ -770,205 +871,97 @@ class VirtualPlanCard extends StatelessWidget {
   }
 }
 
-class ModernFooterSection extends StatelessWidget {
+// Nova Seção CTA (Call to Action)
+class CTASection extends StatelessWidget {
   final bool isMobile;
-  const ModernFooterSection({super.key, this.isMobile = false});
+  const CTASection({super.key, this.isMobile = false});
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      margin: EdgeInsets.symmetric(
+        horizontal: isMobile ? 20 : 80,
+        vertical: isMobile ? 30 : 50,
+      ),
+      padding: EdgeInsets.all(isMobile ? 30 : 50),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF0D47A1), Color(0xFF1565C0)],
+          colors: [
+            Color.fromARGB(169, 219, 229, 231),
+            Color.fromARGB(201, 205, 209, 211)
+          ],
         ),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: const Color(0xFF14B8A6).withOpacity(0.3),
             blurRadius: 20,
-            offset: const Offset(0, -5),
+            offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: Padding(
-        padding: EdgeInsets.all(isMobile ? 24 : 48),
-        child: Column(
-          children: [
-            Center(
-              child: Image.asset(
-                'assets/logo.png',
-                width: isMobile ? 150 : 200,
-                height: isMobile ? 150 : 200,
-                fit: BoxFit.contain,
-              ),
+      child: Column(
+        children: [
+          // Logo sem fundo arredondado e maior
+          Image.asset(
+            'assets/logo.png',
+            width: isMobile ? 120 : 160,
+            height: isMobile ? 120 : 160,
+            fit: BoxFit.contain,
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Pronto para cuidar da sua saúde?',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: isMobile ? 22 : 32,
+              fontWeight: FontWeight.bold,
+              color: const Color.fromARGB(157, 10, 46, 155),
             ),
-            const SizedBox(height: 24),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: isMobile ? 20 : 100),
-              child: Text(
-                'Cuidando da sua saúde com tecnologia e humanidade. Disponível 24 horas por dia, 7 dias por semana.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: isMobile ? 14 : 16,
-                  height: 1.5,
-                ),
-              ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Agende sua consulta agora mesmo e tenha acesso\nà saúde de qualidade onde você estiver.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: isMobile ? 14 : 16,
+              color: const Color.fromARGB(255, 10, 46, 155),
             ),
-            const SizedBox(height: 40),
-            if (isMobile) ...[
-              _buildFooterLinksCentralizado('Serviços', [
-                'Teleconsultas 24h',
-                'Agendamento online',
-                'Especialidades',
-                'Exames',
-                'Prontuário digital',
-              ]),
-              const SizedBox(height: 30),
-              _buildFooterLinksCentralizado('Institucional', [
-                'Sobre nós',
-                'Carreiras',
-                'Blog',
-                'Imprensa',
-                'Seja parceiro',
-              ]),
-              const SizedBox(height: 30),
-              _buildFooterLinksCentralizado('Suporte', [
-                'Central de ajuda',
-                'FAQ',
-                'Contato',
-                'Termos de uso',
-                'Privacidade',
-              ]),
-            ] else ...[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildFooterLinksCentralizado('Serviços', [
-                    'Teleconsultas 24h',
-                    'Agendamento online',
-                    'Especialidades',
-                    'Exames',
-                    'Prontuário digital',
-                  ]),
-                  _buildFooterLinksCentralizado('Institucional', [
-                    'Sobre nós',
-                    'Carreiras',
-                    'Blog',
-                    'Imprensa',
-                    'Seja parceiro',
-                  ]),
-                  _buildFooterLinksCentralizado('Suporte', [
-                    'Central de ajuda',
-                    'FAQ',
-                    'Contato',
-                    'Termos de uso',
-                    'Privacidade',
-                  ]),
-                ],
+          ),
+          const SizedBox(height: 30),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/clinicas');
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF14B8A6),
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 30 : 48,
+                vertical: isMobile ? 14 : 18,
               ),
-            ],
-            const SizedBox(height: 40),
-            Divider(color: Colors.white.withOpacity(0.2)),
-            const SizedBox(height: 24),
-            Column(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(50),
+              ),
+              elevation: 4,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildSocialIcon(Icons.facebook),
-                    const SizedBox(width: 16),
-                    _buildSocialIcon(Icons.phone_android),
-                    const SizedBox(width: 16),
-                    _buildSocialIcon(Icons.email),
-                  ],
-                ),
-                const SizedBox(height: 16),
+                const Icon(Icons.arrow_forward, size: 20),
+                const SizedBox(width: 12),
                 Text(
-                  '© 2026 Virtual Health - Todos os direitos reservados',
+                  'Começar agora',
                   style: TextStyle(
-                    color: Colors.white54,
-                    fontSize: isMobile ? 10 : 12,
+                    fontSize: isMobile ? 14 : 18,
+                    fontWeight: FontWeight.bold,
                   ),
-                  textAlign: TextAlign.center,
                 ),
               ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSocialIcon(IconData icon) {
-    return InkWell(
-      onTap: () {},
-      child: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(
-          icon,
-          color: Colors.white,
-          size: 24,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFooterLinksCentralizado(String title, List<String> links) {
-    return Builder(
-      builder: (context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-            ),
-            textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 16),
-          ...links.map((link) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: InkWell(
-                  onTap: () {
-                    if (link == 'Contato') {
-                      Navigator.pushNamed(context, '/contato');
-                    } else if (link == 'Termos de uso') {
-                      Navigator.pushNamed(context, '/termos-uso');
-                    } else if (link == 'Privacidade') {
-                      Navigator.pushNamed(context, '/privacidade');
-                    } else if (link == 'Teleconsultas 24h') {
-                      Navigator.pushNamed(context, '/teleconsulta');
-                    } else if (link == 'Agendamento online') {
-                      Navigator.pushNamed(context, '/clinicas');
-                    }
-                  },
-                  child: Text(
-                    link,
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                      decoration: (link == 'Contato' ||
-                              link == 'Termos de uso' ||
-                              link == 'Privacidade' ||
-                              link == 'Teleconsultas 24h' ||
-                              link == 'Agendamento online')
-                          ? TextDecoration.underline
-                          : TextDecoration.none,
-                      decorationColor: Colors.white54,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              )),
         ],
       ),
     );
