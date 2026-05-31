@@ -5,6 +5,7 @@ import 'agendamentosMe.dart';
 import 'dicas.dart';
 import 'perfilMe.dart';
 import 'teleconsultaMe.dart';
+import 'medico_bottom_nav_bar.dart';
 
 class MedicoHomePage extends StatefulWidget {
   const MedicoHomePage({super.key});
@@ -191,46 +192,7 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
           _currentPage = 'Dashboard';
         });
       });
-    } else if (page == 'Sair') {
-      _confirmLogout();
     }
-  }
-
-  void _confirmLogout() {
-    showDialog(
-      context: context,
-      builder: (_) {
-        return AlertDialog(
-          title: const Text('Sair'),
-          content: const Text(
-            'Deseja realmente sair?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () async {
-                await supabase.auth.signOut();
-
-                if (mounted) {
-                  Navigator.pushNamedAndRemoveUntil(
-                    context,
-                    '/login',
-                    (route) => false,
-                  );
-                }
-              },
-              child: const Text(
-                'Sair',
-                style: TextStyle(color: Colors.red),
-              ),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   void _irParaTeleconsulta(
@@ -258,191 +220,37 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
       key: _scaffoldKey,
       drawer: isMobile ? _buildDrawer() : null,
       backgroundColor: const Color(0xfff5f7fa),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final isMobile = constraints.maxWidth < 800;
-
-          return Stack(
-            children: [
-              RefreshIndicator(
-                onRefresh: carregarDados,
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: EdgeInsets.only(
-                    top: isMobile ? 120 : 180,
-                    left: 16,
-                    right: 16,
-                    bottom: 16,
-                  ),
-                  child: isLoading
-                      ? const Center(
-                          child: CircularProgressIndicator(),
-                        )
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildWelcomeSection(),
-                            const SizedBox(height: 20),
-                            _buildStatsGrid(),
-                            const SizedBox(height: 20),
-                            _buildTodayAppointments(),
-                          ],
-                        ),
+      body: RefreshIndicator(
+        onRefresh: carregarDados,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.only(
+            top: isMobile ? 120 : 180,
+            left: 16,
+            right: 16,
+            bottom: 16,
+          ),
+          child: isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(),
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildWelcomeSection(),
+                    const SizedBox(height: 20),
+                    _buildStatsGrid(),
+                    const SizedBox(height: 20),
+                    _buildTodayAppointments(),
+                  ],
                 ),
-              ),
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: _buildTopNavigationBar(isMobile),
-              ),
-            ],
-          );
+        ),
+      ),
+      bottomNavigationBar: MedicoBottomNavBar(
+        currentIndex: 0,
+        onProfileTap: () {
+          Navigator.pushNamed(context, '/medico/perfil');
         },
-      ),
-    );
-  }
-
-  Widget _buildTopNavigationBar(bool isMobile) {
-    final navItems = [
-      'Dashboard',
-      'Minha Agenda',
-      'Teleconsulta',
-      'Dicas de Saúde',
-      'Meu Perfil'
-    ];
-
-    if (isMobile) {
-      return Container(
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.95),
-          borderRadius: BorderRadius.circular(50),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 20,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            IconButton(
-              onPressed: () {
-                _scaffoldKey.currentState?.openDrawer();
-              },
-              icon: const Icon(Icons.menu, size: 28, color: Color(0xFF3FA9C6)),
-            ),
-            Image.asset(
-              'assets/logo.png',
-              width: 60,
-              height: 60,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) {
-                return const Icon(Icons.medical_services,
-                    size: 50, color: Color(0xFF3FA9C6));
-              },
-            ),
-            const SizedBox(width: 40),
-          ],
-        ),
-      );
-    }
-
-    // Desktop layout
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
-      padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.92),
-        borderRadius: BorderRadius.circular(60),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: Border.all(
-          color: Colors.white.withOpacity(0.3),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Image.asset(
-            'assets/logo.png',
-            width: 70,
-            height: 70,
-            fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) {
-              return const Icon(Icons.medical_services,
-                  size: 60, color: Color(0xFF3FA9C6));
-            },
-          ),
-          Row(
-            children: navItems.map((item) {
-              final isActive = _currentPage == item;
-              return GestureDetector(
-                onTap: () => _onPageChanged(item),
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 12),
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Column(
-                    children: [
-                      Text(
-                        item,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: isActive ? primaryColor : Colors.grey[700],
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        height: 2,
-                        width: isActive ? 24 : 0,
-                        decoration: BoxDecoration(
-                          color: primaryColor,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-          MouseRegion(
-            cursor: SystemMouseCursors.click,
-            child: GestureDetector(
-              onTap: () => _confirmLogout(),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Colors.red, Colors.redAccent],
-                  ),
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                child: const Text(
-                  'Sair',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

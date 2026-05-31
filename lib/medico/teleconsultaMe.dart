@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jitsi_meet_flutter_sdk/jitsi_meet_flutter_sdk.dart';
+import 'package:virtualhealth/medico/medico_bottom_nav_bar.dart';
 
 class TeleconsultaPage extends StatefulWidget {
   final String consultaId;
@@ -28,7 +29,6 @@ class _TeleconsultaPageState extends State<TeleconsultaPage> {
     });
 
     try {
-      // nome da sala baseado no id da consulta
       final roomName = 'consulta_${widget.consultaId}';
 
       var options = JitsiMeetConferenceOptions(
@@ -74,7 +74,6 @@ class _TeleconsultaPageState extends State<TeleconsultaPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xfff5f7fa),
-
       appBar: AppBar(
         backgroundColor: const Color(0xFF3FA9C6),
         elevation: 0,
@@ -86,7 +85,6 @@ class _TeleconsultaPageState extends State<TeleconsultaPage> {
           ),
         ),
       ),
-
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -106,9 +104,7 @@ class _TeleconsultaPageState extends State<TeleconsultaPage> {
                   color: Color(0xFF3FA9C6),
                 ),
               ),
-
               const SizedBox(height: 24),
-
               Text(
                 widget.pacienteNome,
                 style: const TextStyle(
@@ -116,9 +112,7 @@ class _TeleconsultaPageState extends State<TeleconsultaPage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-
               const SizedBox(height: 10),
-
               Text(
                 'Consulta #${widget.consultaId}',
                 style: TextStyle(
@@ -126,9 +120,7 @@ class _TeleconsultaPageState extends State<TeleconsultaPage> {
                   fontSize: 15,
                 ),
               ),
-
               const SizedBox(height: 30),
-
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -139,26 +131,23 @@ class _TeleconsultaPageState extends State<TeleconsultaPage> {
                   children: [
                     Row(
                       children: const [
-                        Icon(Icons.videocam,
-                            color: Color(0xFF3FA9C6)),
+                        Icon(Icons.videocam, color: Color(0xFF3FA9C6)),
                         SizedBox(width: 8),
                         Text('Vídeo em tempo real'),
                       ],
                     ),
-                    SizedBox(height: 12),
+                    const SizedBox(height: 12),
                     Row(
                       children: const [
-                        Icon(Icons.mic,
-                            color: Color(0xFF3FA9C6)),
+                        Icon(Icons.mic, color: Color(0xFF3FA9C6)),
                         SizedBox(width: 8),
                         Text('Áudio habilitado'),
                       ],
                     ),
-                    SizedBox(height: 12),
+                    const SizedBox(height: 12),
                     Row(
                       children: const [
-                        Icon(Icons.lock,
-                            color: Color(0xFF3FA9C6)),
+                        Icon(Icons.lock, color: Color(0xFF3FA9C6)),
                         SizedBox(width: 8),
                         Text('Sala privada da consulta'),
                       ],
@@ -166,9 +155,7 @@ class _TeleconsultaPageState extends State<TeleconsultaPage> {
                   ],
                 ),
               ),
-
               const SizedBox(height: 40),
-
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
@@ -183,13 +170,9 @@ class _TeleconsultaPageState extends State<TeleconsultaPage> {
                           ),
                         )
                       : const Icon(Icons.video_call),
-
                   label: Text(
-                    isLoading
-                        ? 'Iniciando...'
-                        : 'Iniciar Videochamada',
+                    isLoading ? 'Iniciando...' : 'Iniciar Videochamada',
                   ),
-
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF3FA9C6),
                     foregroundColor: Colors.white,
@@ -197,8 +180,7 @@ class _TeleconsultaPageState extends State<TeleconsultaPage> {
                       vertical: 16,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                   ),
                 ),
@@ -206,6 +188,12 @@ class _TeleconsultaPageState extends State<TeleconsultaPage> {
             ],
           ),
         ),
+      ),
+      bottomNavigationBar: MedicoBottomNavBar(
+        currentIndex: 1,
+        onProfileTap: () {
+          Navigator.pushNamed(context, '/medico/perfil');
+        },
       ),
     );
   }

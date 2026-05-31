@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:virtualhealth/widgets/custom_bottom_nav_bar.dart';
+import 'package:virtualhealth/medico/medico_bottom_nav_bar.dart';
 import 'package:virtualhealth/services/auth_service.dart';
 import 'package:virtualhealth/medico/teleconsultaMe.dart';
 
@@ -8,22 +8,23 @@ class AgendamentosPacientesPage extends StatefulWidget {
   const AgendamentosPacientesPage({super.key});
 
   @override
-  State<AgendamentosPacientesPage> createState() => _AgendamentosPacientesPageState();
+  State<AgendamentosPacientesPage> createState() =>
+      _AgendamentosPacientesPageState();
 }
 
 class _AgendamentosPacientesPageState extends State<AgendamentosPacientesPage> {
   final AuthService _auth = AuthService();
-  
+
   DateTime _dataSelecionada = DateTime.now();
   String _filtroTipo = 'Todos';
-  
+
   bool _isLoading = false;
   bool _isLoggedIn = false;
   String? _userName;
   Map<String, dynamic>? _userProfile;
-  
+
   final List<String> _tiposFiltro = ['Todos', 'Online', 'Presencial'];
-  
+
   // Dados mockados de agendamentos do médico
   final List<Map<String, dynamic>> _mockAppointments = [
     {
@@ -108,11 +109,10 @@ class _AgendamentosPacientesPageState extends State<AgendamentosPacientesPage> {
   }
 
   void _iniciarTeleconsulta(Map<String, dynamic> appointment) {
-    // Garantir que os valores não sejam nulos
     final consultaId = appointment['id']?.toString() ?? '';
     final pacienteNome = appointment['paciente']?.toString() ?? 'Paciente';
     final pacienteId = appointment['pacienteId']?.toString() ?? '';
-    
+
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -132,8 +132,12 @@ class _AgendamentosPacientesPageState extends State<AgendamentosPacientesPage> {
         title: const Text('Desconectar'),
         content: const Text('Tem certeza que deseja sair?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Sair')),
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancelar')),
+          TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Sair')),
         ],
       ),
     );
@@ -179,7 +183,8 @@ class _AgendamentosPacientesPageState extends State<AgendamentosPacientesPage> {
                 const SizedBox(height: 15),
                 Text(
                   _userProfile?['nome_completo'] ?? 'Médico',
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 22, fontWeight: FontWeight.bold),
                 ),
                 Text(
                   'Médico',
@@ -188,7 +193,8 @@ class _AgendamentosPacientesPageState extends State<AgendamentosPacientesPage> {
                 const SizedBox(height: 20),
                 const Divider(),
                 ListTile(
-                  leading: const Icon(Icons.person_outline, color: Color(0xFF1565C0)),
+                  leading: const Icon(Icons.person_outline,
+                      color: Color(0xFF1565C0)),
                   title: const Text('Meu Perfil'),
                   onTap: () {
                     Navigator.pop(context);
@@ -196,7 +202,8 @@ class _AgendamentosPacientesPageState extends State<AgendamentosPacientesPage> {
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.health_and_safety, color: Color(0xFF1565C0)),
+                  leading: const Icon(Icons.health_and_safety,
+                      color: Color(0xFF1565C0)),
                   title: const Text('Dicas de Saúde'),
                   onTap: () {
                     Navigator.pop(context);
@@ -205,7 +212,8 @@ class _AgendamentosPacientesPageState extends State<AgendamentosPacientesPage> {
                 ),
                 ListTile(
                   leading: const Icon(Icons.logout, color: Colors.red),
-                  title: const Text('Sair', style: TextStyle(color: Colors.red)),
+                  title:
+                      const Text('Sair', style: TextStyle(color: Colors.red)),
                   onTap: () {
                     Navigator.pop(context);
                     _logout();
@@ -222,16 +230,26 @@ class _AgendamentosPacientesPageState extends State<AgendamentosPacientesPage> {
 
   String _formatarDataPersonalizada() {
     const meses = [
-      'JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO',
-      'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'
+      'JANEIRO',
+      'FEVEREIRO',
+      'MARÇO',
+      'ABRIL',
+      'MAIO',
+      'JUNHO',
+      'JULHO',
+      'AGOSTO',
+      'SETEMBRO',
+      'OUTUBRO',
+      'NOVEMBRO',
+      'DEZEMBRO'
     ];
-    
+
     const dias = ['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB', 'DOM'];
-    
+
     final diaSemana = dias[_dataSelecionada.weekday - 1];
     final dia = _dataSelecionada.day;
     final mes = meses[_dataSelecionada.month - 1];
-    
+
     return '$diaSemana – $dia DE $mes';
   }
 
@@ -262,21 +280,17 @@ class _AgendamentosPacientesPageState extends State<AgendamentosPacientesPage> {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     itemCount: _filteredAppointments.length,
                     itemBuilder: (context, index) {
-                      return _buildAppointmentCard(_filteredAppointments[index]);
+                      return _buildAppointmentCard(
+                          _filteredAppointments[index]);
                     },
                   ),
           ),
         ],
       ),
-      bottomNavigationBar: CustomBottomNavBar(
+      bottomNavigationBar: MedicoBottomNavBar(
         currentIndex: 1,
-        isLoggedIn: _isLoggedIn,
         onProfileTap: () {
-          if (_isLoggedIn) {
-            _showUserMenu();
-          } else {
-            Navigator.pushNamed(context, '/login');
-          }
+          Navigator.pushNamed(context, '/medico/perfil');
         },
       ),
     );
@@ -339,7 +353,8 @@ class _AgendamentosPacientesPageState extends State<AgendamentosPacientesPage> {
               ),
               shape: StadiumBorder(
                 side: BorderSide(
-                  color: isSelected ? const Color(0xFF3FA9C6) : Colors.transparent,
+                  color:
+                      isSelected ? const Color(0xFF3FA9C6) : Colors.transparent,
                   width: 1,
                 ),
               ),
@@ -376,13 +391,12 @@ class _AgendamentosPacientesPageState extends State<AgendamentosPacientesPage> {
     final isPrimeiraConsulta = appointment['isPrimeiraConsulta'] == true;
     final isConfirmado = appointment['status'] == 'confirmado';
     final podeIniciar = isOnline && isConfirmado;
-    
-    // Garantir valores não nulos para exibição
+
     final pacienteNome = appointment['paciente']?.toString() ?? 'Paciente';
     final descricao = appointment['descricao']?.toString() ?? 'Consulta';
     final horario = appointment['horario']?.toString() ?? '00:00';
     final duracao = appointment['duracao']?.toString() ?? '30 min';
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -412,7 +426,8 @@ class _AgendamentosPacientesPageState extends State<AgendamentosPacientesPage> {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.access_time, size: 18, color: const Color(0xFF3FA9C6)),
+                    Icon(Icons.access_time,
+                        size: 18, color: const Color(0xFF3FA9C6)),
                     const SizedBox(width: 8),
                     Text(
                       _formatarHorario(horario),
@@ -429,7 +444,8 @@ class _AgendamentosPacientesPageState extends State<AgendamentosPacientesPage> {
                   ],
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
                     color: Colors.green.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
@@ -446,7 +462,6 @@ class _AgendamentosPacientesPageState extends State<AgendamentosPacientesPage> {
               ],
             ),
           ),
-          
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -469,7 +484,8 @@ class _AgendamentosPacientesPageState extends State<AgendamentosPacientesPage> {
                   children: [
                     if (isPrimeiraConsulta)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
                           color: Colors.purple.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
@@ -485,7 +501,8 @@ class _AgendamentosPacientesPageState extends State<AgendamentosPacientesPage> {
                       ),
                     if (isPrimeiraConsulta) const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
                         color: isOnline
                             ? Colors.purple.withOpacity(0.1)
@@ -514,7 +531,6 @@ class _AgendamentosPacientesPageState extends State<AgendamentosPacientesPage> {
                     ),
                   ],
                 ),
-                
                 if (podeIniciar) ...[
                   const SizedBox(height: 16),
                   SizedBox(
