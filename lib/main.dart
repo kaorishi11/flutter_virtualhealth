@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:virtualhealth/pages/agendamentos.dart';
 import 'pages/login.dart';
 import 'pages/home.dart';
 import 'pages/cadastro.dart';
@@ -12,7 +13,7 @@ import 'pages/teleconsulta.dart';
 import 'pages/termos_uso.dart';
 import 'pages/privacidade.dart';
 import 'pages/perfil.dart';
-import 'pages/agendamentos_paciente.dart'; // Paciente
+import 'pages/agendamentos.dart'; // Paciente
 
 import 'adm/admin_home.dart';
 import 'adm/usuarios.dart';
@@ -84,7 +85,7 @@ class MyApp extends StatelessWidget {
         '/chatbot': (context) => const ChatbotPage(),
         '/teleconsulta': (context) => const TeleconsultaPacientePage(),
         '/perfil': (context) => const ConfigPerfilPage(),
-        '/agendamentos': (context) => const AgendamentosPacientePage(),
+        '/agendamentos': (context) => const AgendamentosMedicosPage(),
         '/termos-uso': (context) => const TermosUsoPage(),
         '/privacidade': (context) => const PrivacidadePage(),
         '/admin': (context) => const AdminHomePage(),

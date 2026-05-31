@@ -156,7 +156,8 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
     } else if (page == 'Minha Agenda') {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const AgendamentosPacientesPage()),
+        MaterialPageRoute(
+            builder: (context) => const AgendamentosPacientesPage()),
       ).then((_) {
         setState(() {
           _currentPage = 'Dashboard';
@@ -184,6 +185,7 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
     } else if (page == 'Meu Perfil') {
       Navigator.push(
         context,
+        MaterialPageRoute(builder: (context) => const PerfilMedicoPage()),
       ).then((_) {
         setState(() {
           _currentPage = 'Dashboard';
