@@ -23,6 +23,10 @@ class _ChatbotPageState extends State<ChatbotPage> {
 
   final String groqApiKey = 'COLE_SUA_NOVA_KEY_AQUI';
 
+  // GETTERS CORRIGIDOS
+  String get _userName => _userProfile?['nome_completo']?.split(' ')[0] ?? 'Usuário';
+  String get _userFuncao => _userProfile?['funcao'] ?? 'paciente';
+
   @override
   void initState() {
     super.initState();
@@ -51,65 +55,131 @@ class _ChatbotPageState extends State<ChatbotPage> {
     }
   }
 
-  void _showUserMenu() {
-    showModalBottomSheet(
+  Future<void> _logout() async {
+    final confirm = await showDialog<bool>(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircleAvatar(
-              radius: 40,
-              backgroundColor: const Color(0xFF3FA9C6),
-              child: Text(
-                _userProfile?['nome_completo'] != null && _userProfile!['nome_completo'].isNotEmpty 
-                    ? _userProfile!['nome_completo'][0].toUpperCase() 
-                    : 'U',
-                style: const TextStyle(fontSize: 32, color: Colors.white),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              _userProfile?['nome_completo'] ?? 'Usuário',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              (_userProfile?['funcao'] ?? 'paciente') == 'paciente' ? 'Paciente' : 'Médico',
-              style: TextStyle(color: Colors.grey[600], fontSize: 14),
-            ),
-            const SizedBox(height: 20),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.logout, color: Colors.red),
-              title: const Text('Sair', style: TextStyle(color: Colors.red)),
-              onTap: () async {
-                Navigator.pop(context);
-                await _auth.logout();
-                if (mounted) {
-                  setState(() {
-                    _isLoggedIn = false;
-                    _userProfile = null;
-                  });
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Logout realizado com sucesso!'),
-                      backgroundColor: Colors.green,
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                  Navigator.pushReplacementNamed(context, '/home');
-                }
-              },
-            ),
-          ],
-        ),
+      builder: (context) => AlertDialog(
+        title: const Text('Desconectar'),
+        content: const Text('Tem certeza que deseja sair?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Sair'),
+          ),
+        ],
       ),
     );
+
+    if (confirm == true) {
+      await _auth.logout();
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+      }
+    }
   }
+
+  void _showUserMenu() {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: Colors.white,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(30),
+      ),
+    ),
+    isScrollControlled: true,  // ESSA LINHA É ESSENCIAL
+    builder: (context) {
+      return SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 20,
+            right: 20,
+            top: 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircleAvatar(
+                radius: 40,
+                backgroundColor: const Color(0xFF3FA9C6),
+                child: Text(
+                  _userName != null && _userName!.isNotEmpty
+                      ? _userName![0].toUpperCase()
+                      : 'U',
+                  style: const TextStyle(
+                    fontSize: 32,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 15),
+              Text(
+                _userProfile?['nome_completo'] ?? 'Usuário',
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              Text(
+                (_userProfile?['funcao'] ?? 'paciente') == 'paciente' ? 'Paciente' : 'Médico',
+                style: const TextStyle(
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Divider(),
+              ListTile(
+                leading: const Icon(
+                  Icons.person_outline,
+                  color: Color(0xFF1565C0),
+                ),
+                title: const Text('Editar perfil'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/perfil');
+                },
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.calendar_month,
+                  color: Color(0xFF1565C0),
+                ),
+                title: const Text('Meus agendamentos'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/agendamentos');
+                },
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.logout,
+                  color: Colors.red,
+                ),
+                title: const Text(
+                  'Sair',
+                  style: TextStyle(
+                    color: Colors.red,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _logout();
+                },
+              ),
+              const SizedBox(height: 20), // Espaço extra no final
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
 
   Future<void> sendMessage() async {
     String userMessage = _controller.text.trim();
@@ -161,7 +231,6 @@ class _ChatbotPageState extends State<ChatbotPage> {
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 800;
@@ -210,8 +279,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color:
-                                const Color(0xFF1565C0).withOpacity(0.1),
+                            color: const Color(0xFF1565C0).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: const Icon(
@@ -323,8 +391,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
                                   mainAxisAlignment: isUser
                                       ? MainAxisAlignment.end
                                       : MainAxisAlignment.start,
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     if (!isUser) ...[
                                       CircleAvatar(
@@ -456,8 +523,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
                               controller: _controller,
                               decoration: InputDecoration(
                                 hintText: 'Digite sua mensagem...',
-                                hintStyle:
-                                    TextStyle(color: Colors.grey[400]),
+                                hintStyle: TextStyle(color: Colors.grey[400]),
                                 border: InputBorder.none,
                                 contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 20,
@@ -480,8 +546,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF1565C0)
-                                    .withOpacity(0.3),
+                                color: const Color(0xFF1565C0).withOpacity(0.3),
                                 blurRadius: 8,
                               ),
                             ],
@@ -534,7 +599,6 @@ class _ChatbotPageState extends State<ChatbotPage> {
     );
   }
 }
-
 
 // Footer
 class ModernFooterSection extends StatelessWidget {

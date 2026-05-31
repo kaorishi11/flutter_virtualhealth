@@ -3,7 +3,7 @@ import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'pages/login.dart';
-import 'pages/home.dart'; // CORRETO
+import 'pages/home.dart';
 import 'pages/cadastro.dart';
 import 'pages/clinicas.dart';
 import 'pages/contato.dart';
@@ -12,7 +12,7 @@ import 'pages/teleconsulta.dart';
 import 'pages/termos_uso.dart';
 import 'pages/privacidade.dart';
 import 'pages/perfil.dart';
-import 'pages/agendamentos.dart';
+import 'pages/agendamentos_paciente.dart'; // Paciente
 
 import 'adm/admin_home.dart';
 import 'adm/usuarios.dart';
@@ -22,18 +22,15 @@ import 'adm/mensagens.dart';
 import 'adm/profissionais.dart';
 
 import 'medico/medico_home.dart';
-import 'medico/agendamentos.dart';
+import 'medico/agendamentosMe.dart';
 import 'medico/dicas.dart';
-import 'medico/perfil.dart';
+import 'medico/perfilMe.dart';
 import 'medico/teleconsultaMe.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Configura URL sem o # (hash)
   usePathUrlStrategy();
-
-  // Inicializa locale pt_BR
   await initializeDateFormatting('pt_BR', null);
 
   await Supabase.initialize(
@@ -86,14 +83,13 @@ class MyApp extends StatelessWidget {
         '/contato': (context) => const ContatoPage(),
         '/chatbot': (context) => const ChatbotPage(),
         '/teleconsulta': (context) => const TeleconsultaPacientePage(),
-        // '/perfil': (context) => const PerfilPage(),
-        // '/agendamentos': (context) => const AgendamentosPage(),
+        '/perfil': (context) => const ConfigPerfilPage(),
+        '/agendamentos': (context) => const AgendamentosPacientePage(),
         '/termos-uso': (context) => const TermosUsoPage(),
         '/privacidade': (context) => const PrivacidadePage(),
-        '/admin': (context) =>
-            const AdminHomePage(), // CORRIGIDO: AdminHomePage existe
+        '/admin': (context) => const AdminHomePage(),
         '/medico': (context) => const MedicoHomePage(),
-        '/medico/agenda': (context) => const MinhaAgendaPage(),
+        '/medico/agendamentos': (context) => const AgendamentosPacientesPage(),
         '/medico/dicas': (context) => const DicasSaudePage(),
         '/medico/perfil': (context) => const PerfilMedicoPage(),
         '/admin-usuarios': (context) => const AdminUsuariosPage(),
@@ -105,7 +101,6 @@ class MyApp extends StatelessWidget {
       onGenerateRoute: (settings) {
         if (settings.name == '/medico/teleconsulta') {
           final args = settings.arguments as Map<String, dynamic>?;
-
           return MaterialPageRoute(
             builder: (context) => TeleconsultaPage(
               consultaId: args?['consultaId'] ?? '',

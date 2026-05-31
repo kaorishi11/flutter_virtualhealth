@@ -152,17 +152,24 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _showUserMenu() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(30),
-        ),
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: Colors.white,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(30),
       ),
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(20),
+    ),
+    isScrollControlled: true,  // ESSA LINHA É ESSENCIAL
+    builder: (context) {
+      return SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 20,
+            right: 20,
+            top: 20,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -186,9 +193,10 @@ class _HomePageState extends State<HomePage> {
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                 ),
+                textAlign: TextAlign.center,
               ),
               Text(
-                _userFuncao == 'paciente' ? 'Paciente' : 'Médico',
+                (_userProfile?['funcao'] ?? 'paciente') == 'paciente' ? 'Paciente' : 'Médico',
                 style: const TextStyle(
                   color: Colors.grey,
                 ),
@@ -233,12 +241,14 @@ class _HomePageState extends State<HomePage> {
                   _logout();
                 },
               ),
+              const SizedBox(height: 20), // Espaço extra no final
             ],
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
 
   @override
   Widget build(BuildContext context) {

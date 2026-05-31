@@ -127,77 +127,104 @@ class _ClinicasPageState extends State<ClinicasPage> {
     }
   }
 
-  void _showUserMenu() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+void _showUserMenu() {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: Colors.white,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(30),
       ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircleAvatar(
-              radius: 40,
-              backgroundColor: const Color(0xFF3FA9C6),
-              child: Text(
-                _userName != null && _userName!.isNotEmpty
-                    ? _userName![0].toUpperCase()
-                    : 'U',
-                style: const TextStyle(fontSize: 32, color: Colors.white),
+    ),
+    isScrollControlled: true,  // ESSA LINHA É ESSENCIAL
+    builder: (context) {
+      return SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 20,
+            right: 20,
+            top: 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircleAvatar(
+                radius: 40,
+                backgroundColor: const Color(0xFF3FA9C6),
+                child: Text(
+                  _userName != null && _userName!.isNotEmpty
+                      ? _userName![0].toUpperCase()
+                      : 'U',
+                  style: const TextStyle(
+                    fontSize: 32,
+                    color: Colors.white,
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              _userProfile?['nome_completo'] ?? 'Usuário',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              _userFuncao == 'paciente' ? 'Paciente' : 'Médico',
-              style: TextStyle(color: Colors.grey[600], fontSize: 14),
-            ),
-            const SizedBox(height: 20),
-            const Divider(),
-            ListTile(
-              leading:
-                  const Icon(Icons.person_outline, color: Color(0xFF3FA9C6)),
-              title: const Text('Meu Perfil'),
-              onTap: () {
-                Navigator.pop(context);
-                _navigateToProfile();
-              },
-            ),
-            ListTile(
-              leading:
-                  const Icon(Icons.calendar_today, color: Color(0xFF3FA9C6)),
-              title: const Text('Minhas Consultas'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading:
-                  const Icon(Icons.settings_outlined, color: Color(0xFF3FA9C6)),
-              title: const Text('Configurações'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.logout, color: Colors.red),
-              title: const Text('Sair', style: TextStyle(color: Colors.red)),
-              onTap: () {
-                Navigator.pop(context);
-                _logout();
-              },
-            ),
-          ],
+              const SizedBox(height: 15),
+              Text(
+                _userProfile?['nome_completo'] ?? 'Usuário',
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              Text(
+                (_userProfile?['funcao'] ?? 'paciente') == 'paciente' ? 'Paciente' : 'Médico',
+                style: const TextStyle(
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Divider(),
+              ListTile(
+                leading: const Icon(
+                  Icons.person_outline,
+                  color: Color(0xFF1565C0),
+                ),
+                title: const Text('Editar perfil'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/perfil');
+                },
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.calendar_month,
+                  color: Color(0xFF1565C0),
+                ),
+                title: const Text('Meus agendamentos'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/agendamentos');
+                },
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.logout,
+                  color: Colors.red,
+                ),
+                title: const Text(
+                  'Sair',
+                  style: TextStyle(
+                    color: Colors.red,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _logout();
+                },
+              ),
+              const SizedBox(height: 20), // Espaço extra no final
+            ],
+          ),
         ),
-      ),
-    );
-  }
+      );
+    },
+  );
+}
 
   void _navigateToProfile() {
     ScaffoldMessenger.of(context).showSnackBar(

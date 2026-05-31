@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
-import 'agendamentos.dart';
+import 'agendamentosMe.dart';
 import 'dicas.dart';
-import 'perfil.dart';
+import 'perfilMe.dart';
 import 'teleconsultaMe.dart';
 
 class MedicoHomePage extends StatefulWidget {
@@ -156,7 +156,7 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
     } else if (page == 'Minha Agenda') {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const MinhaAgendaPage()),
+        MaterialPageRoute(builder: (context) => const AgendamentosPacientesPage()),
       ).then((_) {
         setState(() {
           _currentPage = 'Dashboard';
@@ -184,7 +184,6 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
     } else if (page == 'Meu Perfil') {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const PerfilMedicoPage()),
       ).then((_) {
         setState(() {
           _currentPage = 'Dashboard';

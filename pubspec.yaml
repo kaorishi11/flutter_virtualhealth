@@ -11,17 +11,27 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
 
+  flutter_ai_chatbot: ^0.0.3
+  # Navegação
   go_router: ^14.0.0
+  
+  # Datas e calendário
   intl: ^0.20.2
   table_calendar: ^3.0.9
+  
+  # Imagem e câmera
   image_picker: ^1.0.4
+  
+  # Video conferência
   jitsi_meet_flutter_sdk: ^10.3.0
 
-  # Supabase
+  # Supabase (Backend)
   supabase_flutter: ^2.0.0
 
-  # Mapas com Geoapify
+  # Mapas
   flutter_map: ^8.2.2
   latlong2: ^0.9.1
   geolocator: ^10.1.0
@@ -30,21 +40,18 @@ dependencies:
   # Video Player
   video_player: ^2.8.1
 
-  # Utilitários
+  # Ícones
   cupertino_icons: ^1.0.6
-  flutter_ai_chatbot: ^0.0.3
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
   flutter_lints: ^3.0.0
 
 flutter:
   uses-material-design: true
 
   assets:
-
     - assets/doutorclinica.png
     - assets/logo.png
     - assets/medico.png
@@ -53,3 +60,4 @@ flutter:
     - assets/homepage.jpg
     - assets/video.mp4
     - assets/computadorhome.jpg
+    - assets/doutorclinica.png
