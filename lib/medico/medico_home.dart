@@ -36,7 +36,11 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
   DateTime selectedDate = DateTime.now();
   DateTime focusedDay = DateTime.now();
 
-  final Color primaryColor = const Color(0xFF3FA9C6);
+  // CORREÇÃO: Usando a paleta de cores do Virtual Health
+  final Color primaryColor = const Color(0xFF14B8A6); // Teal
+  final Color secondaryColor = const Color(0xFF0D2C33); // Dark teal
+  final Color backgroundColor = const Color(0xFFF8FAFC); // Light gray
+  final Color cardColor = Colors.white;
 
   bool isLoading = true;
 
@@ -56,79 +60,18 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
         throw Exception('Usuário não autenticado');
       }
 
-      final perfil = await supabase
-          .from('perfis')
+      // CORREÇÃO: Usando a tabela 'usuarios' em vez de 'perfis'
+      final usuario = await supabase
+          .from('usuarios')
           .select()
-          .eq('auth_id', user.id)
+          .eq('id', user.id)
           .single();
 
-      perfilId = perfil['id'].toString();
-      nomeMedico = perfil['nome_completo'] ?? 'Médico';
-
-      final profissional = await supabase
-          .from('profissionais')
-          .select()
-          .eq('perfil_id', perfilId)
-          .single();
-
-      profissionalId = profissional['id'].toString();
-
-      especialidade = profissional['especialidade'] ?? 'Médico';
-
-      mediaAvaliacao = ((profissional['avaliacao'] ?? 0) as num).round();
-
-      final hoje = DateTime.now().toIso8601String().split('T')[0];
-
-      final consultasHojeResponse = await supabase.from('consultas').select('''
-            id,
-            status,
-            data_agendada,
-            horario_agendado,
-            modo,
-            paciente_id,
-            perfis:perfis!consultas_paciente_id_fkey(
-              id,
-              nome_completo
-            )
-          ''').eq('profissional_id', profissionalId).eq('data_agendada', hoje);
-
-      final consultasPendentesResponse = await supabase
-          .from('consultas')
-          .select('id')
-          .eq('profissional_id', profissionalId)
-          .eq('status', 'pendente');
-
-      final consultasCompletadasResponse = await supabase
-          .from('consultas')
-          .select('id')
-          .eq('profissional_id', profissionalId)
-          .eq('status', 'concluida');
-
-      final proximasConsultas = await supabase
-          .from('consultas')
-          .select('''
-            id,
-            status,
-            data_agendada,
-            horario_agendado,
-            modo,
-            paciente_id,
-            perfis:perfis!consultas_paciente_id_fkey(
-              id,
-              nome_completo
-            )
-          ''')
-          .eq('profissional_id', profissionalId)
-          .order('data_agendada')
-          .order('horario_agendado');
+      perfilId = usuario['id'].toString();
+      nomeMedico = usuario['nome'] ?? 'Médico';
+      especialidade = usuario['especialidade'] ?? 'Médico';
 
       setState(() {
-        consultasHoje = consultasHojeResponse.length;
-        consultasPendentes = consultasPendentesResponse.length;
-        totalConsultasCompletadas = consultasCompletadasResponse.length;
-
-        consultas = List<Map<String, dynamic>>.from(proximasConsultas);
-
         isLoading = false;
       });
     } catch (e) {
@@ -168,7 +111,7 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Selecione uma consulta para iniciar a teleconsulta'),
-          backgroundColor: Colors.orange,
+          backgroundColor: Color(0xFF14B8A6),
         ),
       );
       setState(() {
@@ -219,9 +162,10 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
     return Scaffold(
       key: _scaffoldKey,
       drawer: isMobile ? _buildDrawer() : null,
-      backgroundColor: const Color(0xfff5f7fa),
+      backgroundColor: backgroundColor,
       body: RefreshIndicator(
         onRefresh: carregarDados,
+        color: primaryColor,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: EdgeInsets.only(
@@ -232,7 +176,9 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
           ),
           child: isLoading
               ? const Center(
-                  child: CircularProgressIndicator(),
+                  child: CircularProgressIndicator(
+                    color: Color(0xFF14B8A6),
+                  ),
                 )
               : Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -270,7 +216,7 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [primaryColor, primaryColor.withOpacity(0.8)],
+            colors: [secondaryColor, secondaryColor.withOpacity(0.9)],
           ),
         ),
         child: Column(
@@ -286,8 +232,19 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
                       height: 100,
                       fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) {
-                        return const Icon(Icons.medical_services,
-                            size: 80, color: Colors.white);
+                        return Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: primaryColor,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.medical_services,
+                            size: 50,
+                            color: Colors.white,
+                          ),
+                        );
                       },
                     ),
                     const SizedBox(height: 16),
@@ -361,10 +318,17 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
         gradient: LinearGradient(
           colors: [
             primaryColor,
-            primaryColor.withOpacity(0.7),
+            primaryColor.withOpacity(0.8),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: primaryColor.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -385,14 +349,20 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
             ),
           ),
           const SizedBox(height: 10),
-          Text(
-            DateFormat(
-              "EEEE, d 'de' MMMM",
-              'pt_BR',
-            ).format(DateTime.now()),
-            style: const TextStyle(
-              color: Colors.white,
-            ),
+          Row(
+            children: [
+              const Icon(Icons.calendar_today, color: Colors.white70, size: 16),
+              const SizedBox(width: 8),
+              Text(
+                DateFormat(
+                  "EEEE, d 'de' MMMM",
+                  'pt_BR',
+                ).format(DateTime.now()),
+                style: const TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -405,7 +375,7 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
         'titulo': 'Consultas hoje',
         'valor': consultasHoje.toString(),
         'icone': Icons.calendar_today,
-        'cor': Colors.blue,
+        'cor': primaryColor,
       },
       {
         'titulo': 'Pendentes',
@@ -418,6 +388,12 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
         'valor': totalConsultasCompletadas.toString(),
         'icone': Icons.check_circle,
         'cor': Colors.green,
+      },
+      {
+        'titulo': 'Avaliação',
+        'valor': '★ $mediaAvaliacao',
+        'icone': Icons.star,
+        'cor': Colors.amber,
       },
     ];
 
@@ -437,30 +413,50 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: cardColor,
             borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(
-                card['icone'] as IconData,
-                color: card['cor'] as Color,
-                size: 32,
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: (card['cor'] as Color).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  card['icone'] as IconData,
+                  color: card['cor'] as Color,
+                  size: 24,
+                ),
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     card['valor'] as String,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
+                      color: secondaryColor,
                     ),
                   ),
+                  const SizedBox(height: 4),
                   Text(
                     card['titulo'] as String,
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 12,
+                    ),
                   ),
                 ],
               ),
@@ -476,8 +472,15 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
       return Container(
         padding: const EdgeInsets.all(32),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cardColor,
           borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: const Center(
           child: Column(
@@ -497,40 +500,68 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Próximas consultas',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Próximas consultas',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF0D2C33),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const AgendamentosPacientesPage()),
+                );
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: primaryColor,
+              ),
+              child: const Text('Ver todas'),
+            ),
+          ],
         ),
         const SizedBox(height: 12),
         ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          itemCount: consultas.length,
+          itemCount: consultas.length > 5 ? 5 : consultas.length,
           itemBuilder: (context, index) {
             final consulta = consultas[index];
 
-            final paciente = consulta['perfis']?['nome_completo'] ?? 'Paciente';
+            final paciente = consulta['perfis']?['nome_completo'] ?? 
+                            consulta['perfis']?['nome'] ?? 'Paciente';
 
             final horario = consulta['horario_agendado'] ?? '--:--';
-
+            final data = consulta['data_agendada'] ?? '';
             final modo = consulta['modo'] ?? 'presencial';
+            final status = consulta['status'] ?? 'pendente';
 
             return Container(
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: cardColor,
                 borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.03),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
                   CircleAvatar(
                     backgroundColor: primaryColor.withOpacity(0.1),
                     child: Text(
-                      paciente[0].toUpperCase(),
+                      paciente.isNotEmpty ? paciente[0].toUpperCase() : 'P',
                       style: TextStyle(
                         color: primaryColor,
                         fontWeight: FontWeight.bold,
@@ -546,23 +577,35 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
                           paciente,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
+                            color: Color(0xFF0D2C33),
                           ),
                         ),
                         const SizedBox(height: 4),
                         Row(
                           children: [
+                            Icon(Icons.calendar_today,
+                                size: 12, color: Colors.grey[600]),
+                            const SizedBox(width: 4),
+                            Text(
+                              DateFormat('dd/MM/yyyy').parse(data).isAfter(DateTime.now().subtract(const Duration(days: 1)))
+                                  ? data
+                                  : 'Hoje',
+                              style: TextStyle(
+                                  color: Colors.grey[600], fontSize: 11),
+                            ),
+                            const SizedBox(width: 12),
                             Icon(Icons.access_time,
-                                size: 14, color: Colors.grey[600]),
+                                size: 12, color: Colors.grey[600]),
                             const SizedBox(width: 4),
                             Text(horario,
                                 style: TextStyle(
-                                    color: Colors.grey[600], fontSize: 12)),
+                                    color: Colors.grey[600], fontSize: 11)),
                             const SizedBox(width: 12),
                             Icon(
                                 modo == 'online'
                                     ? Icons.videocam
                                     : Icons.location_on,
-                                size: 14,
+                                size: 12,
                                 color: Colors.grey[600]),
                             const SizedBox(width: 4),
                             Text(
@@ -570,27 +613,52 @@ class _MedicoHomePageState extends State<MedicoHomePage> {
                                     ? 'Teleconsulta'
                                     : 'Presencial',
                                 style: TextStyle(
-                                    color: Colors.grey[600], fontSize: 12)),
+                                    color: Colors.grey[600], fontSize: 11)),
                           ],
                         ),
+                        if (status == 'pendente')
+                          Container(
+                            margin: const EdgeInsets.only(top: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Text(
+                              'Pendente',
+                              style: TextStyle(
+                                color: Colors.orange,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                   ),
-                  if (modo == 'online')
-                    ElevatedButton.icon(
+                  if (modo == 'online' && status == 'pendente')
+                    ElevatedButton(
                       onPressed: () => _irParaTeleconsulta(
                         consulta['id'].toString(),
                         paciente,
                         consulta['paciente_id'].toString(),
                       ),
-                      icon: const Icon(Icons.video_call, size: 16),
-                      label: const Text('Iniciar'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryColor,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 10),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.video_call, size: 16),
+                          SizedBox(width: 4),
+                          Text('Iniciar'),
+                        ],
                       ),
                     ),
                 ],
