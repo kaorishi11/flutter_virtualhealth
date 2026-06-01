@@ -76,11 +76,22 @@ class _AgendamentosPacientesPageState extends State<AgendamentosPacientesPage> {
 
   List<Map<String, dynamic>> _filteredAppointments = [];
 
-  // Paleta de cores do Virtual Health
-  final Color primaryColor = const Color(0xFF14B8A6);
-  final Color secondaryColor = const Color(0xFF0D2C33);
-  final Color backgroundColor = const Color(0xFFF8FAFC);
-  final Color cardColor = Colors.white;
+  // Paleta de cores do Virtual Health (centralizada)
+  static const Color primaryTeal = Color(0xFF14B8A6);
+  static const Color deepOcean = Color(0xFF0D2C33);
+  static const Color actionTeal = Color(0xFF0F766E);
+  static const Color backgroundWhite = Color(0xFFF8FAFC);
+  static const Color cardWhite = Color(0xFFFFFFFF);
+  static const Color secondaryTealSoft = Color(0xFFEDF7F6);
+  static const Color mutedText = Color(0xFF6B7280);
+  static const Color borderLight = Color(0x3314B8A6);
+  
+  // Cores de status
+  static const Color statusConfirmed = Color(0xFF10B981);
+  static const Color statusWaiting = Color(0xFFF59E0B);
+  static const Color statusCancelled = Color(0xFFEF4444);
+  static const Color badgePurple = Color(0xFF8B5CF6);
+  static const Color badgeBlue = Color(0xFF3B82F6);
 
   @override
   void initState() {
@@ -148,15 +159,18 @@ class _AgendamentosPacientesPageState extends State<AgendamentosPacientesPage> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Desconectar'),
-        content: const Text('Tem certeza que deseja sair?'),
+        title: const Text('Desconectar', style: TextStyle(color: deepOcean, fontWeight: FontWeight.bold)),
+        content: const Text('Tem certeza que deseja sair?', style: TextStyle(color: mutedText)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancelar')),
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancelar', style: TextStyle(color: mutedText)),
+          ),
           TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Sair', style: TextStyle(color: Color(0xFF14B8A6)))),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Sair', style: TextStyle(color: primaryTeal, fontWeight: FontWeight.w600)),
+          ),
         ],
       ),
     );
@@ -172,7 +186,7 @@ class _AgendamentosPacientesPageState extends State<AgendamentosPacientesPage> {
   void _showUserMenu() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: cardWhite,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
       ),
@@ -189,51 +203,82 @@ class _AgendamentosPacientesPageState extends State<AgendamentosPacientesPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircleAvatar(
-                  radius: 40,
-                  backgroundColor: primaryColor,
-                  child: Text(
-                    _userName != null && _userName!.isNotEmpty
-                        ? _userName![0].toUpperCase()
-                        : 'M',
-                    style: const TextStyle(fontSize: 32, color: Colors.white),
+                Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: [primaryTeal],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: CircleAvatar(
+                    radius: 40,
+                    backgroundColor: Colors.transparent,
+                    child: Text(
+                      _userName != null && _userName!.isNotEmpty
+                          ? _userName![0].toUpperCase()
+                          : 'M',
+                      style: const TextStyle(fontSize: 32, color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 15),
                 Text(
                   _userProfile?['nome'] ?? 'Médico',
                   style: const TextStyle(
-                      fontSize: 22, fontWeight: FontWeight.bold),
+                    fontSize: 22, 
+                    fontWeight: FontWeight.bold,
+                    color: deepOcean,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 Text(
                   _getTipoDisplay(_userTipo),
-                  style: const TextStyle(color: Colors.grey),
+                  style: TextStyle(color: mutedText),
                 ),
                 const SizedBox(height: 20),
-                const Divider(),
+                Divider(color: borderLight, thickness: 1),
                 ListTile(
-                  leading: const Icon(Icons.person_outline,
-                      color: Color(0xFF14B8A6)),
-                  title: const Text('Meu Perfil'),
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: secondaryTealSoft,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.person_outline, color: primaryTeal, size: 20),
+                  ),
+                  title: const Text('Meu Perfil', style: TextStyle(color: deepOcean)),
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.pushNamed(context, '/medico/perfil');
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.health_and_safety,
-                      color: Color(0xFF14B8A6)),
-                  title: const Text('Dicas de Saúde'),
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: secondaryTealSoft,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.health_and_safety, color: primaryTeal, size: 20),
+                  ),
+                  title: const Text('Dicas de Saúde', style: TextStyle(color: deepOcean)),
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.pushNamed(context, '/medico/dicas');
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.logout, color: Colors.red),
-                  title:
-                      const Text('Sair', style: TextStyle(color: Colors.red)),
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: statusCancelled.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.logout, color: statusCancelled, size: 20),
+                  ),
+                  title: const Text('Sair', style: TextStyle(color: statusCancelled)),
                   onTap: () {
                     Navigator.pop(context);
                     _logout();
@@ -263,18 +308,8 @@ class _AgendamentosPacientesPageState extends State<AgendamentosPacientesPage> {
 
   String _formatarDataPersonalizada() {
     const meses = [
-      'JANEIRO',
-      'FEVEREIRO',
-      'MARÇO',
-      'ABRIL',
-      'MAIO',
-      'JUNHO',
-      'JULHO',
-      'AGOSTO',
-      'SETEMBRO',
-      'OUTUBRO',
-      'NOVEMBRO',
-      'DEZEMBRO'
+      'JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO',
+      'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'
     ];
 
     const dias = ['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB', 'DOM'];
@@ -290,7 +325,7 @@ class _AgendamentosPacientesPageState extends State<AgendamentosPacientesPage> {
     return horario.replaceFirst(':', 'H');
   }
 
-  // Função auxiliar para criar cor com opacidade (compatível com Flutter Web)
+  // Função auxiliar para criar cor com opacidade
   Color _colorWithOpacity(Color color, double opacity) {
     return Color.fromRGBO(color.red, color.green, color.blue, opacity);
   }
@@ -298,10 +333,13 @@ class _AgendamentosPacientesPageState extends State<AgendamentosPacientesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: backgroundWhite,
       appBar: AppBar(
-        title: const Text('MINHA AGENDA'),
-        backgroundColor: secondaryColor,
+        title: const Text(
+          'MINHA AGENDA',
+          style: TextStyle(fontWeight: FontWeight.w600, letterSpacing: 0.5),
+        ),
+        backgroundColor: deepOcean,
         foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
@@ -322,8 +360,20 @@ class _AgendamentosPacientesPageState extends State<AgendamentosPacientesPage> {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     itemCount: _filteredAppointments.length,
                     itemBuilder: (context, index) {
-                      return _buildAppointmentCard(
-                          _filteredAppointments[index]);
+                      return TweenAnimationBuilder(
+                        tween: Tween<double>(begin: 0, end: 1),
+                        duration: Duration(milliseconds: 300 + (index * 50)),
+                        builder: (context, double value, child) {
+                          return Opacity(
+                            opacity: value,
+                            child: Transform.translate(
+                              offset: Offset(0, 20 * (1 - value)),
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: _buildAppointmentCard(_filteredAppointments[index]),
+                      );
                     },
                   ),
           ),
@@ -341,27 +391,68 @@ class _AgendamentosPacientesPageState extends State<AgendamentosPacientesPage> {
   Widget _buildDataHeader() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      color: cardColor,
+      color: cardWhite,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          IconButton(
-            icon: const Icon(Icons.chevron_left, size: 28),
-            onPressed: () => _mudarData(-1),
-            color: primaryColor,
-          ),
-          Text(
-            _formatarDataPersonalizada(),
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: secondaryColor,
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [secondaryTealSoft, cardWhite],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: borderLight, width: 1),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.chevron_left, size: 28),
+              onPressed: () => _mudarData(-1),
+              color: primaryTeal,
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.chevron_right, size: 28),
-            onPressed: () => _mudarData(1),
-            color: primaryColor,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [deepOcean, actionTeal],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: deepOcean.withOpacity(0.2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Text(
+              _formatarDataPersonalizada(),
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [secondaryTealSoft, cardWhite],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: borderLight, width: 1),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.chevron_right, size: 28),
+              onPressed: () => _mudarData(1),
+              color: primaryTeal,
+            ),
           ),
         ],
       ),
@@ -371,7 +462,7 @@ class _AgendamentosPacientesPageState extends State<AgendamentosPacientesPage> {
   Widget _buildFiltros() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      color: cardColor,
+      color: cardWhite,
       child: Row(
         children: _tiposFiltro.map((tipo) {
           final isSelected = _filtroTipo == tipo;
@@ -386,19 +477,22 @@ class _AgendamentosPacientesPageState extends State<AgendamentosPacientesPage> {
                   _filtrarAgendamentos();
                 });
               },
-              backgroundColor: Colors.grey[100],
-              selectedColor: _colorWithOpacity(primaryColor, 0.1),
-              checkmarkColor: primaryColor,
+              backgroundColor: secondaryTealSoft,
+              selectedColor: _colorWithOpacity(primaryTeal, 0.15),
+              checkmarkColor: primaryTeal,
               labelStyle: TextStyle(
-                color: isSelected ? primaryColor : Colors.grey[700],
+                color: isSelected ? primaryTeal : mutedText,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                fontSize: 13,
               ),
               shape: StadiumBorder(
                 side: BorderSide(
-                  color: isSelected ? primaryColor : Colors.transparent,
-                  width: 1,
+                  color: isSelected ? primaryTeal : borderLight,
+                  width: isSelected ? 1.5 : 1,
                 ),
               ),
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             ),
           );
         }).toList(),
@@ -411,16 +505,23 @@ class _AgendamentosPacientesPageState extends State<AgendamentosPacientesPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.event_busy, size: 64, color: Colors.grey[400]),
-          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: secondaryTealSoft,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.event_busy, size: 64, color: primaryTeal.withOpacity(0.6)),
+          ),
+          const SizedBox(height: 24),
           Text(
             'Nenhuma consulta agendada',
-            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: deepOcean),
           ),
           const SizedBox(height: 8),
           Text(
             'Selecione outra data ou aguarde novos agendamentos',
-            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+            style: TextStyle(fontSize: 14, color: mutedText),
           ),
         ],
       ),
@@ -441,132 +542,208 @@ class _AgendamentosPacientesPageState extends State<AgendamentosPacientesPage> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(16),
+        color: cardWhite,
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: _colorWithOpacity(Colors.black, 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
+        border: Border.all(color: borderLight, width: 1),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header do card com horário e status
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: _colorWithOpacity(primaryColor, 0.05),
+              gradient: LinearGradient(
+                colors: [primaryTeal.withOpacity(0.08), secondaryTealSoft],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
               borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
               ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Icon(Icons.access_time,
-                        size: 18, color: primaryColor),
-                    const SizedBox(width: 8),
-                    Text(
-                      _formatarHorario(horario),
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: secondaryColor,
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: cardWhite,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: borderLight, width: 1),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.access_time, size: 16, color: primaryTeal),
+                      const SizedBox(width: 6),
+                      Text(
+                        _formatarHorario(horario),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: deepOcean,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      duracao,
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                    ),
-                  ],
+                      const SizedBox(width: 6),
+                      Container(
+                        width: 3,
+                        height: 3,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: mutedText,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        duracao,
+                        style: TextStyle(fontSize: 12, color: mutedText),
+                      ),
+                    ],
+                  ),
                 ),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: _colorWithOpacity(Colors.green, 0.1),
+                    color: statusConfirmed.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: statusConfirmed.withOpacity(0.3), width: 1),
                   ),
-                  child: const Text(
-                    'Confirmado',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.green,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: statusConfirmed,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      const Text(
+                        'Confirmado',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: statusConfirmed,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
+          
+          // Conteúdo do card
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  pacienteNome,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: secondaryColor,
-                  ),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: secondaryTealSoft,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.person_outline,
+                        size: 20,
+                        color: primaryTeal,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            pacienteNome,
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              color: deepOcean,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            descricao,
+                            style: TextStyle(fontSize: 13, color: mutedText),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  descricao,
-                  style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 14),
+                
+                // Tags
                 Wrap(
                   spacing: 8,
-                  runSpacing: 4,
+                  runSpacing: 8,
                   children: [
                     if (isPrimeiraConsulta)
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
-                          color: _colorWithOpacity(Colors.purple, 0.1),
+                          color: badgePurple.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: badgePurple.withOpacity(0.3), width: 1),
                         ),
-                        child: const Text(
-                          '1ª consulta',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.purple,
-                            fontWeight: FontWeight.w500,
-                          ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.favorite, size: 12, color: badgePurple),
+                            const SizedBox(width: 4),
+                            Text(
+                              '1ª consulta',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: badgePurple,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
                         color: isOnline
-                            ? _colorWithOpacity(primaryColor, 0.1)
-                            : _colorWithOpacity(Colors.blue, 0.1),
+                            ? primaryTeal.withOpacity(0.1)
+                            : badgeBlue.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isOnline ? primaryTeal.withOpacity(0.3) : badgeBlue.withOpacity(0.3),
+                          width: 1,
+                        ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
                             isOnline ? Icons.videocam : Icons.location_on,
-                            size: 10,
-                            color: isOnline ? primaryColor : Colors.blue,
+                            size: 12,
+                            color: isOnline ? primaryTeal : badgeBlue,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             appointment['tipo'] ?? 'Presencial',
                             style: TextStyle(
-                              fontSize: 10,
-                              color: isOnline ? primaryColor : Colors.blue,
+                              fontSize: 11,
+                              color: isOnline ? primaryTeal : badgeBlue,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -575,21 +752,41 @@ class _AgendamentosPacientesPageState extends State<AgendamentosPacientesPage> {
                     ),
                   ],
                 ),
+                
                 if (podeIniciar) ...[
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton.icon(
+                    child: ElevatedButton(
                       onPressed: () => _iniciarTeleconsulta(appointment),
-                      icon: const Icon(Icons.videocam, size: 18),
-                      label: const Text('Iniciar Chamada'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryColor,
+                        backgroundColor: primaryTeal,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(14),
                         ),
+                        elevation: 2,
+                      ).copyWith(
+                        overlayColor: WidgetStateProperty.resolveWith<Color?>(
+                          (Set<WidgetState> states) {
+                            if (states.contains(WidgetState.pressed)) {
+                              return Colors.white.withOpacity(0.2);
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.videocam, size: 18),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Iniciar Chamada',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                          ),
+                        ],
                       ),
                     ),
                   ),

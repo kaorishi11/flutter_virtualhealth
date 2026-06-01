@@ -13,7 +13,6 @@ class DicasSaudePage extends StatefulWidget {
 class _DicasSaudePageState extends State<DicasSaudePage> {
   final supabase = Supabase.instance.client;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  String _currentPage = 'Dicas de Saúde';
 
   final TextEditingController _tituloController = TextEditingController();
   final TextEditingController _conteudoController = TextEditingController();
@@ -27,7 +26,18 @@ class _DicasSaudePageState extends State<DicasSaudePage> {
   String _perfilId = '';
   String _profissionalId = '';
 
-  final Color primaryColor = const Color(0xFF3FA9C6);
+  // ==================== PALETA DE CORES VIRTUAL HEALTH ====================
+  static const Color primaryTeal = Color(0xFF14B8A6);      // Primary
+  static const Color deepOcean = Color(0xFF0D2C33);        // Deep Ocean
+  static const Color actionTeal = Color(0xFF0F766E);       // Action Teal
+  static const Color backgroundWhite = Color(0xFFF8FAFC);  // Background
+  static const Color cardWhite = Color(0xFFFFFFFF);        // Card / Surface
+  static const Color secondaryTealSoft = Color(0xFFEDF7F6); // Secondary
+  static const Color mutedText = Color(0xFF6B7280);        // Muted (cinza-esverdeado)
+  static const Color borderLight = Color(0x3314B8A6);      // Teal claro 20% opacidade
+  static const Color likeRed = Color(0xFFEF4444);          // Cor para curtidas
+  static const Color statusSuccess = Color(0xFF10B981);    // Verde para sucesso
+  // ========================================================================
 
   @override
   void initState() {
@@ -120,8 +130,7 @@ class _DicasSaudePageState extends State<DicasSaudePage> {
             id: dica['id'],
             titulo: dica['titulo'] ?? 'Dica de saúde',
             conteudo: dica['conteudo'] ?? '',
-            autor:
-                dica['perfis']?['nome_completo']?.split(' ')[0] ?? _nomeMedico,
+            autor: dica['perfis']?['nome_completo']?.split(' ')[0] ?? _nomeMedico,
             especialidade: _especialidade,
             dataPublicacao: DateTime.parse(dica['criado_em']),
             curtidas: dica['curtidas'] ?? 0,
@@ -193,24 +202,7 @@ class _DicasSaudePageState extends State<DicasSaudePage> {
       _mostrarSnackbar('Dica publicada com sucesso!');
     } catch (e) {
       debugPrint('Erro ao publicar: $e');
-      setState(() {
-        _dicas.insert(
-            0,
-            DicaSaude(
-              id: DateTime.now().millisecondsSinceEpoch.toString(),
-              titulo: _tituloController.text.trim().isEmpty
-                  ? 'Nova dica de saúde'
-                  : _tituloController.text.trim(),
-              conteudo: _conteudoController.text.trim(),
-              autor: _nomeMedico,
-              especialidade: _especialidade,
-              dataPublicacao: DateTime.now(),
-              curtidas: 0,
-            ));
-        _tituloController.clear();
-        _conteudoController.clear();
-      });
-      _mostrarSnackbar('Dica publicada com sucesso!');
+      _mostrarSnackbar('Erro ao publicar dica. Tente novamente.');
     }
 
     setState(() {
@@ -236,6 +228,7 @@ class _DicasSaudePageState extends State<DicasSaudePage> {
         }
       });
     } catch (e) {
+      // Fallback local
       setState(() {
         final index = _dicas.indexWhere((d) => d.id == dica.id);
         if (index != -1) {
@@ -248,9 +241,11 @@ class _DicasSaudePageState extends State<DicasSaudePage> {
   void _mostrarSnackbar(String mensagem) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(mensagem),
-        backgroundColor: primaryColor,
+        content: Text(mensagem, style: const TextStyle(color: Colors.white)),
+        backgroundColor: primaryTeal,
         behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(16),
       ),
     );
   }
@@ -259,47 +254,91 @@ class _DicasSaudePageState extends State<DicasSaudePage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Como publicar dicas'),
-        content: const Column(
+        title: Row(
+          children: [
+            Icon(Icons.help_outline, color: primaryTeal, size: 28),
+            const SizedBox(width: 12),
+            const Text('Como publicar dicas', style: TextStyle(color: deepOcean, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Escreva dicas de saúde para seus pacientes'),
-            SizedBox(height: 8),
-            Text('Compartilhe conhecimentos e orientações'),
-            SizedBox(height: 8),
-            Text('Os pacientes podem curtir suas dicas'),
-            SizedBox(height: 8),
-            Text('As dicas aparecem no feed dos pacientes'),
+            _buildHelpItem(Icons.edit, 'Escreva dicas de saúde para seus pacientes'),
+            const SizedBox(height: 12),
+            _buildHelpItem(Icons.share, 'Compartilhe conhecimentos e orientações'),
+            const SizedBox(height: 12),
+            _buildHelpItem(Icons.favorite, 'Os pacientes podem curtir suas dicas'),
+            const SizedBox(height: 12),
+            _buildHelpItem(Icons.feed, 'As dicas aparecem no feed dos pacientes'),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Entendi'),
+            style: TextButton.styleFrom(
+              foregroundColor: primaryTeal,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            ),
+            child: const Text('Entendi', style: TextStyle(fontWeight: FontWeight.w600)),
           ),
         ],
       ),
     );
   }
 
+  Widget _buildHelpItem(IconData icon, String text) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: secondaryTealSoft,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, size: 18, color: primaryTeal),
+        ),
+        const SizedBox(width: 12),
+        Expanded(child: Text(text, style: TextStyle(color: mutedText, fontSize: 14))),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 800;
-
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: const Color(0xfff5f7fa),
+      backgroundColor: backgroundWhite,
+      appBar: AppBar(
+        title: const Text(
+          'DICAS DE SAÚDE',
+          style: TextStyle(
+            fontWeight: FontWeight.w600, 
+            letterSpacing: 0.5,
+            fontSize: 18,
+          ),
+        ),
+        backgroundColor: deepOcean,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline),
+            onPressed: _mostrarAjuda,
+            tooltip: 'Ajuda',
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: _carregarDicas,
+        color: primaryTeal,
+        backgroundColor: cardWhite,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: EdgeInsets.only(
-            top: isMobile ? 120 : 160,
-            left: 16,
-            right: 16,
-            bottom: 16,
-          ),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -322,101 +361,131 @@ class _DicasSaudePageState extends State<DicasSaudePage> {
   Widget _buildPublicarSection() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        color: cardWhite,
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(0.04),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
         ],
+        border: Border.all(color: borderLight, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header da seção
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: primaryColor.withOpacity(0.05),
+              color: secondaryTealSoft,
               borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(24),
-                topRight: Radius.circular(24),
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
               ),
             ),
             child: Row(
               children: [
-                Icon(Icons.post_add, color: primaryColor, size: 28),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: cardWhite,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(Icons.post_add, color: primaryTeal, size: 22),
+                ),
                 const SizedBox(width: 12),
                 const Text(
-                  'PUBLICAR DICAS',
+                  'PUBLICAR DICA',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1,
+                    color: deepOcean,
                   ),
                 ),
               ],
             ),
           ),
+          
+          // Formulário
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Campo Título
                 TextField(
                   controller: _tituloController,
+                  style: TextStyle(color: deepOcean, fontSize: 14),
                   decoration: InputDecoration(
                     hintText: 'Título (opcional)',
-                    prefixIcon: Icon(Icons.title, color: primaryColor),
+                    hintStyle: TextStyle(color: mutedText, fontSize: 14),
+                    prefixIcon: Icon(Icons.title, color: primaryTeal, size: 20),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(color: Colors.grey[300]!),
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: borderLight),
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(color: Colors.grey[300]!),
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: borderLight),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(color: primaryColor, width: 2),
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: primaryTeal, width: 2),
                     ),
+                    filled: true,
+                    fillColor: backgroundWhite,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                 ),
                 const SizedBox(height: 16),
+                
+                // Campo Conteúdo
                 TextField(
                   controller: _conteudoController,
-                  maxLines: 5,
+                  maxLines: 4,
+                  style: TextStyle(color: deepOcean, fontSize: 14, height: 1.5),
                   decoration: InputDecoration(
-                    hintText: 'Escrever...',
-                    hintStyle: TextStyle(color: Colors.grey[400]),
-                    prefixIcon: Icon(Icons.edit_note, color: primaryColor),
-                    alignLabelWithHint: true,
+                    hintText: 'Escreva sua dica de saúde...',
+                    hintStyle: TextStyle(color: mutedText, fontSize: 14),
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.only(bottom: 40),
+                      child: Icon(Icons.edit_note, color: primaryTeal, size: 20),
+                    ),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(color: Colors.grey[300]!),
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: borderLight),
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(color: Colors.grey[300]!),
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: borderLight),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(color: primaryColor, width: 2),
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: primaryTeal, width: 2),
                     ),
+                    filled: true,
+                    fillColor: backgroundWhite,
+                    alignLabelWithHint: true,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
+                
+                // Botão Publicar
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _isPublicando ? null : _publicarDica,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryColor,
+                      backgroundColor: primaryTeal,
+                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(12),
                       ),
+                      elevation: 0,
                     ),
                     child: _isPublicando
                         ? const SizedBox(
@@ -430,8 +499,7 @@ class _DicasSaudePageState extends State<DicasSaudePage> {
                         : const Text(
                             'PUBLICAR',
                             style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.white,
+                              fontSize: 14,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 1,
                             ),
@@ -450,50 +518,78 @@ class _DicasSaudePageState extends State<DicasSaudePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'ÚLTIMAS DICAS PUBLICADAS',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1,
+        // Título da seção
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+          child: Row(
+            children: [
+              Container(
+                width: 4,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: primaryTeal,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
-            ),
-          ],
+              const SizedBox(width: 10),
+              const Text(
+                'ÚLTIMAS DICAS PUBLICADAS',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.8,
+                  color: deepOcean,
+                ),
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: 16),
+        
+        const SizedBox(height: 12),
+        
+        // Conteúdo da seção
         if (_isLoading)
           const Center(
             child: Padding(
               padding: EdgeInsets.all(32),
-              child: CircularProgressIndicator(),
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(primaryTeal),
+              ),
             ),
           )
         else if (_dicas.isEmpty)
           Container(
-            padding: const EdgeInsets.all(40),
+            padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: cardWhite,
               borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: borderLight, width: 1),
             ),
-            child: const Center(
-              child: Column(
-                children: [
-                  Icon(Icons.health_and_safety, size: 48, color: Colors.grey),
-                  SizedBox(height: 12),
-                  Text(
-                    'Nenhuma dica publicada ainda',
-                    style: TextStyle(color: Colors.grey),
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: secondaryTealSoft,
+                    shape: BoxShape.circle,
                   ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Publique sua primeira dica acima!',
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  child: Icon(Icons.health_and_safety, size: 48, color: primaryTeal.withOpacity(0.5)),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Nenhuma dica publicada ainda',
+                  style: TextStyle(
+                    fontSize: 16, 
+                    fontWeight: FontWeight.w500, 
+                    color: deepOcean,
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Publique sua primeira dica acima!',
+                  style: TextStyle(fontSize: 13, color: mutedText),
+                ),
+              ],
             ),
           )
         else
@@ -503,7 +599,10 @@ class _DicasSaudePageState extends State<DicasSaudePage> {
             itemCount: _dicas.length > 3 ? 3 : _dicas.length,
             itemBuilder: (context, index) {
               final dica = _dicas[index];
-              return _buildDicaCard(dica);
+              return Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                child: _buildDicaCard(dica),
+              );
             },
           ),
       ],
@@ -512,69 +611,82 @@ class _DicasSaudePageState extends State<DicasSaudePage> {
 
   Widget _buildDicaCard(DicaSaude dica) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        color: cardWhite,
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
+        border: Border.all(color: borderLight, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Conteúdo da dica
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (dica.titulo.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: secondaryTealSoft,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                     child: Text(
                       dica.titulo,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: primaryTeal,
                       ),
                     ),
                   ),
+                if (dica.titulo.isNotEmpty) const SizedBox(height: 12),
                 Text(
                   dica.conteudo,
                   style: TextStyle(
                     fontSize: 14,
                     height: 1.5,
-                    color: Colors.grey[800],
+                    color: deepOcean,
                   ),
                 ),
               ],
             ),
           ),
+          
+          // Footer do card
           Container(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
             decoration: BoxDecoration(
-              color: primaryColor.withOpacity(0.03),
+              color: secondaryTealSoft.withOpacity(0.4),
               borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(20),
-                bottomRight: Radius.circular(20),
+                bottomLeft: Radius.circular(16),
+                bottomRight: Radius.circular(16),
               ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                // Informações do autor
                 Row(
                   children: [
-                    CircleAvatar(
-                      radius: 16,
-                      backgroundColor: primaryColor.withOpacity(0.2),
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: primaryTeal.withOpacity(0.12),
+                        shape: BoxShape.circle,
+                      ),
                       child: Icon(
                         Icons.medical_information,
-                        size: 16,
-                        color: primaryColor,
+                        size: 14,
+                        color: primaryTeal,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -583,55 +695,82 @@ class _DicasSaudePageState extends State<DicasSaudePage> {
                       children: [
                         Text(
                           dica.autor,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 12,
+                            color: deepOcean,
                           ),
                         ),
                         Text(
                           dica.especialidade,
                           style: TextStyle(
                             fontSize: 10,
-                            color: Colors.grey[600],
+                            color: mutedText,
                           ),
                         ),
                       ],
                     ),
                   ],
                 ),
+                
+                // Curtidas e data
                 Row(
                   children: [
-                    IconButton(
-                      icon: Icon(
-                        Icons.favorite_border,
-                        size: 18,
-                        color: Colors.red[400],
+                    // Botão de curtir
+                    InkWell(
+                      onTap: () => _curtirDica(dica),
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: likeRed.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.favorite,
+                              size: 14,
+                              color: likeRed,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              _formatarCurtidas(dica.curtidas),
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: likeRed,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      onPressed: () => _curtirDica(dica),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
                     ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _formatarCurtidas(dica.curtidas),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w500,
+                    const SizedBox(width: 12),
+                    
+                    // Data
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: mutedText.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Icon(
-                      Icons.access_time,
-                      size: 14,
-                      color: Colors.grey[500],
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _formatarData(dica.dataPublicacao),
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey[500],
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.access_time,
+                            size: 10,
+                            color: mutedText,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            _formatarData(dica.dataPublicacao),
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: mutedText,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -660,11 +799,11 @@ class _DicasSaudePageState extends State<DicasSaudePage> {
     } else if (diff.inDays == 1) {
       return 'Ontem';
     } else if (diff.inDays < 7) {
-      return '${diff.inDays} dias atrás';
+      return '${diff.inDays}d';
     } else if (diff.inDays < 30) {
-      return '${(diff.inDays / 7).floor()} semanas atrás';
+      return '${(diff.inDays / 7).floor()}sem';
     } else {
-      return DateFormat('dd/MM/yyyy').format(data);
+      return DateFormat('dd/MM/yy').format(data);
     }
   }
 }
