@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/auth_service.dart';
-import 'login.dart';
-import 'chatbot.dart';
-import 'cadastro.dart';
-import 'home.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
 
 class ContatoPage extends StatefulWidget {
@@ -63,8 +59,8 @@ class _ContatoPageState extends State<ContatoPage> {
             _usuarioId = profile['id'];
             _usuarioNome = profile['nome_completo'];
             _usuarioEmail = profile['email'];
-            _nomeController.text = _usuarioNome!;
-            _emailController.text = _usuarioEmail!;
+            _nomeController.text = _usuarioNome ?? '';
+            _emailController.text = _usuarioEmail ?? '';
           });
         }
       } else {
@@ -98,114 +94,100 @@ class _ContatoPageState extends State<ContatoPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Logout realizado com sucesso!'),
-          backgroundColor: Colors.green,
+          backgroundColor: Color(0xFF14B8A6),
           behavior: SnackBarBehavior.floating,
         ),
       );
 
-      // Voltar para Home após logout
       Navigator.pushReplacementNamed(context, '/');
     }
   }
 
   void _showUserMenu() {
-  showModalBottomSheet(
-    context: context,
-    backgroundColor: Colors.white,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(
-        top: Radius.circular(30),
-      ),
-    ),
-    isScrollControlled: true,  // ESSA LINHA É ESSENCIAL
-    builder: (context) {
-      return SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            left: 20,
-            right: 20,
-            top: 20,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircleAvatar(
-                radius: 40,
-                backgroundColor: const Color(0xFF3FA9C6),
-                child: Text(
-                  _userName != null && _userName!.isNotEmpty
-                      ? _userName![0].toUpperCase()
-                      : 'U',
-                  style: const TextStyle(
-                    fontSize: 32,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 15),
-              Text(
-                _userProfile?['nome_completo'] ?? 'Usuário',
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              Text(
-                (_userProfile?['funcao'] ?? 'paciente') == 'paciente' ? 'Paciente' : 'Médico',
-                style: const TextStyle(
-                  color: Colors.grey,
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Divider(),
-              ListTile(
-                leading: const Icon(
-                  Icons.person_outline,
-                  color: Color(0xFF1565C0),
-                ),
-                title: const Text('Editar perfil'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/perfil');
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.calendar_month,
-                  color: Color(0xFF1565C0),
-                ),
-                title: const Text('Meus agendamentos'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/agendamentos');
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.logout,
-                  color: Colors.red,
-                ),
-                title: const Text(
-                  'Sair',
-                  style: TextStyle(
-                    color: Colors.red,
-                  ),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  _logout();
-                },
-              ),
-              const SizedBox(height: 20), // Espaço extra no final
-            ],
-          ),
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFFFFFFFF),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(30),
         ),
-      );
-    },
-  );
-}
+      ),
+      isScrollControlled: true,
+      builder: (context) {
+        return SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+              left: 20,
+              right: 20,
+              top: 20,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircleAvatar(
+                  radius: 40,
+                  backgroundColor: const Color(0xFF14B8A6),
+                  child: Text(
+                    _userName != null && _userName!.isNotEmpty
+                        ? _userName![0].toUpperCase()
+                        : 'U',
+                    style: const TextStyle(
+                      fontSize: 32,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                Text(
+                  _userProfile?['nome_completo'] ?? 'Usuário',
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                Text(
+                  (_userProfile?['funcao'] ?? 'paciente') == 'paciente' ? 'Paciente' : 'Médico',
+                  style: TextStyle(color: Colors.grey[600]),
+                ),
+                const SizedBox(height: 20),
+                const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.person_outline, color: Color(0xFF14B8A6)),
+                  title: const Text('Editar perfil'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/perfil');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.calendar_month, color: Color(0xFF14B8A6)),
+                  title: const Text('Meus agendamentos'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/agendamentos');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.logout, color: Colors.red),
+                  title: const Text(
+                    'Sair',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _logout();
+                  },
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   Future<void> _enviarMensagem() async {
     if (!_formKey.currentState!.validate()) return;
@@ -247,7 +229,7 @@ class _ContatoPageState extends State<ContatoPage> {
                       'Mensagem enviada com sucesso! Nossa equipe retornará em breve.')),
             ],
           ),
-          backgroundColor: Colors.green,
+          backgroundColor: Color(0xFF14B8A6),
           behavior: SnackBarBehavior.floating,
           duration: Duration(seconds: 4),
         ),
@@ -281,37 +263,21 @@ class _ContatoPageState extends State<ContatoPage> {
     }
   }
 
-  void _onPageChanged(String page) {
-    if (page == 'Início') {
-      Navigator.pushReplacementNamed(context, '/home');
-    } else if (page == 'Contato') {
-      // Já está na página de contato
-      Navigator.pop(context);
-    } else if (page == 'Chatbot') {
-      Navigator.pushReplacementNamed(context, '/chatbot');
-    } else if (page == 'Cadastro') {
-      Navigator.pushReplacementNamed(context, '/cadastro');
-    } else if (page == 'Teleconsulta') {
-      Navigator.pushReplacementNamed(context, '/teleconsulta');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 800;
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: const Color(0xFFF7F7F7),
+      backgroundColor: const Color(0xFFF8FAFC),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         child: Column(
           children: [
             _buildHeader(isMobile),
-            const SizedBox(height: 30),
+            const SizedBox(height: 40),
             _buildForm(isMobile),
             const SizedBox(height: 50),
-            _buildFooter(isMobile),
           ],
         ),
       ),
@@ -331,13 +297,13 @@ class _ContatoPageState extends State<ContatoPage> {
 
   Widget _buildHeader(bool isMobile) {
     return Container(
-      height: isMobile ? 280 : 350,
+      height: isMobile ? 300 : 380,
       width: double.infinity,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF0D47A1), Color(0xFF1565C0)],
+          colors: [Color(0xFF0D2C33), Color(0xFF0D2C33)],
         ),
       ),
       child: Center(
@@ -346,10 +312,23 @@ class _ContatoPageState extends State<ContatoPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF14B8A6).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Icon(
+                  Icons.contact_support,
+                  color: Color(0xFF14B8A6),
+                  size: 50,
+                ),
+              ),
+              const SizedBox(height: 20),
               Text(
                 'POSSUI ALGUMA DÚVIDA?',
                 style: TextStyle(
-                  fontSize: isMobile ? 20 : 28,
+                  fontSize: isMobile ? 18 : 24,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
                   letterSpacing: 2,
@@ -358,14 +337,20 @@ class _ContatoPageState extends State<ContatoPage> {
               ),
               const SizedBox(height: 12),
               Text(
-                'NOS CONTATE',
+                'FALE CONOSCO',
                 style: TextStyle(
-                  fontSize: isMobile ? 32 : 48,
+                  fontSize: isMobile ? 28 : 44,
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xFF4FC3F7),
+                  color: const Color(0xFF14B8A6),
                   letterSpacing: 1,
                 ),
                 textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              Container(
+                width: 60,
+                height: 3,
+                color: const Color(0xFF14B8A6),
               ),
               const SizedBox(height: 20),
               Text(
@@ -378,11 +363,11 @@ class _ContatoPageState extends State<ContatoPage> {
               ),
               const SizedBox(height: 8),
               Text(
-                'com rapidez e segurança',
+                'com rapidez, segurança e atendimento humanizado',
                 style: TextStyle(
                   fontSize: isMobile ? 16 : 20,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF4FC3F7),
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -394,12 +379,18 @@ class _ContatoPageState extends State<ContatoPage> {
   }
 
   Widget _buildForm(bool isMobile) {
+    // Obtém o primeiro nome do usuário logado
+    String firstName = '';
+    if (_isLoggedIn && _usuarioNome != null && _usuarioNome!.isNotEmpty) {
+      firstName = _usuarioNome!.split(' ')[0];
+    }
+
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: isMobile ? 20 : 40),
-      padding: EdgeInsets.all(isMobile ? 20 : 32),
+      margin: EdgeInsets.symmetric(horizontal: isMobile ? 20 : 80),
+      padding: EdgeInsets.all(isMobile ? 24 : 40),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        color: const Color(0xFFFFFFFF),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -408,8 +399,8 @@ class _ContatoPageState extends State<ContatoPage> {
           ),
           BoxShadow(
             color: Colors.black.withOpacity(0.08),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -418,28 +409,53 @@ class _ContatoPageState extends State<ContatoPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Envie sua mensagem',
-              style: TextStyle(
-                fontSize: isMobile ? 20 : 24,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF1565C0),
-              ),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF14B8A6).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.email_outlined,
+                    color: Color(0xFF14B8A6),
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Envie sua mensagem',
+                        style: TextStyle(
+                          fontSize: isMobile ? 20 : 28,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF0D2C33),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _isLoggedIn && firstName.isNotEmpty
+                            ? 'Olá $firstName! Deixe sua mensagem abaixo.'
+                            : 'Preencha os campos abaixo para enviar sua mensagem.',
+                        style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              _isLoggedIn
-                  ? 'Olá $_usuarioNome! Deixe sua mensagem abaixo.'
-                  : 'Preencha os campos abaixo para enviar sua mensagem.',
-              style: TextStyle(color: Colors.grey[600], fontSize: 14),
-            ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
 
             // Nome
             _buildTextField(
               label: 'NOME COMPLETO',
               controller: _nomeController,
               hint: 'Digite seu nome completo',
+              icon: Icons.person_outline,
               enabled: !_isLoggedIn,
               isMobile: isMobile,
               validator: (value) {
@@ -450,7 +466,7 @@ class _ContatoPageState extends State<ContatoPage> {
               },
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
 
             // Email
             _buildTextField(
@@ -471,7 +487,7 @@ class _ContatoPageState extends State<ContatoPage> {
               },
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
 
             // Mensagem
             _buildTextField(
@@ -491,26 +507,26 @@ class _ContatoPageState extends State<ContatoPage> {
               },
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
 
             // Botão Enviar
             SizedBox(
               width: double.infinity,
-              height: isMobile ? 48 : 52,
+              height: isMobile ? 50 : 56,
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _enviarMensagem,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1565C0),
+                  backgroundColor: const Color(0xFF14B8A6),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                   elevation: 2,
                 ),
                 child: _isLoading
                     ? const SizedBox(
-                        height: 20,
-                        width: 20,
+                        height: 22,
+                        width: 22,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
                           valueColor:
@@ -523,12 +539,12 @@ class _ContatoPageState extends State<ContatoPage> {
                           Text(
                             'Enviar Mensagem',
                             style: TextStyle(
-                              fontSize: isMobile ? 14 : 16,
+                              fontSize: isMobile ? 15 : 17,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          const Icon(Icons.send, size: 18),
+                          const SizedBox(width: 10),
+                          const Icon(Icons.send, size: 20),
                         ],
                       ),
               ),
@@ -543,6 +559,7 @@ class _ContatoPageState extends State<ContatoPage> {
     required String label,
     required TextEditingController controller,
     required String hint,
+    IconData? icon,
     int maxLines = 1,
     bool enabled = true,
     TextInputType keyboardType = TextInputType.text,
@@ -552,239 +569,54 @@ class _ContatoPageState extends State<ContatoPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: isMobile ? 11 : 12,
-            fontWeight: FontWeight.w600,
-            color: const Color(0xFF1565C0),
-          ),
+        Row(
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 16, color: const Color(0xFF14B8A6)),
+              const SizedBox(width: 8),
+            ],
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: isMobile ? 11 : 13,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF0D2C33),
+                letterSpacing: 1,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 8),
         TextFormField(
           controller: controller,
           enabled: enabled,
           maxLines: maxLines,
           keyboardType: keyboardType,
-          style: TextStyle(fontSize: isMobile ? 14 : 15),
+          style: TextStyle(fontSize: isMobile ? 15 : 16, color: const Color(0xFF0D2C33)),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(color: Colors.grey[400]),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide.none,
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF1565C0), width: 2),
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: Color(0xFF14B8A6), width: 2),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: const Color(0xFF14B8A6).withOpacity(0.2)),
             ),
             filled: true,
-            fillColor: const Color(0xFFF5F9F5),
+            fillColor: const Color(0xFFF8FAFC),
             contentPadding: EdgeInsets.symmetric(
-              horizontal: isMobile ? 14 : 16,
-              vertical: isMobile ? 12 : 14,
+              horizontal: isMobile ? 16 : 20,
+              vertical: isMobile ? 14 : 16,
             ),
           ),
           validator: validator,
         ),
-      ],
-    );
-  }
-
-  // ================= FOOTER =================
-  Widget _buildFooter(bool isMobile) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF0D47A1), Color(0xFF1565C0)],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 20,
-            offset: const Offset(0, -5),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: EdgeInsets.all(isMobile ? 24 : 48),
-        child: Column(
-          children: [
-            Center(
-              child: Image.asset(
-                'assets/logo.png',
-                width: isMobile ? 150 : 200,
-                height: isMobile ? 150 : 200,
-                fit: BoxFit.contain,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: isMobile ? 20 : 100),
-              child: Text(
-                'Cuidando da sua saúde com tecnologia e humanidade. Disponível 24 horas por dia, 7 dias por semana.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: isMobile ? 14 : 16,
-                  height: 1.5,
-                ),
-              ),
-            ),
-            const SizedBox(height: 40),
-            if (isMobile) ...[
-              _buildFooterLinksCentralizado('Serviços', [
-                'Teleconsultas 24h',
-                'Agendamento online',
-                'Especialidades',
-                'Exames',
-                'Prontuário digital',
-              ]),
-              const SizedBox(height: 30),
-              _buildFooterLinksCentralizado('Institucional', [
-                'Sobre nós',
-                'Carreiras',
-                'Blog',
-                'Imprensa',
-                'Seja parceiro',
-              ]),
-              const SizedBox(height: 30),
-              _buildFooterLinksCentralizado('Suporte', [
-                'Central de ajuda',
-                'FAQ',
-                'Contato',
-                'Termos de uso',
-                'Privacidade',
-              ]),
-            ] else ...[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildFooterLinksCentralizado('Serviços', [
-                    'Teleconsultas 24h',
-                    'Agendamento online',
-                    'Especialidades',
-                    'Exames',
-                    'Prontuário digital',
-                  ]),
-                  _buildFooterLinksCentralizado('Institucional', [
-                    'Sobre nós',
-                    'Carreiras',
-                    'Blog',
-                    'Imprensa',
-                    'Seja parceiro',
-                  ]),
-                  _buildFooterLinksCentralizado('Suporte', [
-                    'Central de ajuda',
-                    'FAQ',
-                    'Contato',
-                    'Termos de uso',
-                    'Privacidade',
-                  ]),
-                ],
-              ),
-            ],
-            const SizedBox(height: 40),
-            Divider(color: Colors.white.withOpacity(0.2)),
-            const SizedBox(height: 24),
-            Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildSocialIcon(Icons.facebook),
-                    const SizedBox(width: 16),
-                    _buildSocialIcon(Icons.phone_android),
-                    const SizedBox(width: 16),
-                    _buildSocialIcon(Icons.email),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  '© 2026 Virtual Health - Todos os direitos reservados',
-                  style: TextStyle(
-                    color: Colors.white54,
-                    fontSize: isMobile ? 10 : 12,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSocialIcon(IconData icon) {
-    return InkWell(
-      onTap: () {},
-      child: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(
-          icon,
-          color: Colors.white,
-          size: 24,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFooterLinksCentralizado(String title, List<String> links) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 16),
-        ...links.map((link) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: InkWell(
-                onTap: () {
-                  if (link == 'Contato') {
-                    Navigator.pop(context);
-                  } else if (link == 'Termos de uso') {
-                    Navigator.pushNamed(context, '/termos-uso');
-                  } else if (link == 'Privacidade') {
-                    Navigator.pushNamed(context, '/privacidade');
-                  } else if (link == 'Teleconsultas 24h') {
-                    Navigator.pushNamed(context, '/teleconsulta');
-                  } else if (link == 'Agendamento online') {
-                    Navigator.pushNamed(context, '/clinicas');
-                  }
-                },
-                child: Text(
-                  link,
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                    decoration: (link == 'Contato' ||
-                            link == 'Termos de uso' ||
-                            link == 'Privacidade' ||
-                            link == 'Teleconsultas 24h' ||
-                            link == 'Agendamento online')
-                        ? TextDecoration.underline
-                        : TextDecoration.none,
-                    decorationColor: Colors.white54,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            )),
       ],
     );
   }

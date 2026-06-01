@@ -35,9 +35,9 @@ Future<void> main() async {
   await initializeDateFormatting('pt_BR', null);
 
   await Supabase.initialize(
-    url: 'https://yxhvmckqfjymmrcognta.supabase.co',
+    url: 'https://zswqxvhkchazgupmaigw.supabase.co',
     anonKey:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4aHZtY2txZmp5bW1yY29nbnRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MjAxNTcsImV4cCI6MjA5NDk5NjE1N30.KYEPDk5u8-rscXhLuDN2OIGi-w-STjFPhFFPe58LK6o',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpzd3F4dmhrY2hhemd1cG1haWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzg3MzksImV4cCI6MjA5NTY1NDczOX0.2Bef2OgOpdAC76YP2So4q7m-MKRsSrxvfTVtRseQLG8',
   );
 
   runApp(const MyApp());

@@ -20,7 +20,6 @@ class _AgendamentosMedicosPageState extends State<AgendamentosMedicosPage> {
   String? _userName;
   Map<String, dynamic>? _userProfile;
   
-  // GETTER CORRIGIDO
   String get _userFuncao => _userProfile?['funcao'] ?? 'paciente';
   
   List<Map<String, dynamic>> _appointments = [];
@@ -159,7 +158,6 @@ class _AgendamentosMedicosPageState extends State<AgendamentosMedicosPage> {
       return 'Acessar link';
     }
     if (status == 'realizada') {
-      return 'Ver relatório';
     }
     return '';
   }
@@ -172,7 +170,6 @@ class _AgendamentosMedicosPageState extends State<AgendamentosMedicosPage> {
       return 'link';
     }
     if (status == 'realizada') {
-      return 'relatorio';
     }
     return '';
   }
@@ -180,13 +177,13 @@ class _AgendamentosMedicosPageState extends State<AgendamentosMedicosPage> {
   Color _getStatusColor(String status) {
     switch (status) {
       case 'confirmada':
-        return Colors.green;
+        return const Color(0xFF10B981);
       case 'agendada':
-        return Colors.orange;
+        return const Color(0xFFF59E0B);
       case 'realizada':
-        return Colors.blue;
+        return const Color(0xFF14B8A6);
       case 'cancelada':
-        return Colors.red;
+        return const Color(0xFFEF4444);
       default:
         return Colors.grey;
     }
@@ -237,7 +234,7 @@ class _AgendamentosMedicosPageState extends State<AgendamentosMedicosPage> {
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
-              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              style: TextButton.styleFrom(foregroundColor: const Color(0xFFEF4444)),
               child: const Text('Sim, cancelar'),
             ),
           ],
@@ -260,19 +257,16 @@ class _AgendamentosMedicosPageState extends State<AgendamentosMedicosPage> {
           _isLoading = false;
         });
 
-        _showSnackBar('Consulta cancelada com sucesso!', Colors.green);
+        _showSnackBar('Consulta cancelada com sucesso!', const Color(0xFF10B981));
       }
     } 
     else if (acao == 'link') {
       final link = appointment['link_teleconsulta'];
       if (link != null && link.isNotEmpty) {
-        _showSnackBar('Abrindo link da teleconsulta...', Colors.blue);
+        _showSnackBar('Abrindo link da teleconsulta...', const Color(0xFF14B8A6));
       } else {
-        _showSnackBar('Link não disponível', Colors.orange);
+        _showSnackBar('Link não disponível', const Color(0xFFF59E0B));
       }
-    }
-    else if (acao == 'relatorio') {
-      _showSnackBar('Função de relatório em desenvolvimento', Colors.blue);
     }
   }
 
@@ -304,103 +298,90 @@ class _AgendamentosMedicosPageState extends State<AgendamentosMedicosPage> {
   }
 
   void _showUserMenu() {
-  showModalBottomSheet(
-    context: context,
-    backgroundColor: Colors.white,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(
-        top: Radius.circular(30),
-      ),
-    ),
-    isScrollControlled: true,  // ESSA LINHA É ESSENCIAL
-    builder: (context) {
-      return SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            left: 20,
-            right: 20,
-            top: 20,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircleAvatar(
-                radius: 40,
-                backgroundColor: const Color(0xFF3FA9C6),
-                child: Text(
-                  _userName != null && _userName!.isNotEmpty
-                      ? _userName![0].toUpperCase()
-                      : 'U',
-                  style: const TextStyle(
-                    fontSize: 32,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 15),
-              Text(
-                _userProfile?['nome_completo'] ?? 'Usuário',
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              Text(
-                (_userProfile?['funcao'] ?? 'paciente') == 'paciente' ? 'Paciente' : 'Médico',
-                style: const TextStyle(
-                  color: Colors.grey,
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Divider(),
-              ListTile(
-                leading: const Icon(
-                  Icons.person_outline,
-                  color: Color(0xFF1565C0),
-                ),
-                title: const Text('Editar perfil'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/perfil');
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.calendar_month,
-                  color: Color(0xFF1565C0),
-                ),
-                title: const Text('Meus agendamentos'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/agendamentos');
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.logout,
-                  color: Colors.red,
-                ),
-                title: const Text(
-                  'Sair',
-                  style: TextStyle(
-                    color: Colors.red,
-                  ),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  _logout();
-                },
-              ),
-              const SizedBox(height: 20), // Espaço extra no final
-            ],
-          ),
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFFFFFFFF),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(30),
         ),
-      );
-    },
-  );
-}
+      ),
+      isScrollControlled: true,
+      builder: (context) {
+        return SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+              left: 20,
+              right: 20,
+              top: 20,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircleAvatar(
+                  radius: 40,
+                  backgroundColor: const Color(0xFF14B8A6),
+                  child: Text(
+                    _userName != null && _userName!.isNotEmpty
+                        ? _userName![0].toUpperCase()
+                        : 'U',
+                    style: const TextStyle(
+                      fontSize: 32,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                Text(
+                  _userProfile?['nome_completo'] ?? 'Usuário',
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                Text(
+                  (_userProfile?['funcao'] ?? 'paciente') == 'paciente' ? 'Paciente' : 'Médico',
+                  style: TextStyle(color: Colors.grey[600]),
+                ),
+                const SizedBox(height: 20),
+                const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.person_outline, color: Color(0xFF14B8A6)),
+                  title: const Text('Editar perfil'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/perfil');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.calendar_month, color: Color(0xFF14B8A6)),
+                  title: const Text('Meus agendamentos'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/agendamentos');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.logout, color: Colors.red),
+                  title: const Text(
+                    'Sair',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _logout();
+                  },
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   void _showSnackBar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -414,22 +395,25 @@ class _AgendamentosMedicosPageState extends State<AgendamentosMedicosPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 800;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text('Agendamentos Médicos'),
-        backgroundColor: const Color(0xFF3FA9C6),
+        title: const Text('Meus Agendamentos'),
+        backgroundColor: const Color(0xFF0D2C33),
         foregroundColor: Colors.white,
         elevation: 0,
+        centerTitle: true,
       ),
       body: _isLoading
           ? const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircularProgressIndicator(),
+                  CircularProgressIndicator(color: Color(0xFF14B8A6)),
                   SizedBox(height: 16),
-                  Text('Carregando agendamentos...'),
+                  Text('Carregando agendamentos...', style: TextStyle(color: Color(0xFF0D2C33))),
                 ],
               ),
             )
@@ -437,9 +421,10 @@ class _AgendamentosMedicosPageState extends State<AgendamentosMedicosPage> {
               child: Column(
                 children: [
                   const SizedBox(height: 20),
-                  _buildMonthHeader(),
+                  _buildMonthHeader(isMobile),
                   const SizedBox(height: 20),
-                  _buildAppointmentsList(),
+                  _buildAppointmentsList(isMobile),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
@@ -457,13 +442,13 @@ class _AgendamentosMedicosPageState extends State<AgendamentosMedicosPage> {
     );
   }
 
-  Widget _buildMonthHeader() {
+  Widget _buildMonthHeader(bool isMobile) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -477,23 +462,35 @@ class _AgendamentosMedicosPageState extends State<AgendamentosMedicosPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              IconButton(
-                onPressed: _goToPreviousMonth,
-                icon: const Icon(Icons.chevron_left, size: 32),
-                color: const Color(0xFF3FA9C6),
+              Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEDF7F6),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: IconButton(
+                  onPressed: _goToPreviousMonth,
+                  icon: const Icon(Icons.chevron_left, size: 28),
+                  color: const Color(0xFF14B8A6),
+                ),
               ),
               Text(
                 '${_months[_currentMonth]} $_currentYear',
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1565C0),
+                  color: Color(0xFF0D2C33),
                 ),
               ),
-              IconButton(
-                onPressed: _goToNextMonth,
-                icon: const Icon(Icons.chevron_right, size: 32),
-                color: const Color(0xFF3FA9C6),
+              Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEDF7F6),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: IconButton(
+                  onPressed: _goToNextMonth,
+                  icon: const Icon(Icons.chevron_right, size: 28),
+                  color: const Color(0xFF14B8A6),
+                ),
               ),
             ],
           ),
@@ -502,14 +499,14 @@ class _AgendamentosMedicosPageState extends State<AgendamentosMedicosPage> {
     );
   }
 
-  Widget _buildAppointmentsList() {
+  Widget _buildAppointmentsList(bool isMobile) {
     if (_filteredAppointments.isEmpty) {
       return Container(
         margin: const EdgeInsets.all(20),
         padding: const EdgeInsets.all(40),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
           children: [
@@ -526,7 +523,8 @@ class _AgendamentosMedicosPageState extends State<AgendamentosMedicosPage> {
                 Navigator.pushNamed(context, '/clinicas');
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3FA9C6),
+                backgroundColor: const Color(0xFF14B8A6),
+                foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -553,7 +551,7 @@ class _AgendamentosMedicosPageState extends State<AgendamentosMedicosPage> {
           margin: const EdgeInsets.only(bottom: 16),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.05),
@@ -568,10 +566,10 @@ class _AgendamentosMedicosPageState extends State<AgendamentosMedicosPage> {
                 width: 80,
                 padding: const EdgeInsets.symmetric(vertical: 20),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3FA9C6).withOpacity(0.1),
+                  color: const Color(0xFF14B8A6).withOpacity(0.1),
                   borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    bottomLeft: Radius.circular(16),
+                    topLeft: Radius.circular(20),
+                    bottomLeft: Radius.circular(20),
                   ),
                 ),
                 child: Column(
@@ -581,7 +579,7 @@ class _AgendamentosMedicosPageState extends State<AgendamentosMedicosPage> {
                       style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF1565C0),
+                        color: Color(0xFF14B8A6),
                       ),
                     ),
                   ],
@@ -599,6 +597,7 @@ class _AgendamentosMedicosPageState extends State<AgendamentosMedicosPage> {
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
+                          color: Color(0xFF0D2C33),
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -642,8 +641,9 @@ class _AgendamentosMedicosPageState extends State<AgendamentosMedicosPage> {
                     onPressed: () => _handleButtonClick(botaoAcao, app),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: botaoAcao == 'cancelar'
-                          ? Colors.red
-                          : const Color(0xFF3FA9C6),
+                          ? const Color(0xFFEF4444)
+                          : const Color(0xFF14B8A6),
+                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 10,
@@ -657,7 +657,6 @@ class _AgendamentosMedicosPageState extends State<AgendamentosMedicosPage> {
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
                       ),
                     ),
                   ),

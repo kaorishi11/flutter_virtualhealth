@@ -16,7 +16,7 @@ class _HomePageState extends State<HomePage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isLoggedIn = false;
   String? _userName;
-  String? _userFuncao;
+  String? _userTipo;
   Map<String, dynamic>? _userProfile;
 
   @override
@@ -43,15 +43,15 @@ class _HomePageState extends State<HomePage> {
           setState(() {
             _isLoggedIn = true;
             _userProfile = profile;
-            _userName = profile['nome_completo']?.split(' ')[0] ?? 'Usuário';
-            _userFuncao = profile['funcao'] ?? 'paciente';
+            _userName = profile['nome']?.split(' ')[0] ?? 'Usuário';
+            _userTipo = profile['tipo'] ?? 'paciente';
           });
         } else if (mounted) {
           setState(() {
             _isLoggedIn = false;
             _userName = null;
             _userProfile = null;
-            _userFuncao = null;
+            _userTipo = null;
           });
         }
       } else {
@@ -60,7 +60,7 @@ class _HomePageState extends State<HomePage> {
             _isLoggedIn = false;
             _userName = null;
             _userProfile = null;
-            _userFuncao = null;
+            _userTipo = null;
           });
         }
       }
@@ -71,7 +71,7 @@ class _HomePageState extends State<HomePage> {
           _isLoggedIn = false;
           _userName = null;
           _userProfile = null;
-          _userFuncao = null;
+          _userTipo = null;
         });
       }
     }
@@ -85,7 +85,7 @@ class _HomePageState extends State<HomePage> {
           _isLoggedIn = false;
           _userName = null;
           _userProfile = null;
-          _userFuncao = null;
+          _userTipo = null;
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -180,7 +180,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 15),
                 Text(
-                  _userProfile?['nome_completo'] ?? 'Usuário',
+                  _userProfile?['nome'] ?? 'Usuário',
                   style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -188,9 +188,7 @@ class _HomePageState extends State<HomePage> {
                   textAlign: TextAlign.center,
                 ),
                 Text(
-                  (_userProfile?['funcao'] ?? 'paciente') == 'paciente'
-                      ? 'Paciente'
-                      : 'Médico',
+                  _getTipoDisplay(_userTipo),
                   style: TextStyle(
                     color: Colors.grey[600],
                   ),
@@ -244,6 +242,19 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  String _getTipoDisplay(String? tipo) {
+    switch (tipo) {
+      case 'paciente':
+        return 'Paciente';
+      case 'medico':
+        return 'Médico';
+      case 'admin':
+        return 'Administrador';
+      default:
+        return 'Paciente';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -277,7 +288,6 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-// Seção Hero Modernizada
 class HeroSection extends StatelessWidget {
   final bool isMobile;
   const HeroSection({super.key, this.isMobile = false});
@@ -475,7 +485,6 @@ Widget _buildStatItem(String number, String label, IconData icon) {
   );
 }
 
-// Seção de Vídeo Modernizada
 class VideoPitchSection extends StatefulWidget {
   final bool isMobile;
   const VideoPitchSection({super.key, this.isMobile = false});
@@ -666,7 +675,6 @@ class _VideoPitchSectionState extends State<VideoPitchSection> {
   }
 }
 
-// Card do Plano Virtual Modernizado
 class VirtualPlanCard extends StatelessWidget {
   final bool isMobile;
   const VirtualPlanCard({super.key, this.isMobile = false});
@@ -871,7 +879,6 @@ class VirtualPlanCard extends StatelessWidget {
   }
 }
 
-// Nova Seção CTA (Call to Action)
 class CTASection extends StatelessWidget {
   final bool isMobile;
   const CTASection({super.key, this.isMobile = false});
@@ -904,7 +911,6 @@ class CTASection extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Logo sem fundo arredondado e maior
           Image.asset(
             'assets/logo.png',
             width: isMobile ? 120 : 160,

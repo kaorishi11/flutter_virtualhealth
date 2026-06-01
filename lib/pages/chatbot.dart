@@ -23,7 +23,6 @@ class _ChatbotPageState extends State<ChatbotPage> {
 
   final String groqApiKey = 'COLE_SUA_NOVA_KEY_AQUI';
 
-  // GETTERS CORRIGIDOS
   String get _userName => _userProfile?['nome_completo']?.split(' ')[0] ?? 'Usuário';
   String get _userFuncao => _userProfile?['funcao'] ?? 'paciente';
 
@@ -83,103 +82,88 @@ class _ChatbotPageState extends State<ChatbotPage> {
   }
 
   void _showUserMenu() {
-  showModalBottomSheet(
-    context: context,
-    backgroundColor: Colors.white,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(
-        top: Radius.circular(30),
-      ),
-    ),
-    isScrollControlled: true,  // ESSA LINHA É ESSENCIAL
-    builder: (context) {
-      return SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            left: 20,
-            right: 20,
-            top: 20,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircleAvatar(
-                radius: 40,
-                backgroundColor: const Color(0xFF3FA9C6),
-                child: Text(
-                  _userName != null && _userName!.isNotEmpty
-                      ? _userName![0].toUpperCase()
-                      : 'U',
-                  style: const TextStyle(
-                    fontSize: 32,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 15),
-              Text(
-                _userProfile?['nome_completo'] ?? 'Usuário',
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              Text(
-                (_userProfile?['funcao'] ?? 'paciente') == 'paciente' ? 'Paciente' : 'Médico',
-                style: const TextStyle(
-                  color: Colors.grey,
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Divider(),
-              ListTile(
-                leading: const Icon(
-                  Icons.person_outline,
-                  color: Color(0xFF1565C0),
-                ),
-                title: const Text('Editar perfil'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/perfil');
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.calendar_month,
-                  color: Color(0xFF1565C0),
-                ),
-                title: const Text('Meus agendamentos'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/agendamentos');
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.logout,
-                  color: Colors.red,
-                ),
-                title: const Text(
-                  'Sair',
-                  style: TextStyle(
-                    color: Colors.red,
-                  ),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  _logout();
-                },
-              ),
-              const SizedBox(height: 20), // Espaço extra no final
-            ],
-          ),
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFFFFFFFF),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(30),
         ),
-      );
-    },
-  );
-}
+      ),
+      isScrollControlled: true,
+      builder: (context) {
+        return SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+              left: 20,
+              right: 20,
+              top: 20,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircleAvatar(
+                  radius: 40,
+                  backgroundColor: const Color(0xFF14B8A6),
+                  child: Text(
+                    _userName.isNotEmpty ? _userName[0].toUpperCase() : 'U',
+                    style: const TextStyle(
+                      fontSize: 32,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                Text(
+                  _userProfile?['nome_completo'] ?? 'Usuário',
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                Text(
+                  (_userProfile?['funcao'] ?? 'paciente') == 'paciente' ? 'Paciente' : 'Médico',
+                  style: TextStyle(color: Colors.grey[600]),
+                ),
+                const SizedBox(height: 20),
+                const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.person_outline, color: Color(0xFF14B8A6)),
+                  title: const Text('Editar perfil'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/perfil');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.calendar_month, color: Color(0xFF14B8A6)),
+                  title: const Text('Meus agendamentos'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/agendamentos');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.logout, color: Colors.red),
+                  title: const Text(
+                    'Sair',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _logout();
+                  },
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   Future<void> sendMessage() async {
     String userMessage = _controller.text.trim();
@@ -237,10 +221,11 @@ class _ChatbotPageState extends State<ChatbotPage> {
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: const Color(0xFFF0F4F8),
+      backgroundColor: const Color(0xFFF8FAFC),
       body: SingleChildScrollView(
         child: Column(
           children: [
+            const SizedBox(height: 24),
             // Card do Chat
             Container(
               margin: EdgeInsets.symmetric(
@@ -249,7 +234,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
               ),
               width: isMobile ? double.infinity : 1000,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: const Color(0xFFFFFFFF),
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
@@ -265,13 +250,13 @@ class _ChatbotPageState extends State<ChatbotPage> {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF8F9FA),
+                      color: const Color(0xFFEDF7F6),
                       borderRadius: const BorderRadius.only(
                         topLeft: Radius.circular(24),
                         topRight: Radius.circular(24),
                       ),
                       border: Border(
-                        bottom: BorderSide(color: Colors.grey[200]!),
+                        bottom: BorderSide(color: const Color(0xFF14B8A6).withOpacity(0.2)),
                       ),
                     ),
                     child: Row(
@@ -279,12 +264,12 @@ class _ChatbotPageState extends State<ChatbotPage> {
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF1565C0).withOpacity(0.1),
+                            color: const Color(0xFF14B8A6).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: const Icon(
                             Icons.chat_bubble_outline,
-                            color: Color(0xFF1565C0),
+                            color: Color(0xFF14B8A6),
                             size: 24,
                           ),
                         ),
@@ -298,7 +283,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
-                                  color: Color(0xFF0D47A1),
+                                  color: Color(0xFF0D2C33),
                                 ),
                               ),
                               Text(
@@ -348,7 +333,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
 
                   // Área de mensagens
                   SizedBox(
-                    height: isMobile ? 400 : 500,
+                    height: isMobile ? 450 : 550,
                     child: messages.isEmpty
                         ? Center(
                             child: Column(
@@ -397,12 +382,11 @@ class _ChatbotPageState extends State<ChatbotPage> {
                                       CircleAvatar(
                                         radius: 20,
                                         backgroundColor:
-                                            const Color(0xFF1565C0)
-                                                .withOpacity(0.1),
+                                            const Color(0xFF14B8A6).withOpacity(0.1),
                                         child: const Icon(
                                           Icons.android,
                                           size: 20,
-                                          color: Color(0xFF1565C0),
+                                          color: Color(0xFF14B8A6),
                                         ),
                                       ),
                                       const SizedBox(width: 12),
@@ -418,17 +402,16 @@ class _ChatbotPageState extends State<ChatbotPage> {
                                         padding: const EdgeInsets.all(14),
                                         decoration: BoxDecoration(
                                           color: isUser
-                                              ? const Color(0xFF1565C0)
-                                              : Colors.grey[100],
-                                          borderRadius:
-                                              BorderRadius.circular(20),
+                                              ? const Color(0xFF14B8A6)
+                                              : const Color(0xFFEDF7F6),
+                                          borderRadius: BorderRadius.circular(20),
                                         ),
                                         child: Text(
                                           msg['text'],
                                           style: TextStyle(
                                             color: isUser
                                                 ? Colors.white
-                                                : Colors.black87,
+                                                : const Color(0xFF0D2C33),
                                             fontSize: 14,
                                             height: 1.4,
                                           ),
@@ -440,12 +423,11 @@ class _ChatbotPageState extends State<ChatbotPage> {
                                       CircleAvatar(
                                         radius: 20,
                                         backgroundColor:
-                                            const Color(0xFF1565C0)
-                                                .withOpacity(0.1),
+                                            const Color(0xFF14B8A6).withOpacity(0.1),
                                         child: const Icon(
                                           Icons.person,
                                           size: 20,
-                                          color: Color(0xFF1565C0),
+                                          color: Color(0xFF14B8A6),
                                         ),
                                       ),
                                     ],
@@ -465,11 +447,11 @@ class _ChatbotPageState extends State<ChatbotPage> {
                           CircleAvatar(
                             radius: 16,
                             backgroundColor:
-                                const Color(0xFF1565C0).withOpacity(0.1),
+                                const Color(0xFF14B8A6).withOpacity(0.1),
                             child: const Icon(
                               Icons.android,
                               size: 14,
-                              color: Color(0xFF1565C0),
+                              color: Color(0xFF14B8A6),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -479,7 +461,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
                               vertical: 10,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.grey[100],
+                              color: const Color(0xFFEDF7F6),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Row(
@@ -501,13 +483,13 @@ class _ChatbotPageState extends State<ChatbotPage> {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF8F9FA),
+                      color: const Color(0xFFF8FAFC),
                       borderRadius: const BorderRadius.only(
                         bottomLeft: Radius.circular(24),
                         bottomRight: Radius.circular(24),
                       ),
                       border: Border(
-                        top: BorderSide(color: Colors.grey[200]!),
+                        top: BorderSide(color: const Color(0xFF14B8A6).withOpacity(0.2)),
                       ),
                     ),
                     child: Row(
@@ -517,7 +499,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(30),
-                              border: Border.all(color: Colors.grey[300]!),
+                              border: Border.all(color: const Color(0xFF14B8A6).withOpacity(0.3)),
                             ),
                             child: TextField(
                               controller: _controller,
@@ -538,15 +520,12 @@ class _ChatbotPageState extends State<ChatbotPage> {
                         Container(
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [
-                                Color(0xFF1565C0),
-                                Color(0xFF0D47A1)
-                              ],
+                              colors: [Color(0xFF14B8A6), Color(0xFF0F766E)],
                             ),
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF1565C0).withOpacity(0.3),
+                                color: const Color(0xFF14B8A6).withOpacity(0.3),
                                 blurRadius: 8,
                               ),
                             ],
@@ -566,9 +545,8 @@ class _ChatbotPageState extends State<ChatbotPage> {
                 ],
               ),
             ),
-
+            const SizedBox(height: 40),
             // Footer
-            const ModernFooterSection(),
           ],
         ),
       ),
@@ -593,194 +571,9 @@ class _ChatbotPageState extends State<ChatbotPage> {
       width: 6,
       height: 6,
       decoration: const BoxDecoration(
-        color: Colors.grey,
+        color: Color(0xFF14B8A6),
         shape: BoxShape.circle,
       ),
-    );
-  }
-}
-
-// Footer
-class ModernFooterSection extends StatelessWidget {
-  const ModernFooterSection({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 800;
-    
-    return Container(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF0D47A1), Color(0xFF1565C0)],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 20,
-            offset: const Offset(0, -5),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: EdgeInsets.all(isMobile ? 24 : 48),
-        child: Column(
-          children: [
-            Center(
-              child: Image.asset(
-                'assets/logo.png',
-                width: isMobile ? 150 : 200,
-                height: isMobile ? 150 : 200,
-                fit: BoxFit.contain,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: isMobile ? 20 : 100),
-              child: Text(
-                'Cuidando da sua saúde com tecnologia e humanidade. Disponível 24 horas por dia, 7 dias por semana.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: isMobile ? 14 : 16,
-                  height: 1.5,
-                ),
-              ),
-            ),
-            const SizedBox(height: 40),
-            if (isMobile) ...[
-              _buildFooterLinksCentralizado('Serviços', [
-                'Teleconsultas 24h',
-                'Agendamento online',
-                'Especialidades',
-                'Exames',
-                'Prontuário digital',
-              ]),
-              const SizedBox(height: 30),
-              _buildFooterLinksCentralizado('Institucional', [
-                'Sobre nós',
-                'Carreiras',
-                'Blog',
-                'Imprensa',
-                'Seja parceiro',
-              ]),
-              const SizedBox(height: 30),
-              _buildFooterLinksCentralizado('Suporte', [
-                'Central de ajuda',
-                'FAQ',
-                'Contato',
-                'Termos de uso',
-                'Privacidade',
-              ]),
-            ] else ...[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildFooterLinksCentralizado('Serviços', [
-                    'Teleconsultas 24h',
-                    'Agendamento online',
-                    'Especialidades',
-                    'Exames',
-                    'Prontuário digital',
-                  ]),
-                  _buildFooterLinksCentralizado('Institucional', [
-                    'Sobre nós',
-                    'Carreiras',
-                    'Blog',
-                    'Imprensa',
-                    'Seja parceiro',
-                  ]),
-                  _buildFooterLinksCentralizado('Suporte', [
-                    'Central de ajuda',
-                    'FAQ',
-                    'Contato',
-                    'Termos de uso',
-                    'Privacidade',
-                  ]),
-                ],
-              ),
-            ],
-            const SizedBox(height: 40),
-            Divider(color: Colors.white.withOpacity(0.2)),
-            const SizedBox(height: 24),
-            Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildSocialIcon(Icons.facebook),
-                    const SizedBox(width: 16),
-                    _buildSocialIcon(Icons.phone_android),
-                    const SizedBox(width: 16),
-                    _buildSocialIcon(Icons.email),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  '© 2026 Virtual Health - Todos os direitos reservados',
-                  style: TextStyle(
-                    color: Colors.white54,
-                    fontSize: isMobile ? 10 : 12,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSocialIcon(IconData icon) {
-    return InkWell(
-      onTap: () {},
-      child: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(
-          icon,
-          color: Colors.white,
-          size: 24,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFooterLinksCentralizado(String title, List<String> links) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 16),
-        ...links.map((link) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: InkWell(
-                onTap: () {},
-                child: Text(
-                  link,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            )),
-      ],
     );
   }
 }

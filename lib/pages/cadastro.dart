@@ -141,7 +141,7 @@ class _CadastroPageState extends State<CadastroPage> with SingleTickerProviderSt
         telefone: _telefoneController.text.trim(),
         cep: _cepController.text.trim(),
         dataNascimento: _selectedDate!,
-        registroProfissional: _registroController.text.trim(),
+        crm: _registroController.text.trim(),
         universidade: _universidadeController.text.trim(),
         anoFormacao: int.parse(_anoController.text.trim()),
         especialidade: _especialidadeSelecionada ?? '',

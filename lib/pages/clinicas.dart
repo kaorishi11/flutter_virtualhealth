@@ -319,9 +319,7 @@ class _ClinicasPageState extends State<ClinicasPage> {
                 const SizedBox(height: 32),
                 _buildDoctorsList(isMobile),
                 const SizedBox(height: 50),
-                _buildCTASection(isMobile),
-                const SizedBox(height: 50),
-                _buildFooter(isMobile),
+
               ],
             ),
           ),
@@ -1222,92 +1220,6 @@ class _ClinicasPageState extends State<ClinicasPage> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildCTASection(bool isMobile) {
-    return Container(
-      margin: EdgeInsets.symmetric(
-        horizontal: isMobile ? 20 : 80,
-      ),
-      padding: EdgeInsets.all(isMobile ? 30 : 50),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF0D2C33), Color(0xFF1A4A55)],
-        ),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF14B8A6).withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Image.asset(
-            'assets/logo.png',
-            width: isMobile ? 100 : 140,
-            height: isMobile ? 100 : 140,
-            fit: BoxFit.contain,
-          ),
-          const SizedBox(height: 20),
-          Text(
-            'Pronto para cuidar da sua saúde?',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: isMobile ? 22 : 32,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Agende sua consulta agora mesmo e tenha acesso\nà saúde de qualidade onde você estiver.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: isMobile ? 14 : 16,
-              color: Colors.white70,
-            ),
-          ),
-          const SizedBox(height: 30),
-          ElevatedButton(
-            onPressed: () {
-              // Já está na página de clínicas, apenas scrolla para o topo
-              Scrollable.ensureVisible(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF14B8A6),
-              foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(
-                horizontal: isMobile ? 30 : 48,
-                vertical: isMobile ? 14 : 18,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(50),
-              ),
-              elevation: 4,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.arrow_forward, size: 20),
-                const SizedBox(width: 12),
-                Text(
-                  'Ver especialistas',
-                  style: TextStyle(
-                    fontSize: isMobile ? 14 : 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
